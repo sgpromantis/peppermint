@@ -1,0 +1,9 @@
+# Use the existing working image as base
+FROM ghcr.io/sgpromantis/peppermint:latest
+
+# Copy the updated German translation files
+COPY apps/client/locales/de/peppermint.json ./apps/client/.next/server/static/locales/de/peppermint.json
+COPY apps/client/locales/de/peppermint.json ./apps/client/public/locales/de/peppermint.json
+
+# Copy the updated i18n configuration
+COPY apps/client/i18n.js ./apps/client/i18n.js
