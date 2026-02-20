@@ -36,6 +36,31 @@ import { useTicketActions } from "../hooks/useTicketActions";
 import { Ticket } from "../types/tickets";
 
 export function CommandMenu() {
+    // Translation helper
+    const t = (key) => {
+      const translations = {
+        search: "Suchen",
+        search_placeholder: "Tickets nach Titel, ID, Beschreibung oder Bearbeiter suchen...",
+        no_tickets: "Keine Tickets gefunden.",
+        navigation: "Navigation",
+        all_issues: "Alle Tickets",
+        open_issues: "Offene Tickets",
+        closed_issues: "Geschlossene Tickets",
+        create_issue: "Neues Ticket erstellen",
+        open_tickets: "Offene Tickets",
+        closed_tickets: "Geschlossene Tickets",
+        unassigned: "Nicht zugewiesen",
+        ticket_actions: "Ticket Aktionen",
+        toggle_status: "Status wechseln",
+        set_priority: "Priorität setzen: ",
+        assign_to: "Zuweisen an",
+        unassign: "Zuweisung entfernen",
+        delete_ticket: "Ticket löschen",
+        settings: "Einstellungen",
+        profile: "Profil"
+      };
+      return translations[key] || key;
+    };
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const router = useRouter();
@@ -142,30 +167,210 @@ export function CommandMenu() {
         return Clock;
       case 'low':
         return Timer;
-      default:
-        return Circle;
-    }
-  };
+      <>
+        <Button
+          variant="outline"
+          className="relative text-foreground hover:cursor-pointer whitespace-nowrap flex items-center gap-2"
+          onClick={() => setOpen(true)}
+        >
+          <Search className="h-4 w-4" />
+          <span>{t("search")}</span>
+          <kbd className="hidden md:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
+            <span className="text-xs">⌘</span>K
+          </kbd>
+        </Button>
+        <CommandDialog open={open} onOpenChange={setOpen}>
+          <CommandInput 
+            placeholder={t("search_placeholder")}
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList>
+            <CommandEmpty>{t("no_tickets")}</CommandEmpty>
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case 'high':
-        return 'text-red-500';
-      case 'medium':
-        return 'text-yellow-500';
-      case 'low':
-        return 'text-blue-500';
-      default:
-        return 'text-gray-500';
-    }
-  };
+            {/* Quick Navigation */}
+            <CommandGroup heading={t("navigation")}> 
+              <CommandItem onSelect={() => router.push("/issues")}> 
+                <Circle className="mr-2 h-4 w-4" />
+                <span>{t("all_issues")}</span>
+              </CommandItem>
+              <CommandItem onSelect={() => router.push("/issues/open")}> 
+                <Circle className="mr-2 h-4 w-4" />
+                <span>{t("open_issues")}</span>
+              </CommandItem>
+              <CommandItem onSelect={() => router.push("/issues/closed")}> 
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                <span>{t("closed_issues")}</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={() =>
+                  new KeyboardEvent("keydown", {
+                    key: "c",
+                  })
+                }
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                <span>{t("create_issue")}</span>
+              </CommandItem>
+            </CommandGroup>
 
-  return (
-    <>
-      <Button
-        variant="outline"
-        className="relative text-foreground hover:cursor-pointer whitespace-nowrap flex items-center gap-2"
-        onClick={() => setOpen(true)}
+            <CommandSeparator />
+
+            {/* Enhanced Ticket Search */}
+            {filteredAndGroupedTickets && (
+              <>
+                {/* Open Tickets */}
+                {filteredAndGroupedTickets.open.length > 0 && (
+                  <CommandGroup heading={t("open_tickets")}> 
+                    {filteredAndGroupedTickets.open.map((ticket) => (
+                      <CommandItem
+                        key={ticket.id}
+                        onSelect={() => router.push(`/issue/${ticket.id}`)}
+                        className="flex flex-col py-2 px-2 text-sm justify-start items-start hover:cursor-pointer"
+                      >
+                        <span>{ticket.title}</span>
+                        <span className="text-xs text-muted-foreground">
+                          #{ticket.id} • {ticket.assignedTo?.name || t("unassigned")} • {moment(ticket.createdAt).fromNow()}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+
+                {/* Closed Tickets */}
+                {filteredAndGroupedTickets.closed.length > 0 && (
+                  <CommandGroup heading={t("closed_tickets")}> 
+                    {filteredAndGroupedTickets.closed.map((ticket) => (
+                      <CommandItem
+                        key={ticket.id}
+                        onSelect={() => router.push(`/issue/${ticket.id}`)}
+                        className="flex flex-col py-2 px-2 text-sm justify-start items-start hover:cursor-pointer"
+                      >
+                        <span>{ticket.title}</span>
+                        <span className="text-xs text-muted-foreground">
+                          #{ticket.id} • {ticket.assignedTo?.name || t("unassigned")} • {moment(ticket.createdAt).fromNow()}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </>
+            )}
+
+            <CommandSeparator />
+
+            {/* Quick Actions for Current Ticket */}
+            {router.pathname.includes("/issue/") &&
+              router.query.id &&
+              ticketsData && (
+                <CommandGroup heading={t("ticket_actions")}> 
+                  {/* Status Toggle */}
+                  <CommandItem
+                    onSelect={() => {
+                      const ticket = ticketsData.find(
+                        (t: Ticket) => t.id === router.query.id
+                      );
+                      if (ticket) {
+                        updateTicketStatus(ticket);
+                        setOpen(false);
+                      }
+                    }}
+                  >
+                    <Clock className="mr-2 h-4 w-4" />
+                    <span>{t("toggle_status")}</span>
+                  </CommandItem>
+
+                  {/* Priority Actions */}
+                  {priorities.map((priority) => (
+                    <CommandItem
+                      key={priority.value}
+                      onSelect={() => {
+                        const ticket = ticketsData.find(
+                          (t: Ticket) => t.id === router.query.id
+                        );
+                        if (ticket) {
+                          updateTicketPriority(ticket, priority.value);
+                          setOpen(false);
+                        }
+                      }}
+                    >
+                      <priority.icon className="mr-2 h-4 w-4" />
+                      <span>{t("set_priority")}{priority.label}</span>
+                    </CommandItem>
+                  ))}
+
+                  {/* Assign Actions */}
+                  {usersData && (
+                    <CommandGroup heading={t("assign_to")}> 
+                      {usersData.map((user: any) => (
+                        <CommandItem
+                          key={user.id}
+                          onSelect={() => {
+                            if (router.query.id) {
+                              updateTicketAssignee(
+                                router.query.id as string,
+                                user
+                              );
+                              setOpen(false);
+                            }
+                          }}
+                        >
+                          <UserPlus2 className="mr-2 h-4 w-4" />
+                          <span>{t("assign_to")} {user.name}</span>
+                        </CommandItem>
+                      ))}
+                      <CommandItem
+                        onSelect={() => {
+                          if (router.query.id) {
+                            updateTicketAssignee(
+                              router.query.id as string,
+                              undefined
+                            );
+                            setOpen(false);
+                          }
+                        }}
+                      >
+                        <User2 className="mr-2 h-4 w-4" />
+                        <span>{t("unassign")}</span>
+                      </CommandItem>
+                    </CommandGroup>
+                  )}
+
+                  {/* Delete Action */}
+                  {user?.isAdmin && (
+                    <CommandItem
+                      onSelect={() => {
+                        if (router.query.id) {
+                          deleteTicket(router.query.id as string);
+                          router.push("/issues");
+                          setOpen(false);
+                        }
+                      }}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>{t("delete_ticket")}</span>
+                    </CommandItem>
+                  )}
+                </CommandGroup>
+              )}
+
+            <CommandSeparator />
+
+            {/* Settings and Profile */}
+            <CommandGroup heading={t("settings")}> 
+              <CommandItem onSelect={() => router.push("/settings")}> 
+                <Settings className="mr-2 h-4 w-4" />
+                <span>{t("settings")}</span>
+              </CommandItem>
+              <CommandItem onSelect={() => router.push("/profile")}> 
+                <User className="mr-2 h-4 w-4" />
+                <span>{t("profile")}</span>
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
+      </>
       >
         <Search className="h-4 w-4" />
         <span>Search</span>
