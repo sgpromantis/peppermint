@@ -167,37 +167,9 @@ export function CommandMenu() {
         return Clock;
       case 'low':
         return Timer;
-      <>
-        <Button
-          variant="outline"
-          className="relative text-foreground hover:cursor-pointer whitespace-nowrap flex items-center gap-2"
-          onClick={() => setOpen(true)}
-        >
-          <Search className="h-4 w-4" />
-          <span>{t("search")}</span>
-          <kbd className="hidden md:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-            <span className="text-xs">⌘</span>K
-          </kbd>
-        </Button>
-        <CommandDialog open={open} onOpenChange={setOpen}>
-          <CommandInput 
-            placeholder={t("search_placeholder")}
-            value={search}
-            onValueChange={setSearch}
-          />
-          <CommandList>
-            <CommandEmpty>{t("no_tickets")}</CommandEmpty>
-
-            {/* Quick Navigation */}
-            <CommandGroup heading={t("navigation")}> 
-              <CommandItem onSelect={() => router.push("/issues")}> 
-                <Circle className="mr-2 h-4 w-4" />
-                <span>{t("all_issues")}</span>
-              </CommandItem>
-              <CommandItem onSelect={() => router.push("/issues/open")}> 
-                <Circle className="mr-2 h-4 w-4" />
-                <span>{t("open_issues")}</span>
-              </CommandItem>
+      default:
+        return Circle;
+    }
               <CommandItem onSelect={() => router.push("/issues/closed")}> 
                 <CheckCircle2 className="mr-2 h-4 w-4" />
                 <span>{t("closed_issues")}</span>
