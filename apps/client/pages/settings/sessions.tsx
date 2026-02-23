@@ -42,8 +42,8 @@ export default function Sessions() {
 
       toast({
         variant: "destructive",
-        title: "Error fetching sessions",
-        description: "Please try again later",
+        title: "Fehler beim Laden der Sitzungen",
+        description: "Bitte versuchen Sie es später erneut",
       });
     }
   };
@@ -66,8 +66,8 @@ export default function Sessions() {
       }
 
       toast({
-        title: "Session revoked",
-        description: "The session has been revoked",
+        title: "Sitzung beendet",
+        description: "Die Sitzung wurde beendet",
       });
 
       fetchSessions();
@@ -79,9 +79,9 @@ export default function Sessions() {
   return (
     <div className="p-6">
       <div className="flex flex-col space-y-1 mb-4">
-        <h1 className="text-2xl font-bold">Active Sessions</h1>
+        <h1 className="text-2xl font-bold">Aktive Sitzungen</h1>
         <span className="text-sm text-foreground">
-          Devices you are logged in to
+          Geräte, auf denen Sie angemeldet sind
         </span>
       </div>
       <div className="space-y-4">
@@ -101,10 +101,10 @@ export default function Sessions() {
                   {getPrettyUserAgent(session.userAgent)}
                 </div>
                 <div className="text-xs text-foreground">
-                  Created: {new Date(session.createdAt).toLocaleString("en-GB")}
+                  Erstellt: {new Date(session.createdAt).toLocaleString("de-DE")}
                 </div>
                 <div className="text-xs text-foreground">
-                  Expires: {new Date(session.expires).toLocaleString("en-GB")}
+                  Läuft ab: {new Date(session.expires).toLocaleString("de-DE")}
                 </div>
               </div>
               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -113,7 +113,7 @@ export default function Sessions() {
                   onClick={() => revokeSession(session.id)}
                   variant="destructive"
                 >
-                  Revoke
+                  Beenden
                 </Button>
               </div>
             </div>

@@ -324,20 +324,20 @@ export default function Tickets() {
                       className="h-6 bg-transparent"
                     >
                       <Filter className="mr-2 h-4 w-4" />
-                      <span className="hidden sm:block">Filters</span>
+                      <span className="hidden sm:block">Filter</span>
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[300px] p-0" align="start">
                     {!activeFilter ? (
                       <Command>
-                        <CommandInput placeholder="Search filters..." />
+                        <CommandInput placeholder="Filter suchen..." />
                         <CommandList>
-                          <CommandEmpty>No results found.</CommandEmpty>
+                          <CommandEmpty>Keine Ergebnisse gefunden.</CommandEmpty>
                           <CommandGroup>
                             <CommandItem
                               onSelect={() => setActiveFilter("priority")}
                             >
-                              Priority
+                              Priorität
                             </CommandItem>
                             <CommandItem
                               onSelect={() => setActiveFilter("status")}
@@ -347,7 +347,7 @@ export default function Tickets() {
                             <CommandItem
                               onSelect={() => setActiveFilter("assignee")}
                             >
-                              Assigned To
+                              Zugewiesen an
                             </CommandItem>
                           </CommandGroup>
                         </CommandList>
@@ -355,13 +355,13 @@ export default function Tickets() {
                     ) : activeFilter === "priority" ? (
                       <Command>
                         <CommandInput
-                          placeholder="Search priority..."
+                          placeholder="Priorität suchen..."
                           value={filterSearch}
                           onValueChange={setFilterSearch}
                         />
                         <CommandList>
-                          <CommandEmpty>No priorities found.</CommandEmpty>
-                          <CommandGroup heading="Priority">
+                          <CommandEmpty>Keine Prioritäten gefunden.</CommandEmpty>
+                          <CommandGroup heading="Priorität">
                             {filteredPriorities.map((priority) => (
                               <CommandItem
                                 key={priority}
@@ -390,7 +390,7 @@ export default function Tickets() {
                               }}
                               className="justify-center text-center"
                             >
-                              Back to filters
+                              Zurück zu Filtern
                             </CommandItem>
                           </CommandGroup>
                         </CommandList>
@@ -398,12 +398,12 @@ export default function Tickets() {
                     ) : activeFilter === "status" ? (
                       <Command>
                         <CommandInput
-                          placeholder="Search status..."
+                          placeholder="Status suchen..."
                           value={filterSearch}
                           onValueChange={setFilterSearch}
                         />
                         <CommandList>
-                          <CommandEmpty>No statuses found.</CommandEmpty>
+                          <CommandEmpty>Kein Status gefunden.</CommandEmpty>
                           <CommandGroup heading="Status">
                             {filteredStatuses.map((status) => (
                               <CommandItem
@@ -433,7 +433,7 @@ export default function Tickets() {
                               }}
                               className="justify-center text-center"
                             >
-                              Back to filters
+                              Zurück zu Filtern
                             </CommandItem>
                           </CommandGroup>
                         </CommandList>
@@ -441,13 +441,13 @@ export default function Tickets() {
                     ) : activeFilter === "assignee" ? (
                       <Command>
                         <CommandInput
-                          placeholder="Search assignee..."
+                          placeholder="Bearbeiter suchen..."
                           value={filterSearch}
                           onValueChange={setFilterSearch}
                         />
                         <CommandList>
-                          <CommandEmpty>No assignees found.</CommandEmpty>
-                          <CommandGroup heading="Assigned To">
+                          <CommandEmpty>Kein Bearbeiter gefunden.</CommandEmpty>
+                          <CommandGroup heading="Zugewiesen an">
                             {filteredAssignees?.map((name) => (
                               <CommandItem
                                 key={name}
@@ -476,7 +476,7 @@ export default function Tickets() {
                               }}
                               className="justify-center text-center"
                             >
-                              Back to filters
+                              Zurück zu Filtern
                             </CommandItem>
                           </CommandGroup>
                         </CommandList>
@@ -490,7 +490,7 @@ export default function Tickets() {
                   {selectedPriorities.map((priority) => (
                     <FilterBadge
                       key={`priority-${priority}`}
-                      text={`Priority: ${priority}`}
+                      text={`Priorität: ${priority}`}
                       onRemove={() => handlePriorityToggle(priority)}
                     />
                   ))}
@@ -506,7 +506,7 @@ export default function Tickets() {
                   {selectedAssignees.map((assignee) => (
                     <FilterBadge
                       key={`assignee-${assignee}`}
-                      text={`Assignee: ${assignee}`}
+                      text={`Bearbeiter: ${assignee}`}
                       onRemove={() => handleAssigneeToggle(assignee)}
                     />
                   ))}
@@ -521,7 +521,7 @@ export default function Tickets() {
                       className="h-6 px-2 text-xs"
                       onClick={clearAllFilters}
                     >
-                      Clear all
+                      Alle zurücksetzen
                     </Button>
                   )}
                 </div>

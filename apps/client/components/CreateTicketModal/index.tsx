@@ -18,12 +18,12 @@ function classNames(...classes) {
 }
 
 const type = [
-  { id: 5, name: "Incident" },
+  { id: 5, name: "Vorfall" },
   { id: 1, name: "Service" },
   { id: 2, name: "Feature" },
-  { id: 3, name: "Bug" },
-  { id: 4, name: "Maintenance" },
-  { id: 6, name: "Access" },
+  { id: 3, name: "Fehler" },
+  { id: 4, name: "Wartung" },
+  { id: 6, name: "Zugriff" },
   { id: 8, name: "Feedback" },
 ];
 
@@ -212,7 +212,7 @@ export default function CreateTicketModal({ keypress, setKeyPressDown }) {
               <div className="inline-block bg-background rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 align-middle md:max-w-3xl w-full ">
                 <div className="flex flex-row w-full align-middle">
                   <span className="text-md pb-2 font-semibold text-sm">
-                    New Issue
+                    Neues Ticket
                   </span>
 
                   <button
@@ -220,14 +220,14 @@ export default function CreateTicketModal({ keypress, setKeyPressDown }) {
                     className="ml-auto mb-1.5 text-foreground font-bold text-xs rounded-md hover:text-primary outline-none"
                     onClick={() => setOpen(false)}
                   >
-                    <span className="sr-only">Close</span>
+                    <span className="sr-only">Schließen</span>
                     <XMarkIcon className="h-5 w-5" aria-hidden="true" />
                   </button>
                 </div>
                 <input
                   type="text"
                   name="title"
-                  placeholder="Issue title"
+                  placeholder="Ticket-Titel"
                   maxLength={64}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full pl-0 pr-0 pt-0 text-md text-foreground bg-background border-none focus:outline-none focus:shadow-none focus:ring-0 focus:border-none"

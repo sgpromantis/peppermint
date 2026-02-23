@@ -56,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
     navMain: [
       {
-        title: "New Issue",
+        title: "Neues Ticket",
         url: ``,
         icon: ListPlus,
         isActive: location.pathname === "/" ? true : false,
@@ -70,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         initial: "h",
       },
       {
-        title: "Documents",
+        title: "Dokumente",
         url: `/${locale}/documents`,
         icon: FileText,
         isActive: location.pathname === "/documents" ? true : false,
@@ -78,26 +78,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         internal: true,
       },
       {
-        title: "Issues",
+        title: "Tickets",
         url: `/${locale}/issues`,
         icon: SquareKanban,
         isActive: location.pathname === "/issues" ? true : false,
         initial: "t",
         items: [
           {
-            title: "Open",
+            title: "Offen",
             url: "/issues/open",
             initial: "o",
           },
           {
-            title: "Closed",
+            title: "Geschlossen",
             url: "/issues/closed",
             initial: "f",
           },
         ],
       },
       {
-        title: "Admin",
+        title: "Verwaltung",
         url: "/admin",
         icon: Settings,
         isActive: true,

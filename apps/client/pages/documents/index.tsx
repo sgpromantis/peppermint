@@ -133,22 +133,22 @@ export default function NoteBooksIndex() {
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
           <h1 className="text-base font-semibold leading-6 text-foreground">
-            Documents
+            Dokumente
           </h1>
           <div className="flex items-center w-full justify-center flex-row space-x-2 flex-1 mr-2">
             <Input
-              placeholder="Search documents..."
+              placeholder="Dokumente suchen..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="max-w-xs"
             />
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder="Sortieren nach" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="updatedAt">Last Updated</SelectItem>
-                <SelectItem value="createdAt">Created Date</SelectItem>
+                <SelectItem value="updatedAt">Zuletzt aktualisiert</SelectItem>
+                <SelectItem value="createdAt">Erstellungsdatum</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -158,13 +158,13 @@ export default function NoteBooksIndex() {
         </div>
       </div>
       <div className="mt-8 w-full flex justify-center">
-        {status === "loading" && <p>Loading...</p>}
-        {status === "error" && <p>Error loading documents.</p>}
+        {status === "loading" && <p>Wird geladen...</p>}
+        {status === "error" && <p>Fehler beim Laden der Dokumente.</p>}
         {data && data.notebooks && data.notebooks.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm text-gray-500">No documents found.</p>
+            <p className="text-sm text-gray-500">Keine Dokumente gefunden.</p>
             <Button variant="outline" size="sm" onClick={() => createNew()}>
-              New Document
+              Neues Dokument
             </Button>
           </div>
         ) : (
@@ -172,7 +172,7 @@ export default function NoteBooksIndex() {
             {data && data.notebooks && data.notebooks.length > 0 && (
               <div className="flex w-full justify-end">
                 <Button variant="outline" size="sm" onClick={() => createNew()}>
-                  New Document
+                  Neues Dokument
                 </Button>
               </div>
             )}

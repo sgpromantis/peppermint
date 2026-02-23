@@ -55,7 +55,7 @@ export default function Settings({ children }) {
                     )}
                   >
                     <Flag className="flex-shrink-0  h-5 w-5 text-foreground" />
-                    <span>Feature Flags</span>
+                    <span>Funktionen</span>
                   </Link>
 
                   <Link
@@ -68,7 +68,7 @@ export default function Settings({ children }) {
                     )}
                   >
                     <SearchSlashIcon className="flex-shrink-0  h-5 w-5 text-foreground" />
-                    <span>Sessions</span>
+                    <span>Sitzungen</span>
                   </Link>
                 </nav>
               </aside>

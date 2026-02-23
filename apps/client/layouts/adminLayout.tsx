@@ -35,14 +35,14 @@ export default function AdminLayout({ children }: any) {
   if (user && !user.isAdmin) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <h1 className="text-4xl font-bold">You are not an admin</h1>
+        <h1 className="text-4xl font-bold">Sie sind kein Administrator</h1>
       </div>
     );
   }
 
   const navigation = [
     {
-      name: "Back",
+      name: "Zurück",
       href: "/",
       current: null,
       icon: MoveLeft,
@@ -60,7 +60,7 @@ export default function AdminLayout({ children }: any) {
       icon: ContactIcon,
     },
     {
-      name: "Email Queues",
+      name: "E-Mail-Warteschlangen",
       href: "/admin/email-queues",
       current: location.pathname === "/admin/email-queues",
       icon: Mail,
@@ -72,25 +72,25 @@ export default function AdminLayout({ children }: any) {
       icon: Webhook,
     },
     {
-      name: "SMTP Email",
+      name: "SMTP E-Mail",
       href: "/admin/smtp",
       current: location.pathname === "/admin/smtp",
       icon: Mailbox,
     },
     {
-      name: "Authentication",
+      name: "Authentifizierung",
       href: "/admin/authentication",
       current: location.pathname === "/admin/authentication",
       icon: KeyRound,
     },
     {
-      name: "Roles",
+      name: "Rollen",
       href: "/admin/roles",
       current: location.pathname === "/admin/roles",
       icon: RollerCoaster,
     },
     {
-      name: "Logs",
+      name: "Protokolle",
       href: "/admin/logs",
       current: location.pathname === "/admin/logs",
       icon: FileText,
@@ -315,7 +315,7 @@ export default function AdminLayout({ children }: any) {
                         variant="outline"
                         className="text-foreground hover:cursor-pointer whitespace-nowrap"
                       >
-                        Send Feedback
+                        Feedback senden
                       </Button>
                     </Link>
                   )}

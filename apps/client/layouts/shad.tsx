@@ -80,7 +80,7 @@ export default function ShadLayout({ children }: any) {
                         variant="outline"
                         className="text-foreground hover:cursor-pointer whitespace-nowrap"
                       >
-                        Send Feedback
+                        Feedback senden
                       </Button>
                     </Link>
                   )}

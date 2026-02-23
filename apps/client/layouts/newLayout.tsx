@@ -62,7 +62,7 @@ export default function NewLayout({ children }: any) {
       initial: "h",
     },
     {
-      name: "Documents",
+      name: "Dokumente",
       href: `/${locale}/documents`,
       icon: FileText,
       current: location.pathname === "/documents" ? true : false,
@@ -511,7 +511,7 @@ export default function NewLayout({ children }: any) {
                       variant="outline"
                       className="text-foreground hover:cursor-pointer whitespace-nowrap"
                     >
-                      Send Feedback
+                      Feedback senden
                     </Button>
                   </Link>
                 )}
