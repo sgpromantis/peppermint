@@ -16,19 +16,19 @@ import { useRouter } from "next/router";
 import { Fragment, useState } from "react";
 
 const type = [
-  { id: 5, name: "Incident" },
+  { id: 5, name: "Vorfall" },
   { id: 1, name: "Service" },
   { id: 2, name: "Feature" },
-  { id: 3, name: "Bug" },
-  { id: 4, name: "Maintenance" },
-  { id: 6, name: "Access" },
+  { id: 3, name: "Fehler" },
+  { id: 4, name: "Wartung" },
+  { id: 6, name: "Zugriff" },
   { id: 8, name: "Feedback" },
 ];
 
 const pri = [
-  { id: 7, name: "Low" },
-  { id: 8, name: "Medium" },
-  { id: 9, name: "High" },
+  { id: 7, name: "Niedrig" },
+  { id: 8, name: "Mittel" },
+  { id: 9, name: "Hoch" },
 ];
 
 export default function ClientTicketNew() {
@@ -70,8 +70,8 @@ export default function ClientTicketNew() {
         if (res.success === true) {
           toast({
             variant: "default",
-            title: "Success",
-            description: "Ticket created succesfully",
+            title: "Erfolg",
+            description: "Ticket erfolgreich erstellt",
           });
 
           setView("success");
@@ -79,8 +79,8 @@ export default function ClientTicketNew() {
         } else {
           toast({
             variant: "destructive",
-            title: "Error",
-            description: `Please fill out all information and try again`,
+            title: "Fehler",
+            description: `Bitte füllen Sie alle Felder aus und versuchen Sie es erneut`,
           });
         }
       });
@@ -91,10 +91,10 @@ export default function ClientTicketNew() {
     <div className="flex justify-center items-center content-center h-screen bg-gray-900">
       {view === "new" ? (
         <div className="max-w-2xl bg-white p-12 rounded-md">
-          <h1 className="font-bold text-2xl">Submit a Ticket</h1>
+          <h1 className="font-bold text-2xl">Ticket einreichen</h1>
           <span>
-            Need help? Submit a ticket and our support team will get back to you
-            as soon as possible.
+            Benötigen Sie Hilfe? Reichen Sie ein Ticket ein und unser Support-Team
+            wird sich so schnell wie möglich bei Ihnen melden.
           </span>
 
           <div className="my-4 flex flex-col space-y-4">
@@ -143,7 +143,7 @@ export default function ClientTicketNew() {
                 htmlFor="email"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Subject
+                Betreff
               </label>
               <div className="mt-2">
                 <input
@@ -151,7 +151,7 @@ export default function ClientTicketNew() {
                   name="email"
                   id="email"
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6"
-                  placeholder="I can't login to my account"
+                  placeholder="Ich kann mich nicht einloggen"
                   onChange={(e) => setSubject(e.target.value)}
                   value={subject}
                 />
@@ -162,7 +162,7 @@ export default function ClientTicketNew() {
               {({ open }) => (
                 <>
                   <Listbox.Label className="block text-sm font-medium leading-6 text-gray-900">
-                    Issue Type
+                    Ticket-Typ
                   </Listbox.Label>
                   <div className="relative mt-2">
                     <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none sm:text-sm sm:leading-6">
@@ -235,7 +235,7 @@ export default function ClientTicketNew() {
               {({ open }) => (
                 <>
                   <Listbox.Label className="block text-sm font-medium leading-6 text-gray-900">
-                    Priority
+                    Priorität
                   </Listbox.Label>
                   <div className="relative mt-2">
                     <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none sm:text-sm sm:leading-6">
@@ -309,7 +309,7 @@ export default function ClientTicketNew() {
                 htmlFor="comment"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Description of Issue
+                Beschreibung des Problems
               </label>
               <div className="mt-2">
                 <textarea
@@ -318,7 +318,7 @@ export default function ClientTicketNew() {
                   id="comment"
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   defaultValue={""}
-                  placeholder="I think i locked myself out!"
+                  placeholder="Ich glaube, ich habe mich ausgesperrt!"
                   onChange={(e) => setDescription(e.target.value)}
                   value={description}
                 />
@@ -331,7 +331,7 @@ export default function ClientTicketNew() {
               disabled={isLoading}
               className="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 "
             >
-              Submit Ticket
+              Ticket einreichen
             </button>
           </div>
         </div>
@@ -347,12 +347,12 @@ export default function ClientTicketNew() {
               </div>
               <div className="ml-3">
                 <h3 className="text-4xl font-medium text-white">
-                  Ticket Submitted
+                  Ticket eingereicht
                 </h3>
                 <div className="mt-2 text-sm text-white">
                   <p>
-                    A member of our team has been notified and will be in touch
-                    shortly.
+                    Ein Mitglied unseres Teams wurde benachrichtigt und wird sich
+                    in Kürze bei Ihnen melden.
                   </p>
                 </div>
                 {/* <div className="mt-4">
