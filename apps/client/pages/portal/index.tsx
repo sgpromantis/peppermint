@@ -71,14 +71,14 @@ export default function Home() {
                       />
                     </svg>
                     <span className="mt-2 block text-sm font-semibold text-gray-900 dark:text-white">
-                      Create your first issue
+                      Erstes Ticket erstellen
                     </span>
                   </button>
                 </>
               ) : (
                 <>
                   <span className="font-bold text-2xl">
-                    {t("recent_tickets")}
+                    {t("recent_tickets") || "Letzte Tickets"}
                   </span>
                   <div className="-mx-4 sm:-mx-0 w-full">
                     <table className="min-w-full divide-y divide-gray-300">
@@ -88,32 +88,32 @@ export default function Home() {
                             scope="col"
                             className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-0"
                           >
-                            {t("title")}
+                            {t("title") || "Titel"}
                           </th>
                           <th
                             scope="col"
                             className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell"
                           >
-                            {t("priority")}
+                            {t("priority") || "Priorität"}
                           </th>
                           <th
                             scope="col"
                             className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white sm:table-cell"
                           >
-                            {t("status")}
+                            {t("status") || "Status"}
                           </th>
                           <th
                             scope="col"
                             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
                           >
-                            {t("created")}
+                            {t("created") || "Erstellt"}
                           </th>
 
                           <th
                             scope="col"
                             className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
                           >
-                            {t("assigned_to")}
+                            {t("assigned_to") || "Zugewiesen an"}
                           </th>
                         </tr>
                       </thead>
@@ -137,17 +137,17 @@ export default function Home() {
                               <td className="hidden px-3 py-1 text-sm text-gray-500 lg:table-cell w-[64px]">
                                 {item.priority === "Low" && (
                                   <span className="inline-flex w-full justify-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700  ring-1 ring-inset ring-blue-600/20">
-                                    {item.priority}
+                                    {t("low") || "Niedrig"}
                                   </span>
                                 )}
                                 {item.priority === "Normal" && (
                                   <span className="inline-flex items-center w-full justify-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                    {item.priority}
+                                    {t("normal") || "Normal"}
                                   </span>
                                 )}
                                 {item.priority === "High" && (
                                   <span className="inline-flex items-center w-full justify-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
-                                    {item.priority}
+                                    {t("high") || "Hoch"}
                                   </span>
                                 )}
                               </td>
@@ -162,7 +162,7 @@ export default function Home() {
                                       >
                                         <circle cx={3} cy={3} r={3} />
                                       </svg>
-                                      {t("closed")}
+                                      {t("closed") || "Geschlossen"}
                                     </span>
                                   </div>
                                 ) : (
@@ -175,7 +175,7 @@ export default function Home() {
                                       >
                                         <circle cx={3} cy={3} r={3} />
                                       </svg>
-                                      {t("open")}
+                                      {t("open") || "Offen"}
                                     </span>
                                   </>
                                 )}
@@ -186,176 +186,6 @@ export default function Home() {
                               <td className="px-3 py-1 text-sm text-gray-500 w-[130px] dark:text-white truncate whitespace-nowrap">
                                 {item.assignedTo ? item.assignedTo.name : "-"}
                               </td>
-                              {/* <td className="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                          <Menu
-                            as="div"
-                            className="relative inline-block text-left"
-                          >
-                            <div>
-                              <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                                Options
-                                <ChevronDownIcon
-                                  className="-mr-1 h-5 w-5 text-gray-400"
-                                  aria-hidden="true"
-                                />
-                              </Menu.Button>
-                            </div>
-
-                            <Transition
-                              as={Fragment}
-                              enter="transition ease-out duration-100"
-                              enterFrom="transform opacity-0 scale-95"
-                              enterTo="transform opacity-100 scale-100"
-                              leave="transition ease-in duration-75"
-                              leaveFrom="transform opacity-100 scale-100"
-                              leaveTo="transform opacity-0 scale-95"
-                            >
-                              <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                <div className="py-1">
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <a
-                                        href="#"
-                                        className={classNames(
-                                          active
-                                            ? "bg-gray-100 text-gray-900"
-                                            : "text-gray-700",
-                                          "group flex items-center px-4 py-2 text-sm"
-                                        )}
-                                      >
-                                        <PencilSquareIcon
-                                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                          aria-hidden="true"
-                                        />
-                                        Edit
-                                      </a>
-                                    )}
-                                  </Menu.Item>
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <a
-                                        href="#"
-                                        className={classNames(
-                                          active
-                                            ? "bg-gray-100 text-gray-900"
-                                            : "text-gray-700",
-                                          "group flex items-center px-4 py-2 text-sm"
-                                        )}
-                                      >
-                                        <DocumentDuplicateIcon
-                                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                          aria-hidden="true"
-                                        />
-                                        Duplicate
-                                      </a>
-                                    )}
-                                  </Menu.Item>
-                                </div>
-                                <div className="py-1">
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <a
-                                        href="#"
-                                        className={classNames(
-                                          active
-                                            ? "bg-gray-100 text-gray-900"
-                                            : "text-gray-700",
-                                          "group flex items-center px-4 py-2 text-sm"
-                                        )}
-                                      >
-                                        <ArchiveBoxIcon
-                                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                          aria-hidden="true"
-                                        />
-                                        Archive
-                                      </a>
-                                    )}
-                                  </Menu.Item>
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <a
-                                        href="#"
-                                        className={classNames(
-                                          active
-                                            ? "bg-gray-100 text-gray-900"
-                                            : "text-gray-700",
-                                          "group flex items-center px-4 py-2 text-sm"
-                                        )}
-                                      >
-                                        <ArrowRightCircleIcon
-                                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                          aria-hidden="true"
-                                        />
-                                        Move
-                                      </a>
-                                    )}
-                                  </Menu.Item>
-                                </div>
-                                <div className="py-1">
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <a
-                                        href="#"
-                                        className={classNames(
-                                          active
-                                            ? "bg-gray-100 text-gray-900"
-                                            : "text-gray-700",
-                                          "group flex items-center px-4 py-2 text-sm"
-                                        )}
-                                      >
-                                        <UserPlusIcon
-                                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                          aria-hidden="true"
-                                        />
-                                        Share
-                                      </a>
-                                    )}
-                                  </Menu.Item>
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <a
-                                        href="#"
-                                        className={classNames(
-                                          active
-                                            ? "bg-gray-100 text-gray-900"
-                                            : "text-gray-700",
-                                          "group flex items-center px-4 py-2 text-sm"
-                                        )}
-                                      >
-                                        <HeartIcon
-                                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                          aria-hidden="true"
-                                        />
-                                        Add to favorites
-                                      </a>
-                                    )}
-                                  </Menu.Item>
-                                </div>
-                                <div className="py-1">
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <a
-                                        href="#"
-                                        className={classNames(
-                                          active
-                                            ? "bg-gray-100 text-gray-900"
-                                            : "text-gray-700",
-                                          "group flex items-center px-4 py-2 text-sm"
-                                        )}
-                                      >
-                                        <TrashIcon
-                                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                          aria-hidden="true"
-                                        />
-                                        Delete
-                                      </a>
-                                    )}
-                                  </Menu.Item>
-                                </div>
-                              </Menu.Items>
-                            </Transition>
-                          </Menu>
-                        </td> */}
                             </tr>
                           ))}
                       </tbody>
@@ -367,8 +197,6 @@ export default function Home() {
           </>
         )}
       </div>
-      
-      
     </div>
   );
 }
