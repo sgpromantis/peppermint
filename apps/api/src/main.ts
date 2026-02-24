@@ -1,6 +1,6 @@
 import "dotenv/config";
 import cors from "@fastify/cors";
-import multipart from "@fastify/multipart";
+import multer from "fastify-multer";
 
 import Fastify, { FastifyInstance } from "fastify";
 import fs from "fs";
@@ -33,7 +33,7 @@ server.register(cors, {
   allowedHeaders: ["Content-Type", "Authorization", "Accept"],
 });
 
-server.register(multipart);
+server.register(multer.contentParser);
 
 registerRoutes(server);
 
@@ -61,6 +61,7 @@ server.get(
 // JWT authentication hook
 server.addHook("preHandler", async function (request: any, reply: any) {
   try {
+    // Public endpoints that don't require authentication
     if (request.url === "/api/v1/auth/login" && request.method === "POST") {
       return true;
     }
@@ -68,6 +69,14 @@ server.addHook("preHandler", async function (request: any, reply: any) {
       request.url === "/api/v1/ticket/public/create" &&
       request.method === "POST"
     ) {
+      return true;
+    }
+    // Prometheus metrics endpoint (auth via METRICS_TOKEN if set)
+    if (request.url === "/metrics" && request.method === "GET") {
+      return true;
+    }
+    // Health check
+    if (request.url === "/" && request.method === "GET") {
       return true;
     }
     const bearer = request.headers.authorization!.split(" ")[1];

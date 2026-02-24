@@ -9,6 +9,7 @@ import { AuthorizationCode } from "simple-oauth2";
 import { getOAuthProvider, getOidcConfig } from "../lib/auth";
 import { track } from "../lib/hog";
 import { forgotPassword } from "../lib/nodemailer/auth/forgot-password";
+import { metrics } from "../lib/prometheus-metrics";
 import { requirePermission } from "../lib/roles";
 import { checkSession } from "../lib/session";
 import { getOAuthClient } from "../lib/utils/oauth_client";
@@ -307,19 +308,25 @@ export function authRoutes(fastify: FastifyInstance) {
           password: string;
         };
 
-        let user = await prisma.user.findUnique({
-          where: { email },
-        });
+        // Use $queryRawUnsafe to avoid Prisma schema/DB mismatch issues
+        const users: any[] = await prisma.$queryRawUnsafe(
+          `SELECT * FROM "User" WHERE email = $1 LIMIT 1`,
+          email
+        );
+        
+        const user = users[0];
 
         if (!user?.password) {
+          metrics.incrementFailedLogins();
           return reply.code(401).send({
             message: "Invalid email or password",
           });
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user!.password);
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
+          metrics.incrementFailedLogins();
           return reply.code(401).send({
             message: "Invalid email or password",
           });
@@ -330,7 +337,7 @@ export function authRoutes(fastify: FastifyInstance) {
         const token = jwt.sign(
           {
             data: {
-              id: user!.id,
+              id: user.id,
               // Add a unique identifier for this session
               sessionId: crypto.randomBytes(32).toString("hex"),
             },
@@ -345,7 +352,7 @@ export function authRoutes(fastify: FastifyInstance) {
         // Store session with additional security info
         await prisma.session.create({
           data: {
-            userId: user!.id,
+            userId: user.id,
             sessionToken: token,
             expires: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours
             userAgent: request.headers["user-agent"] || "",
@@ -354,20 +361,23 @@ export function authRoutes(fastify: FastifyInstance) {
         });
 
         await tracking("user_logged_in_password", {});
+        
+        // Track login metrics
+        metrics.incrementLogins("password");
 
         const data = {
-          id: user!.id,
-          email: user!.email,
-          name: user!.name,
-          isAdmin: user!.isAdmin,
-          isManager: user!.isManager,
-          language: user!.language,
-          ticket_created: user!.notify_ticket_created,
-          ticket_status_changed: user!.notify_ticket_status_changed,
-          ticket_comments: user!.notify_ticket_comments,
-          ticket_assigned: user!.notify_ticket_assigned,
-          firstLogin: user!.firstLogin,
-          external_user: user!.external_user,
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          isAdmin: user.isAdmin,
+          isManager: user.isManager ?? false,
+          language: user.language,
+          ticket_created: user.notify_ticket_created,
+          ticket_status_changed: user.notify_ticket_status_changed,
+          ticket_comments: user.notify_ticket_comments,
+          ticket_assigned: user.notify_ticket_assigned,
+          firstLogin: user.firstLogin,
+          external_user: user.external_user,
         };
 
         reply.send({
@@ -375,7 +385,9 @@ export function authRoutes(fastify: FastifyInstance) {
           user: data,
         });
       } catch (error: any) {
-        console.error("Login error:", error);
+        metrics.incrementFailedLogins();
+        console.error("Login error:", error?.message || error);
+        console.error("Stack:", error?.stack);
         return reply.code(500).send({
           message: "Datenbankverbindungsfehler. Bitte versuchen Sie es später erneut.",
           success: false,

@@ -4,7 +4,9 @@ import { clientRoutes } from "./controllers/clients";
 import { configRoutes } from "./controllers/config";
 import { dataRoutes } from "./controllers/data";
 import { metricsRoutes } from "./controllers/metrics";
+import { microsoftGraphRoutes } from "./controllers/microsoft-graph";
 import { notebookRoutes } from "./controllers/notebook";
+import { prometheusRoutes } from "./controllers/prometheus";
 import { emailQueueRoutes } from "./controllers/queue";
 import { roleRoutes } from "./controllers/roles";
 import { objectStoreRoutes } from "./controllers/storage";
@@ -27,4 +29,6 @@ export function registerRoutes(fastify: FastifyInstance) {
   objectStoreRoutes(fastify);
   roleRoutes(fastify);
   metricsRoutes(fastify);
+  microsoftGraphRoutes(fastify);
+  prometheusRoutes(fastify);
 }

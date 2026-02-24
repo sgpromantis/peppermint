@@ -4,6 +4,8 @@ import { simpleParser } from "mailparser";
 import { prisma } from "../../prisma";
 import { EmailConfig, EmailQueue } from "../types/email";
 import { AuthService } from "./auth.service";
+import { metrics } from "../prometheus-metrics";
+import { sendTicketConfirmation } from "../nodemailer/ticket/confirmation";
 
 function getReplyText(email: any): string {
   const parsed = new EmailReplyParser().read(email.text);
@@ -113,7 +115,7 @@ export class ImapService {
         },
       });
 
-      await prisma.ticket.create({
+      const ticket = await prisma.ticket.create({
         data: {
           email: from.value[0].address,
           name: from.value[0].name,
@@ -124,6 +126,17 @@ export class ImapService {
           detail: html || textAsHtml,
         },
       });
+
+      // Track metrics
+      metrics.incrementTicketsCreated(true);
+      metrics.incrementEmailsReceived();
+
+      // Send confirmation email with ticket link
+      try {
+        await sendTicketConfirmation(ticket);
+      } catch (emailError) {
+        console.error("Failed to send ticket confirmation:", emailError);
+      }
     }
   }
 

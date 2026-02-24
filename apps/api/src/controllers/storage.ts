@@ -1,58 +1,36 @@
+//@ts-nocheck
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import multer from "fastify-multer";
 import { prisma } from "../prisma";
-import fs from "fs";
-import path from "path";
-import { pipeline } from "stream/promises";
-
-// Ensure uploads directory exists
-const uploadsDir = "uploads/";
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+const upload = multer({ dest: "uploads/" });
 
 export function objectStoreRoutes(fastify: FastifyInstance) {
   //
   fastify.post(
     "/api/v1/storage/ticket/:id/upload/single",
-    async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
-      try {
-        const data = await request.file();
-        if (!data) {
-          return reply.code(400).send({ error: "No file uploaded" });
-        }
+    { preHandler: upload.single("file") },
 
-        // Generate unique filename
-        const filename = `${Date.now()}-${data.filename}`;
-        const filepath = path.join(uploadsDir, filename);
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      console.log(request.file);
+      console.log(request.body);
 
-        // Save file to disk
-        await pipeline(data.file, fs.createWriteStream(filepath));
+      const uploadedFile = await prisma.ticketFile.create({
+        data: {
+          ticketId: request.params.id,
+          filename: request.file.originalname,
+          path: request.file.path,
+          mime: request.file.mimetype,
+          size: request.file.size,
+          encoding: request.file.encoding,
+          userId: request.body.user,
+        },
+      });
 
-        // Get user from fields
-        const fields = data.fields;
-        const userId = fields.user ? (typeof fields.user === "object" ? (fields.user as any).value : fields.user) : null;
+      console.log(uploadedFile);
 
-        const uploadedFile = await prisma.ticketFile.create({
-          data: {
-            ticketId: request.params.id,
-            filename: data.filename,
-            path: filepath,
-            mime: data.mimetype,
-            size: fs.statSync(filepath).size,
-            encoding: data.encoding,
-            userId: userId,
-          },
-        });
-
-        console.log(uploadedFile);
-
-        reply.send({
-          success: true,
-        });
-      } catch (error) {
-        console.error("Upload error:", error);
-        reply.code(500).send({ error: "Upload failed" });
-      }
+      reply.send({
+        success: true,
+      });
     }
   );
 
