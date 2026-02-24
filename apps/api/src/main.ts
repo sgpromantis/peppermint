@@ -1,3 +1,4 @@
+import "dotenv/config";
 import cors from "@fastify/cors";
 
 // Construct DATABASE_URL from individual env vars if DB_HOST is set (Docker environment)
@@ -10,7 +11,6 @@ if (process.env.DB_HOST && !process.env.DATABASE_URL) {
   process.env.DATABASE_URL = `postgresql://${dbUser}:${dbPass}@${dbHost}:${dbPort}/${dbName}`;
 }
 
-import "dotenv/config";
 import Fastify, { FastifyInstance } from "fastify";
 import multer from "fastify-multer";
 import fs from "fs";

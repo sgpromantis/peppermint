@@ -6,19 +6,19 @@ dist/
 .DS_Store
 .vscode/
 
-# # Exclude any sensitive or secret files
-# .env
-# .env.*
-
 # Exclude any temporary or cache files
 *.log
 *.tmp
 *.swp
 
-lib/
-.github
-.yarn 
+.github/
+.yarn/
+.git/
+.next/
 
-apps/api/node_modules
-apps/api/dist
-apps/client/node_modules
+apps/api/node_modules/
+apps/api/dist/
+apps/client/node_modules/
+apps/client/.next/
+apps/docs/
+apps/landing/

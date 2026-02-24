@@ -44,13 +44,13 @@ export function metricsRoutes(fastify: FastifyInstance) {
       });
 
       // Tickets per time period
-      const ticketsThisWeek = allTickets.filter(t => new Date(t.createdAt) >= startOfWeek).length;
-      const ticketsThisMonth = allTickets.filter(t => new Date(t.createdAt) >= startOfMonth).length;
-      const ticketsThisQuarter = allTickets.filter(t => new Date(t.createdAt) >= startOfQuarter).length;
-      const ticketsThisYear = allTickets.filter(t => new Date(t.createdAt) >= startOfYear).length;
+      const ticketsThisWeek = allTickets.filter((t: typeof allTickets[number]) => new Date(t.createdAt) >= startOfWeek).length;
+      const ticketsThisMonth = allTickets.filter((t: typeof allTickets[number]) => new Date(t.createdAt) >= startOfMonth).length;
+      const ticketsThisQuarter = allTickets.filter((t: typeof allTickets[number]) => new Date(t.createdAt) >= startOfQuarter).length;
+      const ticketsThisYear = allTickets.filter((t: typeof allTickets[number]) => new Date(t.createdAt) >= startOfYear).length;
 
       // Calculate average assignment time (time from creation to assignment)
-      const assignedTickets = allTickets.filter(t => t.userId !== null);
+      const assignedTickets = allTickets.filter((t: typeof allTickets[number]) => t.userId !== null);
       let totalAssignmentTime = 0;
       let assignmentCount = 0;
       
@@ -68,7 +68,7 @@ export function metricsRoutes(fastify: FastifyInstance) {
       const avgAssignmentTimeHours = Math.round(avgAssignmentTimeMs / (1000 * 60 * 60) * 10) / 10;
 
       // Calculate average first response time
-      const ticketsWithComments = allTickets.filter(t => t.Comment.length > 0);
+      const ticketsWithComments = allTickets.filter((t: typeof allTickets[number]) => t.Comment.length > 0);
       let totalResponseTime = 0;
       let responseCount = 0;
       
@@ -83,7 +83,7 @@ export function metricsRoutes(fastify: FastifyInstance) {
       const avgResponseTimeHours = Math.round(avgResponseTimeMs / (1000 * 60 * 60) * 10) / 10;
 
       // Calculate average resolution time (for completed tickets)
-      const completedTickets = allTickets.filter(t => t.isComplete);
+      const completedTickets = allTickets.filter((t: typeof allTickets[number]) => t.isComplete);
       let totalResolutionTime = 0;
       let resolutionCount = 0;
       
@@ -99,28 +99,28 @@ export function metricsRoutes(fastify: FastifyInstance) {
 
       // Tickets by priority
       const ticketsByPriority = {
-        low: allTickets.filter(t => t.priority === "low").length,
-        normal: allTickets.filter(t => t.priority === "normal").length,
-        high: allTickets.filter(t => t.priority === "high").length,
+        low: allTickets.filter((t: typeof allTickets[number]) => t.priority === "low").length,
+        normal: allTickets.filter((t: typeof allTickets[number]) => t.priority === "normal").length,
+        high: allTickets.filter((t: typeof allTickets[number]) => t.priority === "high").length,
       };
 
       // Tickets by status
       const ticketsByStatus = {
-        needs_support: allTickets.filter(t => t.status === "needs_support").length,
-        in_progress: allTickets.filter(t => t.status === "in_progress").length,
-        in_review: allTickets.filter(t => t.status === "in_review").length,
-        done: allTickets.filter(t => t.status === "done").length,
+        needs_support: allTickets.filter((t: typeof allTickets[number]) => t.status === "needs_support").length,
+        in_progress: allTickets.filter((t: typeof allTickets[number]) => t.status === "in_progress").length,
+        in_review: allTickets.filter((t: typeof allTickets[number]) => t.status === "in_review").length,
+        done: allTickets.filter((t: typeof allTickets[number]) => t.status === "done").length,
       };
 
       // Tickets by type
       const ticketsByType = {
-        support: allTickets.filter(t => t.type === "support").length,
-        bug: allTickets.filter(t => t.type === "bug").length,
-        feature: allTickets.filter(t => t.type === "feature").length,
-        incident: allTickets.filter(t => t.type === "incident").length,
-        service: allTickets.filter(t => t.type === "service").length,
-        maintenance: allTickets.filter(t => t.type === "maintenance").length,
-        access: allTickets.filter(t => t.type === "access").length,
+        support: allTickets.filter((t: typeof allTickets[number]) => t.type === "support").length,
+        bug: allTickets.filter((t: typeof allTickets[number]) => t.type === "bug").length,
+        feature: allTickets.filter((t: typeof allTickets[number]) => t.type === "feature").length,
+        incident: allTickets.filter((t: typeof allTickets[number]) => t.type === "incident").length,
+        service: allTickets.filter((t: typeof allTickets[number]) => t.type === "service").length,
+        maintenance: allTickets.filter((t: typeof allTickets[number]) => t.type === "maintenance").length,
+        access: allTickets.filter((t: typeof allTickets[number]) => t.type === "access").length,
       };
 
       // User workload (tickets per user)
@@ -139,11 +139,11 @@ export function metricsRoutes(fastify: FastifyInstance) {
       }
 
       // Open vs closed ratio
-      const openTickets = allTickets.filter(t => !t.isComplete).length;
+      const openTickets = allTickets.filter((t: typeof allTickets[number]) => !t.isComplete).length;
       const closedTickets = completedTickets.length;
 
       // Unassigned tickets
-      const unassignedTickets = allTickets.filter(t => t.userId === null && !t.isComplete).length;
+      const unassignedTickets = allTickets.filter((t: typeof allTickets[number]) => t.userId === null && !t.isComplete).length;
 
       // Resolution rate (percentage of tickets resolved)
       const resolutionRate = allTickets.length > 0 

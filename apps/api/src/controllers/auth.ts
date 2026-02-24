@@ -301,78 +301,86 @@ export function authRoutes(fastify: FastifyInstance) {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      let { email, password } = request.body as {
-        email: string;
-        password: string;
-      };
+      try {
+        let { email, password } = request.body as {
+          email: string;
+          password: string;
+        };
 
-      let user = await prisma.user.findUnique({
-        where: { email },
-      });
-
-      if (!user?.password) {
-        return reply.code(401).send({
-          message: "Invalid email or password",
+        let user = await prisma.user.findUnique({
+          where: { email },
         });
-      }
 
-      const isPasswordValid = await bcrypt.compare(password, user!.password);
-
-      if (!isPasswordValid) {
-        reply.code(401).send({
-          message: "Invalid email or password",
-        });
-        throw new Error("Password is not valid");
-      }
-
-      // Generate a secure session token
-      var secret = Buffer.from(process.env.SECRET!, "base64");
-      const token = jwt.sign(
-        {
-          data: {
-            id: user!.id,
-            // Add a unique identifier for this session
-            sessionId: crypto.randomBytes(32).toString("hex"),
-          },
-        },
-        secret,
-        {
-          expiresIn: "8h",
-          algorithm: "HS256",
+        if (!user?.password) {
+          return reply.code(401).send({
+            message: "Invalid email or password",
+          });
         }
-      );
 
-      // Store session with additional security info
-      await prisma.session.create({
-        data: {
-          userId: user!.id,
-          sessionToken: token,
-          expires: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours
-          userAgent: request.headers["user-agent"] || "",
-          ipAddress: request.ip,
-        },
-      });
+        const isPasswordValid = await bcrypt.compare(password, user!.password);
 
-      await tracking("user_logged_in_password", {});
+        if (!isPasswordValid) {
+          return reply.code(401).send({
+            message: "Invalid email or password",
+          });
+        }
 
-      const data = {
-        id: user!.id,
-        email: user!.email,
-        name: user!.name,
-        isAdmin: user!.isAdmin,
-        language: user!.language,
-        ticket_created: user!.notify_ticket_created,
-        ticket_status_changed: user!.notify_ticket_status_changed,
-        ticket_comments: user!.notify_ticket_comments,
-        ticket_assigned: user!.notify_ticket_assigned,
-        firstLogin: user!.firstLogin,
-        external_user: user!.external_user,
-      };
+        // Generate a secure session token
+        var secret = Buffer.from(process.env.SECRET!, "base64");
+        const token = jwt.sign(
+          {
+            data: {
+              id: user!.id,
+              // Add a unique identifier for this session
+              sessionId: crypto.randomBytes(32).toString("hex"),
+            },
+          },
+          secret,
+          {
+            expiresIn: "8h",
+            algorithm: "HS256",
+          }
+        );
 
-      reply.send({
-        token,
-        user: data,
-      });
+        // Store session with additional security info
+        await prisma.session.create({
+          data: {
+            userId: user!.id,
+            sessionToken: token,
+            expires: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours
+            userAgent: request.headers["user-agent"] || "",
+            ipAddress: request.ip,
+          },
+        });
+
+        await tracking("user_logged_in_password", {});
+
+        const data = {
+          id: user!.id,
+          email: user!.email,
+          name: user!.name,
+          isAdmin: user!.isAdmin,
+          isManager: user!.isManager,
+          language: user!.language,
+          ticket_created: user!.notify_ticket_created,
+          ticket_status_changed: user!.notify_ticket_status_changed,
+          ticket_comments: user!.notify_ticket_comments,
+          ticket_assigned: user!.notify_ticket_assigned,
+          firstLogin: user!.firstLogin,
+          external_user: user!.external_user,
+        };
+
+        reply.send({
+          token,
+          user: data,
+        });
+      } catch (error: any) {
+        console.error("Login error:", error);
+        return reply.code(500).send({
+          message: "Datenbankverbindungsfehler. Bitte versuchen Sie es später erneut.",
+          success: false,
+        });
+      }
     }
   );
 

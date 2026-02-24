@@ -704,10 +704,13 @@ export function ticketRoutes(fastify: FastifyInstance) {
         },
       });
 
-      //@ts-expect-error
+      if (!ticket) {
+        return reply.code(404).send({ message: "Ticket not found" });
+      }
+
       const { email, title } = ticket;
       if (public_comment && email) {
-        sendComment(text, title, ticket!.id, email!);
+        sendComment(text, title, ticket.id, email);
       }
 
       await commentNotification(ticket, user);
