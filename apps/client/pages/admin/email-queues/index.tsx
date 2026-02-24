@@ -41,16 +41,14 @@ export default function EmailQueues() {
           <div className="pt-10 pb-16 divide-y-2">
             <div className="px-4 sm:px-6 md:px-0">
               <h1 className="text-3xl font-extrabold text-gray-900  dark:text-white">
-                Email Queues
+                E-Mail Warteschlangen
               </h1>
             </div>
             <div className="px-4 sm:px-6 md:px-0">
               <div className="sm:flex sm:items-center">
                 <div className="sm:flex-auto mt-4">
                   <p className="mt-2 text-sm text-gray-700  dark:text-white">
-                    A list of the mailboxes you are listening to, these will
-                    automatically create tickets and can be accessed down the
-                    side navigation.
+                    Eine Liste der Postfächer, die überwacht werden. Diese erstellen automatisch Tickets und sind in der Seitennavigation zugänglich.
                   </p>
                 </div>
                 <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
@@ -58,7 +56,7 @@ export default function EmailQueues() {
                     href="/admin/email-queues/new"
                     className="rounded bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                   >
-                    New Queue
+                    Neue Warteschlange
                   </Link>
                 </div>
               </div>

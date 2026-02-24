@@ -143,7 +143,7 @@ function Table({ columns, data }) {
             </tbody>
           </table>
 
-          {data.legnth > 10 && (
+          {data.length > 10 && (
             <nav
               className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
               aria-label="Pagination"
@@ -266,14 +266,14 @@ export default function UserAuthPanel() {
         <div className="pt-10 pb-16 divide-y-2">
           <div className="px-4 sm:px-6 md:px-0">
             <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">
-              Internal Users
+              Interne Benutzer
             </h1>
           </div>
           <div className="px-4 sm:px-6 md:px-0">
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto mt-4">
                 <p className="mt-2 text-sm text-gray-700  dark:text-white">
-                  A list of all internal users of your instance.
+                  Eine Liste aller internen Benutzer Ihrer Instanz.
                 </p>
               </div>
               <div className="sm:ml-16 mt-5 sm:flex-none">
@@ -281,14 +281,14 @@ export default function UserAuthPanel() {
                   href="/admin/users/internal/new"
                   className="rounded bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                 >
-                  New User
+                  Neuer Benutzer
                 </Link>
               </div>
             </div>
             <div className="py-4">
               {status === "loading" && (
                 <div className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
-                  <h2> Loading data ... </h2>
+                  <h2> Daten werden geladen... </h2>
                 </div>
               )}
 
@@ -296,7 +296,7 @@ export default function UserAuthPanel() {
                 <div className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
                   <h2 className="text-2xl font-bold">
                     {" "}
-                    Error fetching data ...{" "}
+                    Fehler beim Laden der Daten...{" "}
                   </h2>
                 </div>
               )}

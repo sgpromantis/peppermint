@@ -220,13 +220,13 @@ export default function Clients() {
   const columns = useMemo(
     () => [
       {
-        Header: "Type",
+        Header: "Typ",
         accessor: "type",
         id: "type",
         width: 50,
       },
       {
-        Header: "Summary",
+        Header: "Zusammenfassung",
         accessor: "title",
         id: "summary",
         Cell: ({ row, value }: any) => {
@@ -238,7 +238,7 @@ export default function Clients() {
         },
       },
       {
-        Header: "Assignee",
+        Header: "Zugewiesen an",
         accessor: "assignedTo.name",
         id: "assignee",
         Cell: ({ row, value }: any) => {
@@ -250,7 +250,7 @@ export default function Clients() {
         },
       },
       {
-        Header: "Client",
+        Header: "Kunde",
         accessor: "client.name",
         id: "client",
         Cell: ({ row, value }: any) => {
@@ -262,7 +262,7 @@ export default function Clients() {
         },
       },
       {
-        Header: "Priority",
+        Header: "Priorität",
         accessor: "priority",
         id: "priority",
         Cell: ({ row, value }) => {
@@ -301,17 +301,17 @@ export default function Clients() {
           return (
             <>
               <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-red-600/10">
-                {value === "needs_support" && <span>Needs Support</span>}
-                {value === "in_progress" && <span>In Progress</span>}
-                {value === "in_review" && <span>In Review</span>}
-                {value === "done" && <span>Done</span>}
+                {value === "needs_support" && <span>Benötigt Unterstützung</span>}
+                {value === "in_progress" && <span>In Bearbeitung</span>}
+                {value === "in_review" && <span>In Überprüfung</span>}
+                {value === "done" && <span>Erledigt</span>}
               </span>
             </>
           );
         },
       },
       {
-        Header: "Created",
+        Header: "Erstellt",
         accessor: "createdAt",
         id: "created",
         Cell: ({ row, value }) => {
@@ -338,15 +338,14 @@ export default function Clients() {
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto mt-4">
                 <p className="mt-2 text-sm text-gray-700">
-                  A list of all your organisation's tickets, regardless of
-                  status.
+                  Eine Liste aller Tickets Ihrer Organisation, unabhängig vom Status.
                 </p>
               </div>
             </div>
             <div className="py-4">
               {status === "loading" && (
                 <div className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
-                  <h2> Loading data ... </h2>
+                  <h2> Daten werden geladen... </h2>
                 </div>
               )}
 
@@ -354,7 +353,7 @@ export default function Clients() {
                 <div className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
                   <h2 className="text-2xl font-bold">
                     {" "}
-                    Error fetching data ...{" "}
+                    Fehler beim Laden der Daten...{" "}
                   </h2>
                 </div>
               )}
@@ -391,7 +390,7 @@ export default function Clients() {
                         </svg>
 
                         <h3 className="mt-2 text-sm font-medium text-gray-900">
-                          You currently don't have any assigned tickets. :)
+                          Sie haben derzeit keine zugewiesenen Tickets. :)
                         </h3>
                       </div>
                     </>

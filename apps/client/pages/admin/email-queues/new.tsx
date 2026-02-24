@@ -31,14 +31,14 @@ export default function EmailQueues() {
           <div className="divide-y-2">
             <div className="px-4 sm:px-6 md:px-0">
               <h1 className="text-3xl font-extrabold text-foreground">
-                New Email Queue
+                Neue E-Mail Warteschlange
               </h1>
             </div>
             <div className="px-4 sm:px-6 md:px-0">
               <div className="sm:flex sm:items-center mt-4">
                 <div className="sm:flex-auto">
                   <p className="mt-2 text-sm text-foreground-muted">
-                    Configure a new email queue for sending outbound emails.
+                    Konfigurieren Sie eine neue E-Mail-Warteschlange für ausgehende E-Mails.
                   </p>
                 </div>
               </div>
@@ -51,34 +51,34 @@ export default function EmailQueues() {
             {step === 0 && (
               <Card className="w-[480px]">
                 <CardHeader>
-                  <CardTitle>Email Provider</CardTitle>
+                  <CardTitle>E-Mail Anbieter</CardTitle>
                   <CardDescription>
-                    Certain providers require different settings.
+                    Bestimmte Anbieter erfordern unterschiedliche Einstellungen.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid w-full items-center gap-4">
                     <div className="flex flex-col space-y-1.5">
-                      <Label htmlFor="framework">Provider</Label>
+                      <Label htmlFor="framework">Anbieter</Label>
                       <Select onValueChange={(value) => setProvider(value)}>
                         <SelectTrigger id="framework">
-                          <SelectValue placeholder="Select" />
+                          <SelectValue placeholder="Auswählen" />
                         </SelectTrigger>
                         <SelectContent position="popper">
                           <SelectItem disabled value="microsoft">
                             Microsoft
                           </SelectItem>
                           <SelectItem value="gmail">Google</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="other">Andere</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                  <Button variant="outline">Cancel</Button>
+                  <Button variant="outline">Abbrechen</Button>
                   <Button disabled={provider === ""} onClick={() => setStep(1)}>
-                    Next
+                    Weiter
                   </Button>
                 </CardFooter>
               </Card>
@@ -131,35 +131,35 @@ function PasswordProvider({ setStep }: any) {
   return (
     <Card className="w-[480px]">
       <CardHeader>
-        <CardTitle>Email Queue Settings</CardTitle>
-        <CardDescription>Configure your email queue settings.</CardDescription>
+        <CardTitle>E-Mail Warteschlangen Einstellungen</CardTitle>
+        <CardDescription>Konfigurieren Sie Ihre E-Mail-Warteschlangen-Einstellungen.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid w-full items-center gap-4">
           <div className="flex flex-col space-y-4">
             <div>
-              <Label htmlFor="name">Queue Name</Label>
+              <Label htmlFor="name">Warteschlangen-Name</Label>
               <Input
                 id="name"
-                placeholder="Enter the queue name"
+                placeholder="Name eingeben"
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
             <div>
-              <Label htmlFor="username">Username (email)</Label>
+              <Label htmlFor="username">Benutzername (E-Mail)</Label>
               <Input
                 id="username"
                 type="email"
-                placeholder="Enter the email"
+                placeholder="E-Mail eingeben"
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Passwort</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter the password"
+                placeholder="Passwort eingeben"
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
@@ -167,7 +167,7 @@ function PasswordProvider({ setStep }: any) {
               <Label htmlFor="hostname">Hostname</Label>
               <Input
                 id="hostname"
-                placeholder="Enter the hostname"
+                placeholder="Hostname eingeben"
                 onChange={(e) => setHostname(e.target.value)}
               />
             </div>
@@ -175,11 +175,11 @@ function PasswordProvider({ setStep }: any) {
               <Label htmlFor="tls">TLS</Label>
               <Select onValueChange={(value) => setTls(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select TLS setting" />
+                  <SelectValue placeholder="TLS-Einstellung auswählen" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="true">True</SelectItem>
-                  <SelectItem value="false">False</SelectItem>
+                  <SelectItem value="true">Ja</SelectItem>
+                  <SelectItem value="false">Nein</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -188,9 +188,9 @@ function PasswordProvider({ setStep }: any) {
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={() => setStep(0)}>
-          Back
+          Zurück
         </Button>
-        <Button onClick={() => newQueue()}>Save</Button>
+        <Button onClick={() => newQueue()}>Speichern</Button>
       </CardFooter>
     </Card>
   );

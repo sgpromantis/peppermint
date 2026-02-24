@@ -112,19 +112,18 @@ export default function Notifications() {
           <div className="divide-y-2">
             <div className="px-4 sm:px-6 md:px-0 flex flex-row justify-between">
               <h1 className="text-3xl font-extrabold text-foreground">
-                SMTP Email Settings
+                SMTP E-Mail Einstellungen
               </h1>
 
               <button className="text-xs" onClick={() => resetSMTP()}>
-                Reset SMTP
+                SMTP Zurücksetzen
               </button>
             </div>
             <div className="px-4 sm:px-6 md:px-0">
               <div className="sm:flex sm:items-center mt-4">
                 <div className="sm:flex-auto">
                   <p className="mt-2 text-sm text-foreground-muted">
-                    Manage your smtp email settings. These settings will be used
-                    to send all outbound emails.
+                    Verwalten Sie Ihre SMTP E-Mail-Einstellungen. Diese werden für alle ausgehenden E-Mails verwendet.
                   </p>
                 </div>
               </div>
@@ -150,12 +149,11 @@ export default function Notifications() {
                             </div>
                             <div className="ml-3">
                               <h3 className="text-sm font-medium text-green-800">
-                                SMTP Config Found & working
+                                SMTP Konfiguration gefunden & funktioniert
                               </h3>
                               <div className="mt-2 text-sm text-green-700">
                                 <p>
-                                  The config you supplied is working as
-                                  intended.
+                                  Die angegebene Konfiguration funktioniert wie erwartet.
                                 </p>
                               </div>
                             </div>
@@ -171,7 +169,7 @@ export default function Notifications() {
                       </div>
 
                       <div className="mt-4">
-                        <h1>Email Templates</h1>
+                        <h1>E-Mail Vorlagen</h1>
                         <table>
                           <tbody>
                             {templates.map((template) => (
@@ -205,7 +203,7 @@ export default function Notifications() {
                             </div>
                             <div className="ml-3">
                               <h3 className="text-sm font-medium text-red-800">
-                                Authentication Error
+                                Authentifizierungsfehler
                               </h3>
                               <div className="mt-2 text-sm text-red-700">
                                 <p>
@@ -252,27 +250,27 @@ export default function Notifications() {
                     {step === 0 && (
                       <Card className="w-[350px]">
                         <CardHeader>
-                          <CardTitle>Email Provider</CardTitle>
+                          <CardTitle>E-Mail Anbieter</CardTitle>
                           <CardDescription>
-                            Certain providers require different settings.
+                            Bestimmte Anbieter erfordern unterschiedliche Einstellungen.
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="grid w-full items-center gap-4">
                             <div className="flex flex-col space-y-1.5">
-                              <Label htmlFor="framework">Provider</Label>
+                              <Label htmlFor="framework">Anbieter</Label>
                               <Select
                                 onValueChange={(value) => setProvider(value)}
                               >
                                 <SelectTrigger id="framework">
-                                  <SelectValue placeholder="Select" />
+                                  <SelectValue placeholder="Auswählen" />
                                 </SelectTrigger>
                                 <SelectContent position="popper">
                                   <SelectItem disabled value="microsoft">
                                     Microsoft
                                   </SelectItem>
                                   <SelectItem value="gmail">Google</SelectItem>
-                                  <SelectItem value="other">Other</SelectItem>
+                                  <SelectItem value="other">Andere</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -304,7 +302,7 @@ export default function Notifications() {
             </div>
           </div>
         ) : (
-          <div>Loading...</div>
+          <div>Laden...</div>
         )}
       </div>
     </main>
@@ -354,8 +352,8 @@ function GmailSettings({ setStep }: { setStep: (step: number) => void }) {
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Gmail Settings</CardTitle>
-        <CardDescription>Configure your Gmail OAuth2 settings.</CardDescription>
+        <CardTitle>Gmail Einstellungen</CardTitle>
+        <CardDescription>Konfigurieren Sie Ihre Gmail OAuth2-Einstellungen.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid w-full items-center gap-4">
@@ -481,6 +479,7 @@ function SMTP({ setStep }: { setStep: (step: number) => void }) {
         reply,
         username,
         password,
+        serviceType: "other",
       }),
     })
       .then((res) => res.json())
@@ -492,7 +491,7 @@ function SMTP({ setStep }: { setStep: (step: number) => void }) {
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>SMTP Settings</CardTitle>
+        <CardTitle>SMTP Einstellungen</CardTitle>
         <CardDescription></CardDescription>
       </CardHeader>
       <CardContent>

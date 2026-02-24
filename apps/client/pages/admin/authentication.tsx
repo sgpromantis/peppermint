@@ -137,7 +137,7 @@ export default function Authentication() {
         <div className="pt-10 pb-16">
           <div className="px-4 sm:px-6 md:px-0">
             <h1 className="text-3xl font-extrabold text-foreground ">
-              Authentication Settings
+              Authentifizierungs-Einstellungen
             </h1>
           </div>
           <div className="px-4 sm:px-6 md:px-0 my-4">
@@ -146,10 +146,10 @@ export default function Authentication() {
                 <Card className={cn("w-[380px]")}>
                   <CardHeader>
                     <CardTitle className="capitalize">
-                      {provider} settings
+                      {provider} Einstellungen
                     </CardTitle>
                     <CardDescription>
-                      Manage your {provider} config
+                      Verwalten Sie Ihre {provider} Konfiguration
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4"></CardContent>
@@ -157,24 +157,22 @@ export default function Authentication() {
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button className="w-full bg-red-500">
-                          <Check className="mr-2 h-4 w-4" /> delete
+                          <Check className="mr-2 h-4 w-4" /> Löschen
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>
-                            Are you absolutely sure?
+                            Sind Sie absolut sicher?
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action cannot be undone. This will permanently
-                            delete your account and remove your data from our
-                            servers.
+                            Diese Aktion kann nicht rückgängig gemacht werden. Die Authentifizierungskonfiguration wird dauerhaft gelöscht.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
                           <AlertDialogAction onClick={() => deleteData()}>
-                            Continue
+                            Fortfahren
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -193,7 +191,7 @@ export default function Authentication() {
                     value={providerType || ""}
                   >
                     <option value="" disabled>
-                      Please select a provider type
+                      Bitte wählen Sie einen Anbietertyp
                     </option>
                     <option value="oidc">OIDC</option>
                     <option value="oauth" disabled>
@@ -329,7 +327,7 @@ export default function Authentication() {
                         onClick={() => postData()}
                         className="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                       >
-                        Save
+                        Speichern
                       </button>
                     </div>
                   </div>

@@ -80,7 +80,7 @@ export default function CreateUser() {
           <div className="pt-10 pb-6 divide-y-2">
             <div className="px-4 sm:px-6 md:px-0">
               <h1 className="text-3xl font-extrabold text-foreground">
-                Add a new user
+                Neuen Benutzer anlegen
               </h1>
             </div>
           </div>
@@ -167,7 +167,7 @@ export default function CreateUser() {
                   type="button"
                   className="rounded-md bg-green-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-green-500"
                 >
-                  Create User
+                  Benutzer erstellen
                 </button>
               </div>
             </Flex>

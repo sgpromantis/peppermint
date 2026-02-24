@@ -86,7 +86,7 @@ export default function Notifications() {
           <div className="divide-y-2">
             <div className="px-4 sm:px-6 md:px-0">
               <h1 className="text-3xl font-extrabold text-foreground">
-                Webhook Settings
+                Webhook Einstellungen
               </h1>
             </div>
            
@@ -101,9 +101,9 @@ export default function Notifications() {
                      <div className="sm:flex sm:items-center mt-4">
                        <div className="sm:flex-auto">
                          <p className="mt-2 text-sm text-foreground">
-                           Webhooks allow external services to be notified when certain
-                           events happen. When the specified events happen, we'll send
-                           a POST request to each of the URLs you provide.
+                           Webhooks ermöglichen es externen Diensten, über bestimmte
+                           Ereignisse benachrichtigt zu werden. Wenn die angegebenen Ereignisse eintreten,
+                           senden wir eine POST-Anfrage an jede der von Ihnen angegebenen URLs.
                          </p>
                        </div>
                        <div className="sm:ml-16 sm:flex-none">
@@ -117,7 +117,7 @@ export default function Notifications() {
                                  : "hidden"
                              }
                            >
-                             Add Webhook
+                             Webhook Hinzufügen
                            </button>
                            <button
                              onClick={() => setShow("main")}
@@ -128,7 +128,7 @@ export default function Notifications() {
                                  : "rounded bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                              }
                            >
-                             Cancel
+                             Abbrechen
                            </button>
                          </>
                        </div>
@@ -156,7 +156,7 @@ export default function Notifications() {
                                   type="button"
                                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                 >
-                                  Delete
+                                  Löschen
                                 </button>
                               </div>
                             </div>
@@ -164,7 +164,7 @@ export default function Notifications() {
                         </div>
                       ) : (
                         <p className="text-foreground">
-                          You currently have no web hooks added
+                          Sie haben derzeit keine Webhooks hinzugefügt
                         </p>
                       )}
                     </div>
@@ -215,7 +215,7 @@ export default function Notifications() {
                             htmlFor="location"
                             className="mt-4 block text-sm font-medium text-foreground"
                           >
-                            Type
+                            Typ
                           </label>
                           <select
                             id="location"
@@ -225,10 +225,10 @@ export default function Notifications() {
                             onChange={(e) => setType(e.target.value)}
                           >
                             <option value="ticket_created">
-                              Ticket created
+                              Ticket erstellt
                             </option>
                             <option value="ticket_status_changed">
-                              Ticket Status Change
+                              Ticket Status geändert
                             </option>
                           </select>
                         </div>
@@ -244,7 +244,7 @@ export default function Notifications() {
                                 className="text-sm font-medium text-foreground w-1/6"
                                 passive
                               >
-                                Active
+                                Aktiv
                               </Switch.Label>
                               <Switch
                                 checked={enabled}
@@ -273,7 +273,7 @@ export default function Notifications() {
                           type="button"
                           className="mt-8 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >
-                          Add Webhook
+                          Webhook Hinzufügen
                         </button>
                       </div>
                     </div>

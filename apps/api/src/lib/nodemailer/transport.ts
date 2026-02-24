@@ -52,13 +52,20 @@ export async function createTransportProvider() {
     });
   } else if (provider?.serviceType === "other") {
     // Username/password configuration
+    const portNum = parseInt(String(provider?.port), 10);
+    const isSecure = portNum === 465 || portNum === 587;
+    
     return nodemailer.createTransport({
       host: provider.host,
-      port: provider?.port,
-      secure: provider?.port === "465" ? true : false, // true for 465, false for other ports
+      port: portNum,
+      secure: portNum === 465, // true for 465 (implicit TLS), false for 587 (STARTTLS)
+      requireTLS: portNum === 587, // Force STARTTLS for port 587
       auth: {
         user: provider?.user,
         pass: provider?.pass,
+      },
+      tls: {
+        rejectUnauthorized: false, // Allow self-signed certificates
       },
     });
   } else {
