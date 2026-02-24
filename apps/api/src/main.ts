@@ -1,22 +1,8 @@
 import "dotenv/config";
 import cors from "@fastify/cors";
-
-// Construct DATABASE_URL from individual env vars if DB_HOST is set (Docker environment)
-// DB_HOST takes priority over any existing DATABASE_URL to ensure Docker networking works
-if (process.env.DB_HOST) {
-  const dbUser = process.env.DB_USERNAME || 'peppermint';
-  const dbPass = process.env.DB_PASSWORD || '';
-  const dbHost = process.env.DB_HOST;
-  const dbPort = process.env.DB_PORT || '5432';
-  const dbName = process.env.DB_DATABASE || 'peppermint';
-  process.env.DATABASE_URL = `postgresql://${dbUser}:${dbPass}@${dbHost}:${dbPort}/${dbName}`;
-  console.log(`DATABASE_URL constructed from DB_HOST: postgresql://${dbUser}:***@${dbHost}:${dbPort}/${dbName}`);
-} else {
-  console.log(`Using DATABASE_URL from env: ${process.env.DATABASE_URL ? process.env.DATABASE_URL.replace(/:[^:@]+@/, ':***@') : 'not set'}`);
-}
+import multipart from "@fastify/multipart";
 
 import Fastify, { FastifyInstance } from "fastify";
-import multer from "fastify-multer";
 import fs from "fs";
 
 import { exec } from "child_process";
@@ -47,7 +33,7 @@ server.register(cors, {
   allowedHeaders: ["Content-Type", "Authorization", "Accept"],
 });
 
-server.register(multer.contentParser);
+server.register(multipart);
 
 registerRoutes(server);
 
