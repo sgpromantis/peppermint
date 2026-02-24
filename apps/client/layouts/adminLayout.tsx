@@ -9,6 +9,7 @@ import {
 import { Button } from "@radix-ui/themes";
 import {
   BarChart3,
+  Cloud,
   ContactIcon,
   FileText,
   KeyRound,
@@ -91,6 +92,12 @@ export default function AdminLayout({ children }: any) {
       icon: RollerCoaster,
     },
     {
+      name: "Microsoft 365",
+      href: "/admin/microsoft-sync",
+      current: location.pathname === "/admin/microsoft-sync",
+      icon: Cloud,
+    },
+    {
       name: "Monitoring",
       href: "/admin/monitoring",
       current: location.pathname === "/admin/monitoring",
@@ -108,7 +115,7 @@ export default function AdminLayout({ children }: any) {
     !loading &&
     user && (
       <SidebarProvider>
-        <div className="min-h-screen overflow-hidden bg-background w-full">
+        <div className="min-h-screen overflow-auto bg-background w-full">
           <Transition.Root show={sidebarOpen} as={Fragment}>
             <Dialog
               as="div"

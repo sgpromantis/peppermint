@@ -126,7 +126,7 @@ export default function NewLayout({ children }: any) {
   return (
     !loading &&
     user && (
-      <div className="min-h-screen overflow-hidden bg-background">
+      <div className="min-h-screen overflow-auto bg-background">
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
             as="div"

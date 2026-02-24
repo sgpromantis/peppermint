@@ -130,6 +130,7 @@ export function authRoutes(fastify: FastifyInstance) {
   );
 
   // Register a new external user
+  // SECURITY: Disabled by default - users must be created by admin or synced from Microsoft 365
   fastify.post(
     "/api/v1/auth/user/register/external",
     {
@@ -147,6 +148,18 @@ export function authRoutes(fastify: FastifyInstance) {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
+      // Check if external registration is enabled via config
+      const config = await prisma.config.findFirst();
+      const notifications = (config?.notifications as any) || {};
+      const allowExternalRegistration = notifications.allowExternalRegistration === true;
+
+      if (!allowExternalRegistration) {
+        return reply.code(403).send({
+          success: false,
+          message: "Registrierung deaktiviert. Bitte kontaktieren Sie den Administrator.",
+        });
+      }
+
       let { email, password, name, language } = request.body as {
         email: string;
         password: string;

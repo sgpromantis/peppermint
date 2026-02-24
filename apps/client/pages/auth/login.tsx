@@ -36,9 +36,9 @@ export default function Login({}) {
           } else {
             toast({
               variant: "destructive",
-              title: "Error",
+              title: "Fehler",
               description:
-                "There was an error logging in, please try again. If this issue persists, please contact support via the discord.",
+                "Bei der Anmeldung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
             });
           }
         });
@@ -46,9 +46,9 @@ export default function Login({}) {
       console.error(error);
       toast({
         variant: "destructive",
-        title: "Database Error",
+        title: "Datenbankfehler",
         description:
-          "This is an issue with the database, please check the docker logs or contact support via discord.",
+          "Es gibt ein Problem mit der Datenbank. Bitte überprüfen Sie die Docker-Logs.",
       });
     }
   }
@@ -74,9 +74,9 @@ export default function Login({}) {
     if (router.query.error) {
       toast({
         variant: "destructive",
-        title: "Account Error - No Account Found",
+        title: "Kontofehler - Kein Konto gefunden",
         description:
-          "It looks like you have tried to use SSO with an account that does not exist. Please try again or contact your admin to get you set up first.",
+          "Es sieht so aus, als hätten Sie versucht, sich mit SSO mit einem nicht existierenden Konto anzumelden. Bitte kontaktieren Sie Ihren Administrator.",
       });
     }
   }, [router]);
@@ -85,7 +85,7 @@ export default function Login({}) {
     <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
-          Welcome to Peppermint
+          Willkommen
         </h2>
       </div>
 
@@ -100,7 +100,7 @@ export default function Login({}) {
                   htmlFor="email"
                   className="block text-sm font-medium text-foreground"
                 >
-                  Email address
+                  E-Mail-Adresse
                 </label>
                 <div className="mt-1">
                   <input
@@ -125,7 +125,7 @@ export default function Login({}) {
                   htmlFor="password"
                   className="block text-sm font-medium text-foreground"
                 >
-                  Password
+                  Passwort
                 </label>
                 <div className="mt-1">
                   <input
@@ -151,7 +151,7 @@ export default function Login({}) {
                     href="/auth/forgot-password"
                     className="font-medium text-indigo-600 hover:text-indigo-500"
                   >
-                    Forgot your password?
+                    Passwort vergessen?
                   </Link>
                 </div>
               </div>
@@ -162,7 +162,7 @@ export default function Login({}) {
                   onClick={postData}
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
-                  Sign In
+                  Anmelden
                 </button>
 
                 {url && (
@@ -171,7 +171,7 @@ export default function Login({}) {
                     onClick={() => router.push(url)}
                     className="w-full flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >
-                    Sign in with OIDC
+                    Mit SSO anmelden
                   </button>
                 )}
               </div>

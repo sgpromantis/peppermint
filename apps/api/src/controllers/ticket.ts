@@ -154,6 +154,20 @@ export function ticketRoutes(fastify: FastifyInstance) {
         createdBy,
       }: any = request.body;
 
+      // Security: Validate email exists as a user in the system
+      if (email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: email.toLowerCase() },
+        });
+
+        if (!existingUser) {
+          return reply.code(403).send({
+            success: false,
+            message: "Zugriff verweigert: E-Mail-Adresse ist nicht registriert. Bitte kontaktieren Sie den Administrator.",
+          });
+        }
+      }
+
       const ticket: any = await prisma.ticket.create({
         data: {
           name,

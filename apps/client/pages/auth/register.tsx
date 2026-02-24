@@ -1,6 +1,7 @@
 import { toast } from "@/shadcn/hooks/use-toast";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Login({}) {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function Login({}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState("de");
   const [status, setStatus] = useState("idle");
 
   async function postData() {
@@ -45,15 +46,15 @@ export default function Login({}) {
         setStatus("idle");
         toast({
           variant: "destructive",
-          title: "Error",
-          description: response.message,
+          title: "Fehler",
+          description: response.message || "Registrierung fehlgeschlagen",
         });
       }
     } else {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Passwords do not match or email is invalid",
+        title: "Fehler",
+        description: "Passwörter stimmen nicht überein oder E-Mail ist ungültig",
       });
     }
   }
@@ -62,7 +63,7 @@ export default function Login({}) {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Create your new account
+          Neues Konto erstellen
         </h2>
       </div>
 
@@ -77,7 +78,7 @@ export default function Login({}) {
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Email address
+                  E-Mail-Adresse
                 </label>
                 <div className="mt-1">
                   <input
@@ -97,7 +98,7 @@ export default function Login({}) {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Password
+                  Passwort
                 </label>
                 <div className="mt-1">
                   <input
@@ -115,7 +116,7 @@ export default function Login({}) {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Confirm Password
+                  Passwort bestätigen
                 </label>
                 <div className="mt-1">
                   <input
@@ -131,7 +132,7 @@ export default function Login({}) {
                 </div>
 
                 <label className="block text-sm font-medium text-gray-700">
-                  Language
+                  Sprache
                 </label>
                 <div className="mt-1 rounded-md shadow-sm flex">
                   <select
@@ -141,21 +142,20 @@ export default function Login({}) {
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                   >
+                    <option value="de">Deutsch</option>
                     <option value="en">English</option>
-                    <option value="de">German</option>
-                    <option value="se">Swedish</option>
-                    <option value="es">Spanish</option>
-                    <option value="no">Norwegian</option>
-                    <option value="fr">French</option>
-                    <option value="pt">Tagalong</option>
-                    <option value="da">Danish</option>
-                    <option value="pt">Portuguese</option>
-                    <option value="it">Italiano</option>
-                    <option value="he">Hebrew</option>
-                    <option value="tr">Turkish</option>
-                    <option value="hu">Hungarian</option>
-                    <option value="th">Thai (ภาษาไทย)</option>
-                    <option value="zh-CN">Simplified Chinese (简体中文)</option>
+                    <option value="se">Schwedisch</option>
+                    <option value="es">Spanisch</option>
+                    <option value="no">Norwegisch</option>
+                    <option value="fr">Französisch</option>
+                    <option value="da">Dänisch</option>
+                    <option value="pt">Portugiesisch</option>
+                    <option value="it">Italienisch</option>
+                    <option value="he">Hebräisch</option>
+                    <option value="tr">Türkisch</option>
+                    <option value="hu">Ungarisch</option>
+                    <option value="th">Thailändisch</option>
+                    <option value="zh-CN">Vereinfachtes Chinesisch</option>
                   </select>
                 </div>
               </div>
@@ -166,11 +166,11 @@ export default function Login({}) {
                   onClick={postData}
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
-                  Create Account
+                  Konto erstellen
                 </button>
 
                 <p className="mt-2 text-xs text-gray-600 text-center">
-                  Note this form is for external users only
+                  Hinweis: Die Registrierung erfordert die Genehmigung des Administrators
                 </p>
               </div>
             </div>
@@ -178,10 +178,9 @@ export default function Login({}) {
         )}
 
         <div className="mt-8 text-center flex flex-col space-y-2">
-          <span className="font-bold">Built with 💚 by Peppermint Labs</span>
-          <a href="https://docs.peppermint.sh/" target="_blank">
-            Documentation
-          </a>
+          <Link href="/auth/login" className="text-green-600 hover:text-green-700">
+            Zurück zur Anmeldung
+          </Link>
         </div>
       </div>
     </div>

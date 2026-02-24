@@ -113,7 +113,7 @@ export default function PortalLayout({ children }: any) {
 
   return (
     !loading && (
-      <div className="min-h-screen overflow-hidden bg-white dark:bg-[#0A090C]">
+      <div className="min-h-screen overflow-auto bg-white dark:bg-[#0A090C]">
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
             as="div"

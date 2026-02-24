@@ -38,7 +38,7 @@ export default function ShadLayout({ children }: any) {
   return (
     !loading &&
     user && (
-      <div className="min-h-screen overflow-hidden">
+      <div className="min-h-screen overflow-auto">
         <SidebarProvider>
           <AppSidebar />
           <div className="w-full">

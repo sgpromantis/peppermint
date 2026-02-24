@@ -80,7 +80,7 @@ export default function ClientTicketNew() {
           toast({
             variant: "destructive",
             title: "Fehler",
-            description: `Bitte füllen Sie alle Felder aus und versuchen Sie es erneut`,
+            description: res.message || `Bitte füllen Sie alle Felder aus und versuchen Sie es erneut`,
           });
         }
       });

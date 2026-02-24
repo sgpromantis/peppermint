@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import { useQuery } from "react-query";
+import useTranslation from "next-translate/useTranslation";
 import {
   useFilters,
   useGlobalFilter,
@@ -31,7 +32,7 @@ function DefaultColumnFilter({ column: { filterValue, setFilter } }: any) {
       onChange={(e) => {
         setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
       }}
-      placeholder="Type to filter"
+      placeholder="Zum Filtern tippen"
     />
   );
 }
@@ -161,7 +162,7 @@ function Table({ columns, data }: any) {
               <div className="hidden sm:block">
                 <div className="flex flex-row flex-nowrap w-full space-x-2">
                   <p className="block text-sm font-medium text-gray-700 mt-4">
-                    Show
+                    Anzeigen
                   </p>
                   <select
                     id="location"
@@ -187,7 +188,7 @@ function Table({ columns, data }: any) {
                   onClick={() => previousPage()}
                   disabled={!canPreviousPage}
                 >
-                  Previous
+                  Vorherige
                 </button>
                 <button
                   className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -195,7 +196,7 @@ function Table({ columns, data }: any) {
                   onClick={() => nextPage()}
                   disabled={!canNextPage}
                 >
-                  Next
+                  Nächste
                 </button>
               </div>
             </nav>
@@ -207,6 +208,7 @@ function Table({ columns, data }: any) {
 }
 
 export default function Clients() {
+  const { t } = useTranslation("peppermint");
   const { data, status, refetch } = useQuery(
     "fetchAllClients",
     fetchAllClients
@@ -230,13 +232,13 @@ export default function Clients() {
   const columns = React.useMemo(
     () => [
       {
-        Header: "Client Name",
+        Header: t("client_name") || "Kundenname",
         accessor: "name",
         width: 10,
         id: "client_name",
       },
       {
-        Header: "Contact Name",
+        Header: t("contact_name") || "Kontaktname",
         accessor: "contactName",
         id: "contactName",
       },
@@ -253,14 +255,14 @@ export default function Clients() {
                 className="rounded bg-white hover:bg-red-100 px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:text-white shadow-sm ring-1 ring-inset ring-gray-300"
                 onClick={() => deleteClient(row.original.id)}
               >
-                Delete
+                {t("delete") || "Löschen"}
               </button>
             </div>
           );
         },
       },
     ],
-    []
+    [t]
   );
 
   return (
@@ -269,14 +271,14 @@ export default function Clients() {
         <div className="pt-10 pb-16 divide-y-2">
           <div className="px-4 sm:px-6 md:px-0">
             <h1 className="text-3xl font-extrabold text-gray-900  dark:text-white">
-              Clients
+              {t("clients") || "Kunden"}
             </h1>
           </div>
           <div className="px-4 sm:px-6 md:px-0">
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto mt-4">
                 <p className="mt-2 text-sm text-gray-700  dark:text-white">
-                  A list of all internal users of your instance.
+                  {t("clients_list_desc") || "Eine Liste aller Kunden Ihrer Instanz."}
                 </p>
               </div>
               <div className="sm:ml-16 mt-5 flex flex-row space-x-2">
@@ -285,34 +287,34 @@ export default function Clients() {
                   type="button"
                   className="inline-flex items-center px-2.5 py-1.5 border font-semibold border-gray-300 shadow-sm text-xs rounded text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  Guest Ticket Url
+                  {t("guest_ticket_url") || "Gast-Ticket URL"}
                 </Link>
                 <Link
                   href={`/portal/`}
                   type="button"
                   className="inline-flex items-center px-2.5 py-1.5 border font-semibold border-gray-300 shadow-sm text-xs rounded text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  Portal Url
+                  {t("portal_url") || "Portal URL"}
                 </Link>
                 <Link
                   href={`/auth/register`}
                   type="button"
                   className="inline-flex items-center px-2.5 py-1.5 border font-semibold border-gray-300 shadow-sm text-xs rounded text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  Portal Register
+                  {t("portal_register") || "Portal Registrierung"}
                 </Link>
                 <Link
                   href="/admin/clients/new"
                   className="rounded bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                 >
-                  New Client
+                  {t("new_client") || "Neuer Kunde"}
                 </Link>
               </div>
             </div>
             <div className="py-4">
               {status === "loading" && (
                 <div className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
-                  <h2> Loading data ... </h2>
+                  <h2> {t("loading_data") || "Daten werden geladen..."} </h2>
                 </div>
               )}
 
@@ -320,7 +322,7 @@ export default function Clients() {
                 <div className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
                   <h2 className="text-2xl font-bold">
                     {" "}
-                    Error fetching data ...{" "}
+                    {t("error_fetching_data") || "Fehler beim Laden der Daten"}{" "}
                   </h2>
                 </div>
               )}
@@ -348,7 +350,7 @@ export default function Clients() {
                             <dt className="sr-only">Role</dt>
                             <dd className="mt-3">
                               <span>
-                                Primary Contact - {client.contactName}
+                                {t("primary_contact") || "Hauptkontakt"} - {client.contactName}
                               </span>
                             </dd>
                           </dl>
