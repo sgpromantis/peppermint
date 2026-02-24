@@ -2,13 +2,17 @@ import "dotenv/config";
 import cors from "@fastify/cors";
 
 // Construct DATABASE_URL from individual env vars if DB_HOST is set (Docker environment)
-if (process.env.DB_HOST && !process.env.DATABASE_URL) {
+// DB_HOST takes priority over any existing DATABASE_URL to ensure Docker networking works
+if (process.env.DB_HOST) {
   const dbUser = process.env.DB_USERNAME || 'peppermint';
   const dbPass = process.env.DB_PASSWORD || '';
   const dbHost = process.env.DB_HOST;
   const dbPort = process.env.DB_PORT || '5432';
   const dbName = process.env.DB_DATABASE || 'peppermint';
   process.env.DATABASE_URL = `postgresql://${dbUser}:${dbPass}@${dbHost}:${dbPort}/${dbName}`;
+  console.log(`DATABASE_URL constructed from DB_HOST: postgresql://${dbUser}:***@${dbHost}:${dbPort}/${dbName}`);
+} else {
+  console.log(`Using DATABASE_URL from env: ${process.env.DATABASE_URL ? process.env.DATABASE_URL.replace(/:[^:@]+@/, ':***@') : 'not set'}`);
 }
 
 import Fastify, { FastifyInstance } from "fastify";
@@ -92,9 +96,12 @@ server.addHook("preHandler", async function (request: any, reply: any) {
 
 const start = async () => {
   try {
+    // Pass current environment (including constructed DATABASE_URL) to child processes
+    const execOptions = { env: { ...process.env } };
+    
     // Run prisma generate and migrate commands before starting the server
     await new Promise<void>((resolve, reject) => {
-      exec("npx prisma migrate deploy", (err, stdout, stderr) => {
+      exec("npx prisma migrate deploy", execOptions, (err, stdout, stderr) => {
         if (err) {
           console.error(err);
           reject(err);
@@ -102,7 +109,7 @@ const start = async () => {
         console.log(stdout);
         console.error(stderr);
 
-        exec("npx prisma generate", (err, stdout, stderr) => {
+        exec("npx prisma generate", execOptions, (err, stdout, stderr) => {
           if (err) {
             console.error(err);
             reject(err);
@@ -111,7 +118,7 @@ const start = async () => {
           console.error(stderr);
         });
 
-        exec("npx prisma db seed", (err, stdout, stderr) => {
+        exec("npx prisma db seed", execOptions, (err, stdout, stderr) => {
           if (err) {
             console.error(err);
             reject(err);
