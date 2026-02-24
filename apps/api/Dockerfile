@@ -1,56 +1,42 @@
-# FROM node:16
+FROM node:lts AS builder
 
-# ENV port=8090
-# COPY . .
-
-# RUN yarn
-# RUN yarn build
-
-# EXPOSE 8090
-# CMD [ "node", "./dist/main.js" ]
-
-FROM node:18 AS base
-
-# The web Dockerfile is copy-pasted into our main docs at /docs/handbook/deploying-with-docker.
-# Make sure you update this Dockerfile, the Dockerfile in the web workspace and copy that over to Dockerfile in the docs.
-
-FROM base AS builder
-
-# Set working directory
-WORKDIR /app
-RUN yarn global add turbo
-COPY . .
-RUN turbo prune --scope=api --docker
-
-
-# Add lockfile and package.json's of isolated subworkspace
-FROM base AS installer
+# Set the working directory inside the container
 WORKDIR /app
 
-# First install dependencies (as they change less often)
-COPY .gitignore .gitignore
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/yarn.lock ./yarn.lock
-RUN yarn install
+RUN apt-get update && \
+    apt-get install -y build-essential python3
 
+# Copy the package.json and package-lock.json files for both apps
+COPY apps/api/package*.json ./apps/api/
+COPY apps/client/package*.json ./apps/client/
+COPY ./ecosystem.config.js ./ecosystem.config.js
 
-# Build the project and its dependencies
-COPY --from=builder /app/out/full/ .
-RUN ls
-COPY turbo.json /../../turbo.json
+RUN npm i -g prisma
+RUN npm i -g typescript@latest -g --force 
 
-# RUN rm -f apps/api/.env
+# Copy the source code for both apps
+COPY apps/api ./apps/api
+COPY apps/client ./apps/client
 
-RUN yarn turbo run build --filter=database
+RUN cd apps/api && npm install --production
+RUN cd apps/api && npm i --save-dev @types/node && npm run build
 
-FROM base AS runner
-WORKDIR /app
+RUN cd apps/client && yarn install --network-timeout 1000000
+RUN cd apps/client && yarn build
 
-# Don't run production as root
-# RUN addgroup --system --gid 1001 prod
-# RUN adduser --system --uid 1001 prod
-# USER prod
-COPY --from=installer /app .
+FROM node:lts AS runner
 
-EXPOSE 8090
-CMD ["node", "apps/api/dist/"]
+COPY --from=builder /app/apps/api/ ./apps/api/
+COPY --from=builder /app/apps/client/.next/standalone ./apps/client
+COPY --from=builder /app/apps/client/.next/static ./apps/client/.next/static
+COPY --from=builder /app/apps/client/public ./apps/client/public
+COPY --from=builder /app/ecosystem.config.js ./ecosystem.config.js
+
+# Expose the ports for both apps
+EXPOSE 3000 5003
+
+# Install PM2 globally
+RUN npm install -g pm2
+
+# Start both apps using PM2
+CMD ["pm2-runtime", "ecosystem.config.js"]

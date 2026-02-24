@@ -8,7 +8,13 @@ import { Fragment, useState } from "react";
 export default function UpdateUserModal({ user }) {
   const [open, setOpen] = useState(false);
 
-  const [admin, setAdmin] = useState(user.isAdmin);
+  // Determine initial role: admin > manager > user
+  const getInitialRole = () => {
+    if (user.isAdmin) return "admin";
+    if (user.isManager) return "manager";
+    return "user";
+  };
+  const [role, setRole] = useState(getInitialRole());
 
   const router = useRouter();
 
@@ -20,7 +26,7 @@ export default function UpdateUserModal({ user }) {
         Authorization: `Bearer ${getCookie("session")}`,
       },
       body: JSON.stringify({
-        role: admin,
+        role: role,
         id: user.id,
       }),
     })
@@ -104,28 +110,39 @@ export default function UpdateUserModal({ user }) {
                       as="h3"
                       className="text-lg leading-6 font-medium text-gray-900"
                     >
-                      Edit User Role
+                      Benutzerrolle bearbeiten
                     </Dialog.Title>
                     <div className="mt-2 space-y-4">
                       <div className="">
                         <div className="space-y-2 sm:flex sm:items-center sm:space-y-0 sm:space-x-10">
                           <span className="relative z-0 inline-flex shadow-sm rounded-md space-x-4">
                             <button
-                              onClick={() => setAdmin(false)}
+                              onClick={() => setRole("user")}
                               type="button"
                               className={
-                                admin === false
+                                role === "user"
                                   ? "relative inline-flex items-center px-4 py-2 border border-gray-300 bg-green-500 text-sm font-medium text-white hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1"
                                   : "relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1"
                               }
                             >
-                              User
+                              Benutzer
                             </button>
                             <button
-                              onClick={() => setAdmin(true)}
+                              onClick={() => setRole("manager")}
                               type="button"
                               className={
-                                admin === true
+                                role === "manager"
+                                  ? "relative inline-flex items-center px-4 py-2 border border-gray-300 bg-green-500 text-sm font-medium text-white hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1"
+                                  : "relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1"
+                              }
+                            >
+                              Manager
+                            </button>
+                            <button
+                              onClick={() => setRole("admin")}
+                              type="button"
+                              className={
+                                role === "admin"
                                   ? "relative inline-flex items-center px-4 py-2 border border-gray-300 bg-green-500 text-sm font-medium text-white hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1"
                                   : "relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1"
                               }

@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "@radix-ui/themes";
 import {
+  BarChart3,
   ContactIcon,
   FileText,
   KeyRound,
@@ -88,6 +89,12 @@ export default function AdminLayout({ children }: any) {
       href: "/admin/roles",
       current: location.pathname === "/admin/roles",
       icon: RollerCoaster,
+    },
+    {
+      name: "Monitoring",
+      href: "/admin/monitoring",
+      current: location.pathname === "/admin/monitoring",
+      icon: BarChart3,
     },
     {
       name: "Protokolle",

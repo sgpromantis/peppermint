@@ -321,8 +321,16 @@ export function ticketRoutes(fastify: FastifyInstance) {
       preHandler: requirePermission(["issue::read"]),
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await checkSession(request);
+      
+      // Admins and Managers can see all tickets, regular users only their own
+      const canSeeAll = user?.isAdmin || user?.isManager;
+      const whereClause = canSeeAll
+        ? { isComplete: false, hidden: false }
+        : { isComplete: false, hidden: false, userId: user?.id };
+
       const tickets = await prisma.ticket.findMany({
-        where: { isComplete: false, hidden: false },
+        where: whereClause,
         orderBy: [
           {
             createdAt: "desc",
@@ -372,15 +380,20 @@ export function ticketRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // Get all tickets (admin)
+  // Get all tickets (admin sees all, non-admin sees only their own)
   fastify.get(
     "/api/v1/tickets/all",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const bearer = request.headers.authorization!.split(" ")[1];
-      const token = checkToken(bearer);
+      const user = await checkSession(request);
+      
+      // Admins and Managers can see all tickets, regular users only their own
+      const canSeeAll = user?.isAdmin || user?.isManager;
+      const whereClause = canSeeAll
+        ? { hidden: false }
+        : { hidden: false, userId: user?.id };
 
       const tickets = await prisma.ticket.findMany({
-        where: { hidden: false },
+        where: whereClause,
         orderBy: [
           {
             createdAt: "desc",
@@ -440,8 +453,16 @@ export function ticketRoutes(fastify: FastifyInstance) {
     "/api/v1/tickets/completed",
 
     async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await checkSession(request);
+      
+      // Admins and Managers can see all tickets, regular users only their own
+      const canSeeAll = user?.isAdmin || user?.isManager;
+      const whereClause = canSeeAll
+        ? { isComplete: true, hidden: false }
+        : { isComplete: true, hidden: false, userId: user?.id };
+
       const tickets = await prisma.ticket.findMany({
-        where: { isComplete: true, hidden: false },
+        where: whereClause,
         include: {
           client: {
             select: { id: true, name: true, number: true },
@@ -467,6 +488,18 @@ export function ticketRoutes(fastify: FastifyInstance) {
     "/api/v1/tickets/unassigned",
 
     async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await checkSession(request);
+      
+      // Only Admins and Managers can see unassigned tickets
+      const canSeeAll = user?.isAdmin || user?.isManager;
+      if (!canSeeAll) {
+        reply.send({
+          success: true,
+          tickets: [],
+        });
+        return;
+      }
+
       const tickets = await prisma.ticket.findMany({
         where: {
           isComplete: false,

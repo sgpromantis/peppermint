@@ -1,4 +1,3 @@
-import { Switch } from "@headlessui/react";
 import { Flex } from "@radix-ui/themes";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/router";
@@ -14,6 +13,7 @@ export default function CreateUser() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [admin, setAdmin] = useState(false);
+  const [manager, setManager] = useState(false);
   const [language, setLanguage] = useState("en");
 
   const { user } = useUser();
@@ -32,6 +32,7 @@ export default function CreateUser() {
         email,
         name,
         admin,
+        manager,
         language,
       }),
     })
@@ -140,24 +141,23 @@ export default function CreateUser() {
                   <option value="zh-CN">Simplified Chinese (简体中文)</option>
                 </select>
               </div>
-              <div>
-                <label className="text-foreground font-bold">Admin User</label>
-                <div className="flex flex-row space-x-2 items-center">
-                  <Switch
-                    checked={admin}
-                    onChange={setAdmin}
-                    className={`${
-                      admin ? "bg-blue-600" : "bg-gray-200"
-                    } relative inline-flex h-6 w-11 items-center rounded-full`}
-                  >
-                    <span className="sr-only">Enable notifications</span>
-                    <span
-                      className={`${
-                        admin ? "translate-x-6" : "translate-x-1"
-                      } inline-block h-4 w-4 transform rounded-full bg-white transition`}
-                    />
-                  </Switch>
-                </div>
+              <div className="w-1/2 flex flex-col">
+                <label className="text-foreground font-bold">Benutzerrolle</label>
+                <select
+                  id="role"
+                  name="role"
+                  className="mt-1 text-foreground bg-transparent block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  value={admin ? "admin" : manager ? "manager" : "user"}
+                  onChange={(e) => {
+                    const role = e.target.value;
+                    setAdmin(role === "admin");
+                    setManager(role === "manager");
+                  }}
+                >
+                  <option value="user">Benutzer</option>
+                  <option value="manager">Manager</option>
+                  <option value="admin">Administrator</option>
+                </select>
               </div>
               <div
                 className="flex justify-end w-full "

@@ -83,6 +83,7 @@ model User {
   image                        String?
   emailVerified                Boolean?
   isAdmin                      Boolean   @default(false)
+  isManager                    Boolean   @default(false)
   language                     String?   @default("en")
   notify_ticket_created        Boolean   @default(true)
   notify_ticket_status_changed Boolean   @default(true)

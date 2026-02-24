@@ -3,6 +3,7 @@ import { authRoutes } from "./controllers/auth";
 import { clientRoutes } from "./controllers/clients";
 import { configRoutes } from "./controllers/config";
 import { dataRoutes } from "./controllers/data";
+import { metricsRoutes } from "./controllers/metrics";
 import { notebookRoutes } from "./controllers/notebook";
 import { emailQueueRoutes } from "./controllers/queue";
 import { roleRoutes } from "./controllers/roles";
@@ -25,4 +26,5 @@ export function registerRoutes(fastify: FastifyInstance) {
   timeTrackingRoutes(fastify);
   objectStoreRoutes(fastify);
   roleRoutes(fastify);
+  metricsRoutes(fastify);
 }

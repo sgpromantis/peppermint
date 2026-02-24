@@ -23,6 +23,7 @@ export function userRoutes(fastify: FastifyInstance) {
           name: true,
           email: true,
           isAdmin: true,
+          isManager: true,
           createdAt: true,
           updatedAt: true,
           language: true,

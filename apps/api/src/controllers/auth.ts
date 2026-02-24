@@ -69,6 +69,7 @@ export function authRoutes(fastify: FastifyInstance) {
             email: { type: "string" },
             password: { type: "string" },
             admin: { type: "boolean" },
+            manager: { type: "boolean" },
             name: { type: "string" },
           },
           required: ["email", "password", "name", "admin"],
@@ -76,10 +77,11 @@ export function authRoutes(fastify: FastifyInstance) {
       },
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      let { email, password, admin, name } = request.body as {
+      let { email, password, admin, manager, name } = request.body as {
         email: string;
         password: string;
         admin: boolean;
+        manager: boolean;
         name: string;
       };
 
@@ -109,6 +111,7 @@ export function authRoutes(fastify: FastifyInstance) {
           password: await bcrypt.hash(password, 10),
           name,
           isAdmin: admin,
+          isManager: manager || false,
         },
       });
 
@@ -952,23 +955,30 @@ export function authRoutes(fastify: FastifyInstance) {
       const session = await checkSession(request);
 
       if (session?.isAdmin) {
-        const { id, role } = request.body as { id: string; role: boolean };
-        if (role === false) {
-          const admins = await prisma.user.findMany({
-            where: { isAdmin: true },
-          });
-          if (admins.length === 1) {
-            reply.code(400).send({
-              message: "Atleast one admin is required",
-              success: false,
+        const { id, role } = request.body as { id: string; role: "user" | "manager" | "admin" };
+        
+        // Check if trying to remove admin and ensure at least one admin remains
+        if (role !== "admin") {
+          const targetUser = await prisma.user.findUnique({ where: { id } });
+          if (targetUser?.isAdmin) {
+            const admins = await prisma.user.findMany({
+              where: { isAdmin: true },
             });
-            return;
+            if (admins.length === 1) {
+              reply.code(400).send({
+                message: "Mindestens ein Admin erforderlich",
+                success: false,
+              });
+              return;
+            }
           }
         }
+        
         await prisma.user.update({
           where: { id },
           data: {
-            isAdmin: role,
+            isAdmin: role === "admin",
+            isManager: role === "manager",
           },
         });
 
