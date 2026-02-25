@@ -31,6 +31,14 @@ export default function Notifications() {
   const [error, setError]: any = useState();
   const [templates, setTemplates] = useState([]);
 
+  // German labels for template types
+  const templateLabels: Record<string, string> = {
+    ticket_assigned: "Ticket zugewiesen",
+    ticket_comment: "Ticket-Kommentar",
+    ticket_created: "Ticket erstellt",
+    ticket_status_changed: "Ticket-Status geändert",
+  };
+
   async function deleteEmailConfig() {
     setLoading(true);
     await fetch(`/api/v1/config/email`, {
@@ -163,7 +171,7 @@ export default function Notifications() {
                             type="button"
                             className="rounded bg-red-500 text-white px-4 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-secondary"
                           >
-                            Delete Settings
+                            Einstellungen löschen
                           </button>
                         </div>
                       </div>
@@ -172,16 +180,16 @@ export default function Notifications() {
                         <h1>E-Mail Vorlagen</h1>
                         <table>
                           <tbody>
-                            {templates.map((template) => (
+                            {templates.map((template: any) => (
                               <tr key={template.id}>
-                                <td>{template.type}</td>
+                                <td>{templateLabels[template.type] || template.type}</td>
                                 <td>{template.subject}</td>
                                 <td>{template.html}</td>
                                 <td>
                                   <a
                                     href={`/admin/smtp/templates/${template.id}`}
                                   >
-                                    Edit
+                                    Bearbeiten
                                   </a>
                                 </td>
                               </tr>
@@ -208,7 +216,7 @@ export default function Notifications() {
                               <div className="mt-2 text-sm text-red-700">
                                 <p>
                                   {error?.message ||
-                                    "An unknown error occurred."}
+                                    "Ein unbekannter Fehler ist aufgetreten."}
                                 </p>
                               </div>
                             </div>
@@ -219,14 +227,14 @@ export default function Notifications() {
                             type="button"
                             className="rounded bg-red-500 text-white px-4 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-secondary"
                           >
-                            Delete Settings
+                            Einstellungen löschen
                           </button>
                         </div>
                       </div>
 
                       <div className="mt-2 ml-0.5 flex flex-col">
                         <span className="text-sm font-semibold">
-                          Verification Status
+                          Verifizierungsstatus
                         </span>
                         <span className="text-xs font-semibold">
                           Code: {error && error.code}
