@@ -442,4 +442,5 @@ enum Template {
   ticket_status_changed
   ticket_assigned
   ticket_comment
+  ticket_confirmation
 }
