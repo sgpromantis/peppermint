@@ -193,50 +193,76 @@ export function configRoutes(fastify: FastifyInstance) {
     "/api/v1/config/email",
 
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const bearer = request.headers.authorization!.split(" ")[1];
-      // GET EMAIL SETTINGS
-      const config = await prisma.email.findFirst({
-        select: {
-          active: true,
-          host: true,
-          port: true,
-          reply: true,
-          user: true,
-          supportMailbox: true,
-        },
-      });
+      try {
+        const bearer = request.headers.authorization!.split(" ")[1];
+        // GET EMAIL SETTINGS
+        const config = await prisma.email.findFirst({
+          select: {
+            active: true,
+            host: true,
+            port: true,
+            reply: true,
+            user: true,
+          },
+        });
 
-      if (config && config?.active) {
-        const provider = await createTransportProvider();
+        // Try to get supportMailbox separately (column may not exist yet)
+        let supportMailbox = null;
+        try {
+          const smResult: any[] = await prisma.$queryRawUnsafe(
+            'SELECT "supportMailbox" FROM "Email" LIMIT 1'
+          );
+          if (smResult.length > 0) {
+            supportMailbox = smResult[0].supportMailbox;
+          }
+        } catch (e) {
+          // Column doesn't exist yet, ignore
+        }
 
-        await new Promise((resolve, reject) => {
-          provider.verify(function (error: any, success: any) {
-            if (error) {
-              console.log("ERROR", error);
-              reply.send({
-                success: true,
-                active: true,
-                email: config,
-                verification: error,
-              });
-            } else {
-              console.log("SUCCESS", success);
-              console.log("Server is ready to take our messages");
-              reply.send({
-                success: true,
-                active: true,
-                email: config,
-                verification: success,
-              });
-            }
+        const emailConfig = config ? { ...config, supportMailbox } : null;
+
+        if (emailConfig && emailConfig?.active) {
+          const provider = await createTransportProvider();
+
+          return await new Promise((resolve, reject) => {
+            provider.verify(function (error: any, success: any) {
+              if (error) {
+                console.log("SMTP verification error:", error);
+                resolve(
+                  reply.send({
+                    success: true,
+                    active: true,
+                    email: emailConfig,
+                    verification: error,
+                  })
+                );
+              } else {
+                console.log("SMTP verification success - server is ready");
+                resolve(
+                  reply.send({
+                    success: true,
+                    active: true,
+                    email: emailConfig,
+                    verification: success,
+                  })
+                );
+              }
+            });
           });
+        }
+
+        return reply.send({
+          success: true,
+          active: false,
+        });
+      } catch (error: any) {
+        console.error("Error fetching email config:", error);
+        return reply.status(500).send({
+          success: false,
+          message: "Failed to fetch email configuration",
+          error: error?.message || "Unknown error",
         });
       }
-
-      reply.send({
-        success: true,
-        active: false,
-      });
     }
   );
 
@@ -260,6 +286,8 @@ export function configRoutes(fastify: FastifyInstance) {
           supportMailbox,
         }: any = request.body;
 
+        console.log("Saving email config:", { host, port, replyto, username, serviceType, active });
+
         const email = await prisma.email.findFirst();
 
         if (email === null) {
@@ -271,11 +299,10 @@ export function configRoutes(fastify: FastifyInstance) {
               user: username,
               pass: password,
               active: true,
-              clientId: clientId,
-              clientSecret: clientSecret,
-              serviceType: serviceType,
-              redirectUri: redirectUri,
-              supportMailbox: supportMailbox,
+              clientId: clientId || undefined,
+              clientSecret: clientSecret || undefined,
+              serviceType: serviceType || "other",
+              redirectUri: redirectUri || undefined,
             },
           });
         } else {
@@ -288,14 +315,31 @@ export function configRoutes(fastify: FastifyInstance) {
               user: username,
               pass: password,
               active: active,
-              clientId: clientId,
-              clientSecret: clientSecret,
-              serviceType: serviceType,
-              redirectUri: redirectUri,
-              supportMailbox: supportMailbox,
+              clientId: clientId || undefined,
+              clientSecret: clientSecret || undefined,
+              serviceType: serviceType || "other",
+              redirectUri: redirectUri || undefined,
             },
           });
         }
+
+        // Try to save supportMailbox separately (column may not exist yet)
+        if (supportMailbox !== undefined) {
+          try {
+            const emailRecord = await prisma.email.findFirst();
+            if (emailRecord) {
+              await prisma.$executeRawUnsafe(
+                'UPDATE "Email" SET "supportMailbox" = $1 WHERE "id" = $2',
+                supportMailbox || null,
+                emailRecord.id
+              );
+            }
+          } catch (e) {
+            console.log("supportMailbox column not available, skipping");
+          }
+        }
+
+        console.log("Email config saved successfully");
 
         if (serviceType === "gmail") {
           const updatedEmail = await prisma.email.findFirst();

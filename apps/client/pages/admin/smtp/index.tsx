@@ -476,27 +476,45 @@ function SMTP({ setStep }: { setStep: (step: number) => void }) {
   const router = useRouter();
 
   async function submitConfig() {
-    await fetch(`/api/v1/config/email`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getCookie("session")}`,
-      },
-      body: JSON.stringify({
-        host,
-        active: true,
-        port,
-        reply,
-        username,
-        password,
-        serviceType: "other",
-        supportMailbox,
-      }),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        router.reload();
+    try {
+      const res = await fetch(`/api/v1/config/email`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("session")}`,
+        },
+        body: JSON.stringify({
+          host,
+          active: true,
+          port,
+          reply,
+          username,
+          password,
+          serviceType: "other",
+          supportMailbox: supportMailbox || undefined,
+        }),
       });
+      const data = await res.json();
+      if (!data.success) {
+        toast({
+          variant: "destructive",
+          title: "Fehler beim Speichern",
+          description: data.error || data.message || "Unbekannter Fehler",
+        });
+        return;
+      }
+      toast({
+        title: "Gespeichert",
+        description: "SMTP Einstellungen wurden erfolgreich gespeichert.",
+      });
+      router.reload();
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: err?.message || "Verbindungsfehler",
+      });
+    }
   }
 
   return (
