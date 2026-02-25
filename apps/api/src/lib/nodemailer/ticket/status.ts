@@ -16,7 +16,8 @@ export async function sendTicketStatus(ticket: any) {
   // Build ticket URL
   const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
   const ticketUrl = `${baseUrl}/portal/ticket/${ticket.id}`;
-  const statusText = ticket.isComplete ? "COMPLETED" : "OPEN";
+  const statusText = ticket.isComplete ? "ABGESCHLOSSEN" : "OFFEN";
+  const statusTextGerman = ticket.isComplete ? "Abgeschlossen" : "Offen";
   const statusColor = ticket.isComplete ? "#10b981" : "#f59e0b";
 
   const testhtml = await prisma.emailTemplate.findFirst({
@@ -37,7 +38,7 @@ export async function sendTicketStatus(ticket: any) {
     };
     htmlToSend = template(replacements);
   } else {
-    // Default HTML template with ticket link
+    // Default German HTML template with ticket link
     htmlToSend = `
 <!DOCTYPE html>
 <html>
@@ -57,25 +58,25 @@ export async function sendTicketStatus(ticket: any) {
 <body>
   <div class="container">
     <div class="header">
-      <h2 style="margin: 0;">Ticket Status Updated</h2>
+      <h2 style="margin: 0;">Ticket-Status aktualisiert</h2>
     </div>
     <div class="content">
       <div class="ticket-info">
         <p><strong>Ticket #${ticket.id}</strong></p>
-        <p><strong>Title:</strong> ${ticket.title}</p>
-        <p><strong>New Status:</strong> <span class="status-badge">${statusText}</span></p>
+        <p><strong>Betreff:</strong> ${ticket.title}</p>
+        <p><strong>Neuer Status:</strong> <span class="status-badge">${statusTextGerman}</span></p>
       </div>
       
-      <p>Your ticket status has been updated. You can view the full details online:</p>
+      <p>Der Status Ihres Tickets wurde aktualisiert. Sie können die vollständigen Details online einsehen:</p>
       <p style="text-align: center;">
-        <a href="${ticketUrl}" class="button">View Ticket Online</a>
+        <a href="${ticketUrl}" class="button">Ticket online ansehen</a>
       </p>
       
-      <p style="color: #6b7280; font-size: 14px;">If you have any questions, simply reply to this email.</p>
+      <p style="color: #6b7280; font-size: 14px;">Bei Fragen antworten Sie einfach auf diese E-Mail.</p>
     </div>
     <div class="footer">
-      <p>Ticket Reference: #${ticket.id}</p>
-      <p><a href="${ticketUrl}">View ticket online</a></p>
+      <p>Ticket-Referenz: #${ticket.id}</p>
+      <p><a href="${ticketUrl}">Ticket online ansehen</a></p>
     </div>
   </div>
 </body>
@@ -84,27 +85,35 @@ export async function sendTicketStatus(ticket: any) {
   }
 
   // Set up email threading headers
-  const domain = email.reply?.split("@")[1] || "peppermint.local";
+  const domain = email.reply?.split("@")[1] || "helpdesk.local";
   const messageId = `<status-${ticket.id}-${randomUUID()}@${domain}>`;
   const references = ticket.messageId ? [ticket.messageId] : [];
   const inReplyTo = ticket.messageId || undefined;
 
-  const textContent = `Ticket Status Updated\n\nTicket #${ticket.id}\nTitle: ${ticket.title}\nNew Status: ${statusText}\n\nView ticket online: ${ticketUrl}\n\nReply to this email if you have any questions.\n\nRef: #${ticket.id}`;
+  const textContent = `Ticket-Status aktualisiert\n\nTicket #${ticket.id}\nBetreff: ${ticket.title}\nNeuer Status: ${statusTextGerman}\n\nTicket online ansehen: ${ticketUrl}\n\nAntworten Sie auf diese E-Mail bei Rückfragen.\n\nRef: #${ticket.id}`;
+
+  // Build mail options with optional BCC
+  const mailOptions: any = {
+    from: email.reply,
+    to: ticket.email,
+    subject: `[Ticket #${ticket.id}] Status geändert: ${statusTextGerman} - ${ticket.title}`,
+    text: textContent,
+    html: htmlToSend,
+    messageId: messageId,
+    references: references,
+    inReplyTo: inReplyTo,
+    headers: {
+      "X-Ticket-ID": ticket.id,
+    },
+  };
+
+  // Add BCC if support mailbox is configured
+  if (email.supportMailbox) {
+    mailOptions.bcc = email.supportMailbox;
+  }
 
   await transport
-    .sendMail({
-      from: email.reply,
-      to: ticket.email,
-      subject: `[Ticket #${ticket.id}] Status changed to ${statusText} - ${ticket.title}`,
-      text: textContent,
-      html: htmlToSend,
-      messageId: messageId,
-      references: references,
-      inReplyTo: inReplyTo,
-      headers: {
-        "X-Ticket-ID": ticket.id,
-      },
-    })
+    .sendMail(mailOptions)
     .then((info: any) => {
       console.log("Status notification sent: %s", info.messageId);
     })

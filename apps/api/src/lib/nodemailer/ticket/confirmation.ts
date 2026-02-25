@@ -18,7 +18,7 @@ export async function sendTicketConfirmation(ticket: any) {
     const transport = await createTransportProvider();
 
     // Generate a unique Message-ID for threading
-    const domain = email.reply?.split("@")[1] || "peppermint.local";
+    const domain = email.reply?.split("@")[1] || "helpdesk.local";
     const messageId = `<ticket-${ticket.id}-${randomUUID()}@${domain}>`;
 
     // Get custom template or use default
@@ -98,7 +98,8 @@ export async function sendTicketConfirmation(ticket: any) {
       `;
     }
 
-    const info = await transport.sendMail({
+    // Build mail options with optional BCC
+    const mailOptions: any = {
       from: email.reply,
       to: ticket.email,
       subject: `[Ticket #${ticket.id}] Ihre Anfrage wurde erfasst - ${ticket.title}`,
@@ -108,7 +109,14 @@ export async function sendTicketConfirmation(ticket: any) {
       headers: {
         "X-Ticket-ID": ticket.id,
       },
-    });
+    };
+
+    // Add BCC if support mailbox is configured
+    if (email.supportMailbox) {
+      mailOptions.bcc = email.supportMailbox;
+    }
+
+    const info = await transport.sendMail(mailOptions);
 
     // Store the Message-ID in the ticket for reply matching
     await prisma.ticket.update({

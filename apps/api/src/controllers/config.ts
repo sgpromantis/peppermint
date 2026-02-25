@@ -202,6 +202,7 @@ export function configRoutes(fastify: FastifyInstance) {
           port: true,
           reply: true,
           user: true,
+          supportMailbox: true,
         },
       });
 
@@ -255,6 +256,7 @@ export function configRoutes(fastify: FastifyInstance) {
         clientId,
         clientSecret,
         redirectUri,
+        supportMailbox,
       }: any = request.body;
 
       const email = await prisma.email.findFirst();
@@ -272,6 +274,7 @@ export function configRoutes(fastify: FastifyInstance) {
             clientSecret: clientSecret,
             serviceType: serviceType,
             redirectUri: redirectUri,
+            supportMailbox: supportMailbox,
           },
         });
       } else {
@@ -288,6 +291,7 @@ export function configRoutes(fastify: FastifyInstance) {
             clientSecret: clientSecret,
             serviceType: serviceType,
             redirectUri: redirectUri,
+            supportMailbox: supportMailbox,
           },
         });
       }

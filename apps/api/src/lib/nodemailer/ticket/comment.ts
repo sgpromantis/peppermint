@@ -46,7 +46,7 @@ export async function sendComment(
       };
       htmlToSend = template(replacements);
     } else {
-      // Default HTML template with ticket link
+      // Default German HTML template with ticket link
       htmlToSend = `
 <!DOCTYPE html>
 <html>
@@ -65,7 +65,7 @@ export async function sendComment(
 <body>
   <div class="container">
     <div class="header">
-      <h2 style="margin: 0;">New Comment on Ticket #${id}</h2>
+      <h2 style="margin: 0;">Neuer Kommentar zu Ticket #${id}</h2>
     </div>
     <div class="content">
       <p><strong>Ticket:</strong> ${title}</p>
@@ -74,16 +74,16 @@ export async function sendComment(
         <p style="margin: 0; white-space: pre-wrap;">${comment}</p>
       </div>
       
-      <p>You can view the full ticket and respond online:</p>
+      <p>Sie können das vollständige Ticket online einsehen und antworten:</p>
       <p style="text-align: center;">
-        <a href="${ticketUrl}" class="button">View Ticket Online</a>
+        <a href="${ticketUrl}" class="button">Ticket online ansehen</a>
       </p>
       
-      <p style="color: #6b7280; font-size: 14px;">Or simply reply to this email to add your response to the ticket.</p>
+      <p style="color: #6b7280; font-size: 14px;">Oder antworten Sie einfach auf diese E-Mail, um Ihre Antwort zum Ticket hinzuzufügen.</p>
     </div>
     <div class="footer">
-      <p>Ticket Reference: #${id}</p>
-      <p>Reply to this email to respond, or <a href="${ticketUrl}">view online</a></p>
+      <p>Ticket-Referenz: #${id}</p>
+      <p>Antworten Sie auf diese E-Mail oder <a href="${ticketUrl}">online ansehen</a></p>
     </div>
   </div>
 </body>
@@ -92,28 +92,37 @@ export async function sendComment(
     }
 
     // Set up email threading headers
-    const domain = provider.reply?.split("@")[1] || "peppermint.local";
+    const domain = provider.reply?.split("@")[1] || "helpdesk.local";
     const messageId = `<comment-${id}-${randomUUID()}@${domain}>`;
     const references = ticket?.messageId ? [ticket.messageId] : [];
     const inReplyTo = ticket?.messageId || undefined;
 
-    const textContent = `New comment on Ticket #${id}\n\nTicket: ${title}\n\nComment:\n${comment}\n\nView ticket online: ${ticketUrl}\n\nYou can reply to this email to respond to the ticket.\n\nRef: #${id}`;
+    const textContent = `Neuer Kommentar zu Ticket #${id}\n\nTicket: ${title}\n\nKommentar:\n${comment}\n\nTicket online ansehen: ${ticketUrl}\n\nSie können auf diese E-Mail antworten, um zum Ticket zu antworten.\n\nRef: #${id}`;
 
     console.log("Sending comment notification to: ", email);
+    
+    // Build mail options with optional BCC
+    const mailOptions: any = {
+      from: provider.reply,
+      to: email,
+      subject: `[Ticket #${id}] Neuer Kommentar - ${title}`,
+      text: textContent,
+      html: htmlToSend,
+      messageId: messageId,
+      references: references,
+      inReplyTo: inReplyTo,
+      headers: {
+        "X-Ticket-ID": id,
+      },
+    };
+
+    // Add BCC if support mailbox is configured
+    if (provider.supportMailbox) {
+      mailOptions.bcc = provider.supportMailbox;
+    }
+
     await transport
-      .sendMail({
-        from: provider.reply,
-        to: email,
-        subject: `[Ticket #${id}] New comment - ${title}`,
-        text: textContent,
-        html: htmlToSend,
-        messageId: messageId,
-        references: references,
-        inReplyTo: inReplyTo,
-        headers: {
-          "X-Ticket-ID": id,
-        },
-      })
+      .sendMail(mailOptions)
       .then((info: any) => {
         console.log("Comment notification sent: %s", info.messageId);
       })

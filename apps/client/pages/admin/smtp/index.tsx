@@ -471,6 +471,7 @@ function SMTP({ setStep }: { setStep: (step: number) => void }) {
   const [reply, setReply] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [supportMailbox, setSupportMailbox] = useState("");
 
   const router = useRouter();
 
@@ -489,6 +490,7 @@ function SMTP({ setStep }: { setStep: (step: number) => void }) {
         username,
         password,
         serviceType: "other",
+        supportMailbox,
       }),
     })
       .then((res) => res.json())
@@ -604,6 +606,29 @@ function SMTP({ setStep }: { setStep: (step: number) => void }) {
                   onChange={(e) => setReply(e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="">
+              <label
+                htmlFor="support_mailbox"
+                className="block text-sm font-medium text-foreground"
+              >
+                Support Mailbox (BCC)
+              </label>
+              <div className="mt-1 flex rounded-md shadow-sm">
+                <input
+                  type="email"
+                  name="support_mailbox"
+                  id="support_mailbox"
+                  className="flex-1 text-foreground text-sm  bg-transparent focus:ring-green-500 focus:border-green-500 block w-full min-w-0 rounded-md"
+                  placeholder="support-team@example.com"
+                  value={supportMailbox}
+                  onChange={(e) => setSupportMailbox(e.target.value)}
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Diese Adresse erhält eine Kopie aller ausgehenden E-Mails.
+              </p>
             </div>
           </div>
         </div>
