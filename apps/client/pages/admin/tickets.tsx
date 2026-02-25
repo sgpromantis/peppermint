@@ -1,7 +1,7 @@
 import { getCookie } from "cookies-next";
 import moment from "moment";
 import { useRouter } from "next/router";
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useQuery } from "react-query";
 import {
   useFilters,
@@ -10,9 +10,32 @@ import {
   useTable,
 } from "react-table";
 import TicketsMobileList from "../../components/TicketsMobileList";
+import { toast } from "@/shadcn/hooks/use-toast";
+import { Button } from "@/shadcn/ui/button";
 
 const fetchALLTIckets = async () => {
   const res = await fetch(`/api/v1/tickets/all/admin`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getCookie("session")}`,
+    },
+  });
+  return res.json();
+};
+
+const fetchTicketNumberInfo = async () => {
+  const res = await fetch(`/api/v1/ticket/number-info`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getCookie("session")}`,
+    },
+  });
+  return res.json();
+};
+
+const resetTicketNumberSequence = async () => {
+  const res = await fetch(`/api/v1/ticket/reset-number-sequence`, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getCookie("session")}`,
@@ -211,6 +234,53 @@ export default function Clients() {
     fetchALLTIckets
   );
 
+  const [numberInfo, setNumberInfo] = useState<{
+    maxNumber: number;
+    totalTickets: number;
+    nextNumber: number;
+  } | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
+
+  useEffect(() => {
+    fetchTicketNumberInfo().then((res) => {
+      if (res.success) {
+        setNumberInfo(res);
+      }
+    });
+  }, []);
+
+  const handleResetSequence = async () => {
+    setIsResetting(true);
+    try {
+      const result = await resetTicketNumberSequence();
+      if (result.success) {
+        toast({
+          title: "Erfolgreich",
+          description: result.message,
+        });
+        // Refresh the number info
+        const newInfo = await fetchTicketNumberInfo();
+        if (newInfo.success) {
+          setNumberInfo(newInfo);
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Fehler",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: "Fehler beim Zurücksetzen der Sequenz",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const router = useRouter();
 
   const high = "bg-red-100 text-red-800";
@@ -342,6 +412,42 @@ export default function Clients() {
                 </p>
               </div>
             </div>
+
+            {/* Ticket Number Management Section */}
+            {numberInfo && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900 mb-3">
+                  Ticketnummern-Verwaltung
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                  <div className="bg-white p-3 rounded border">
+                    <p className="text-sm text-gray-500">Höchste Nummer</p>
+                    <p className="text-2xl font-bold text-gray-900">#{numberInfo.maxNumber}</p>
+                  </div>
+                  <div className="bg-white p-3 rounded border">
+                    <p className="text-sm text-gray-500">Gesamt Tickets</p>
+                    <p className="text-2xl font-bold text-gray-900">{numberInfo.totalTickets}</p>
+                  </div>
+                  <div className="bg-white p-3 rounded border">
+                    <p className="text-sm text-gray-500">Nächste Nummer</p>
+                    <p className="text-2xl font-bold text-green-600">#{numberInfo.nextNumber}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleResetSequence}
+                    disabled={isResetting}
+                  >
+                    {isResetting ? "Wird zurückgesetzt..." : "Sequenz zurücksetzen"}
+                  </Button>
+                  <p className="text-sm text-gray-500">
+                    Setzt die Datenbank-Sequenz auf die höchste vorhandene Ticketnummer zurück.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="py-4">
               {status === "loading" && (
                 <div className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">

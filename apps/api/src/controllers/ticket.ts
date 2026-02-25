@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 import axios from "axios";
 import { checkToken } from "../lib/jwt";
+import { getNextTicketNumber, resetTicketNumberSequence } from "../lib/ticket-number";
 
 //@ts-ignore
 import { track } from "../lib/hog";
@@ -50,8 +51,11 @@ export function ticketRoutes(fastify: FastifyInstance) {
 
       const user = await checkSession(request);
 
+      const nextNumber = await getNextTicketNumber();
+
       const ticket: any = await prisma.ticket.create({
         data: {
+          Number: nextNumber,
           name,
           title,
           detail: JSON.stringify(detail),
@@ -168,8 +172,11 @@ export function ticketRoutes(fastify: FastifyInstance) {
         }
       }
 
+      const nextNumber = await getNextTicketNumber();
+
       const ticket: any = await prisma.ticket.create({
         data: {
+          Number: nextNumber,
           name,
           title,
           detail: JSON.stringify(detail),
@@ -1146,6 +1153,60 @@ export function ticketRoutes(fastify: FastifyInstance) {
 
         reply.send({
           success: true,
+        });
+      }
+    }
+  );
+
+  // Admin endpoint to reset ticket number sequence
+  fastify.post(
+    "/api/v1/ticket/reset-number-sequence",
+    {
+      preHandler: requirePermission(["settings::manage"]),
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const result = await resetTicketNumberSequence();
+
+        reply.send({
+          success: true,
+          message: `Ticketnummern-Sequenz zurückgesetzt. Höchste Nummer: ${result.maxNumber}`,
+          maxNumber: result.maxNumber,
+        });
+      } catch (error) {
+        console.error("Failed to reset ticket number sequence:", error);
+        reply.status(500).send({
+          success: false,
+          message: "Fehler beim Zurücksetzen der Ticketnummern-Sequenz",
+        });
+      }
+    }
+  );
+
+  // Get current ticket number info
+  fastify.get(
+    "/api/v1/ticket/number-info",
+    {
+      preHandler: requirePermission(["settings::manage"]),
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const result = await prisma.ticket.aggregate({
+          _max: { Number: true },
+          _count: { Number: true },
+        });
+
+        reply.send({
+          success: true,
+          maxNumber: result._max.Number ?? 0,
+          totalTickets: result._count.Number,
+          nextNumber: (result._max.Number ?? 0) + 1,
+        });
+      } catch (error) {
+        console.error("Failed to get ticket number info:", error);
+        reply.status(500).send({
+          success: false,
+          message: "Fehler beim Abrufen der Ticketnummern-Info",
         });
       }
     }

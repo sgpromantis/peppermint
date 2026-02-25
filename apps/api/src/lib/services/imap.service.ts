@@ -6,6 +6,7 @@ import { EmailConfig, EmailQueue } from "../types/email";
 import { AuthService } from "./auth.service";
 import { metrics } from "../prometheus-metrics";
 import { sendTicketConfirmation } from "../nodemailer/ticket/confirmation";
+import { getNextTicketNumber } from "../ticket-number";
 
 function getReplyText(email: any): string {
   const parsed = new EmailReplyParser().read(email.text || "");
@@ -279,8 +280,11 @@ export class ImapService {
       },
     });
 
+    const nextNumber = await getNextTicketNumber();
+
     const ticket = await prisma.ticket.create({
       data: {
+        Number: nextNumber,
         email: senderEmail,
         name: senderName,
         title: imapEmail.subject || "-",
