@@ -245,84 +245,93 @@ export function configRoutes(fastify: FastifyInstance) {
     "/api/v1/config/email",
 
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const {
-        host,
-        active,
-        port,
-        reply: replyto,
-        username,
-        password,
-        serviceType,
-        clientId,
-        clientSecret,
-        redirectUri,
-        supportMailbox,
-      }: any = request.body;
+      try {
+        const {
+          host,
+          active,
+          port,
+          reply: replyto,
+          username,
+          password,
+          serviceType,
+          clientId,
+          clientSecret,
+          redirectUri,
+          supportMailbox,
+        }: any = request.body;
 
-      const email = await prisma.email.findFirst();
-
-      if (email === null) {
-        await prisma.email.create({
-          data: {
-            host: host,
-            port: port,
-            reply: replyto,
-            user: username,
-            pass: password,
-            active: true,
-            clientId: clientId,
-            clientSecret: clientSecret,
-            serviceType: serviceType,
-            redirectUri: redirectUri,
-            supportMailbox: supportMailbox,
-          },
-        });
-      } else {
-        await prisma.email.update({
-          where: { id: email.id },
-          data: {
-            host: host,
-            port: port,
-            reply: replyto,
-            user: username,
-            pass: password,
-            active: active,
-            clientId: clientId,
-            clientSecret: clientSecret,
-            serviceType: serviceType,
-            redirectUri: redirectUri,
-            supportMailbox: supportMailbox,
-          },
-        });
-      }
-
-      if (serviceType === "gmail") {
         const email = await prisma.email.findFirst();
 
-        const google = new OAuth2Client(
-          //@ts-expect-error
-          email?.clientId,
-          email?.clientSecret,
-          email?.redirectUri
-        );
+        if (email === null) {
+          await prisma.email.create({
+            data: {
+              host: host,
+              port: port,
+              reply: replyto,
+              user: username,
+              pass: password,
+              active: true,
+              clientId: clientId,
+              clientSecret: clientSecret,
+              serviceType: serviceType,
+              redirectUri: redirectUri,
+              supportMailbox: supportMailbox,
+            },
+          });
+        } else {
+          await prisma.email.update({
+            where: { id: email.id },
+            data: {
+              host: host,
+              port: port,
+              reply: replyto,
+              user: username,
+              pass: password,
+              active: active,
+              clientId: clientId,
+              clientSecret: clientSecret,
+              serviceType: serviceType,
+              redirectUri: redirectUri,
+              supportMailbox: supportMailbox,
+            },
+          });
+        }
 
-        const authorizeUrl = google.generateAuthUrl({
-          access_type: "offline",
-          scope: "https://mail.google.com",
-          prompt: "consent",
-        });
+        if (serviceType === "gmail") {
+          const updatedEmail = await prisma.email.findFirst();
+
+          const google = new OAuth2Client(
+            //@ts-expect-error
+            updatedEmail?.clientId,
+            updatedEmail?.clientSecret,
+            updatedEmail?.redirectUri
+          );
+
+          const authorizeUrl = google.generateAuthUrl({
+            access_type: "offline",
+            scope: "https://mail.google.com",
+            prompt: "consent",
+          });
+
+          return reply.send({
+            success: true,
+            message: "SSO Provider updated!",
+            authorizeUrl: authorizeUrl,
+          });
+        }
 
         return reply.send({
           success: true,
           message: "SSO Provider updated!",
-          authorizeUrl: authorizeUrl,
+        });
+      } catch (error: any) {
+        console.error("Error saving email config:", error);
+        return reply.status(500).send({
+          success: false,
+          message: "Failed to save email configuration",
+          error: error?.message || "Unknown error",
         });
       }
-
-      return reply.send({
-        success: true,
-        message: "SSO Provider updated!",
-      });
     }
   );
 
