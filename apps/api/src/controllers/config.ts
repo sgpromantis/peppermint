@@ -308,14 +308,14 @@ export function configRoutes(fastify: FastifyInstance) {
           prompt: "consent",
         });
 
-        reply.send({
+        return reply.send({
           success: true,
           message: "SSO Provider updated!",
           authorizeUrl: authorizeUrl,
         });
       }
 
-      reply.send({
+      return reply.send({
         success: true,
         message: "SSO Provider updated!",
       });
