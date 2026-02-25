@@ -1,6 +1,7 @@
 import handlebars from "handlebars";
 import { prisma } from "../../../prisma";
 import { createTransportProvider } from "../transport";
+import { randomUUID } from "crypto";
 
 export async function sendComment(
   comment: string,
@@ -11,7 +12,17 @@ export async function sendComment(
   try {
     const provider = await prisma.email.findFirst();
 
+    if (!provider) {
+      console.log("No email provider configured - skipping comment notification");
+      return;
+    }
+
     const transport = await createTransportProvider();
+
+    // Get the ticket to retrieve its messageId for threading
+    const ticket = await prisma.ticket.findUnique({
+      where: { id },
+    });
 
     const testhtml = await prisma.emailTemplate.findFirst({
       where: {
@@ -23,20 +34,33 @@ export async function sendComment(
     var replacements = {
       title: title,
       comment: comment,
+      id: id,
     };
     var htmlToSend = template(replacements);
 
-    console.log("Sending email to: ", email);
+    // Set up email threading headers
+    const domain = provider.reply?.split("@")[1] || "peppermint.local";
+    const messageId = `<comment-${id}-${randomUUID()}@${domain}>`;
+    const references = ticket?.messageId ? [ticket.messageId] : [];
+    const inReplyTo = ticket?.messageId || undefined;
+
+    console.log("Sending comment notification to: ", email);
     await transport
       .sendMail({
-        from: provider?.reply,
+        from: provider.reply,
         to: email,
-        subject: `New comment on Issue #${title} ref: #${id}`,
-        text: `Hello there, Issue #${title}, has had an update with a comment of ${comment}`,
+        subject: `[Ticket #${id}] New comment - ${title}`,
+        text: `Hello,\n\nA new comment has been added to your ticket #${id}:\n\n${comment}\n\nRef: #${id}`,
         html: htmlToSend,
+        messageId: messageId,
+        references: references,
+        inReplyTo: inReplyTo,
+        headers: {
+          "X-Ticket-ID": id,
+        },
       })
       .then((info: any) => {
-        console.log("Message sent: %s", info.messageId);
+        console.log("Comment notification sent: %s", info.messageId);
       })
       .catch((err: any) => console.log(err));
   } catch (error) {

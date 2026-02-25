@@ -8,19 +8,150 @@ import { metrics } from "../prometheus-metrics";
 import { sendTicketConfirmation } from "../nodemailer/ticket/confirmation";
 
 function getReplyText(email: any): string {
-  const parsed = new EmailReplyParser().read(email.text);
+  const parsed = new EmailReplyParser().read(email.text || "");
   const fragments = parsed.getFragments();
 
   let replyText = "";
 
   fragments.forEach((fragment: any) => {
-    console.log("FRAGMENT", fragment._content, fragment.content);
     if (!fragment._isHidden && !fragment._isSignature && !fragment._isQuoted) {
       replyText += fragment._content;
     }
   });
 
-  return replyText;
+  // If no text was extracted, try to get at least something from the email
+  if (!replyText.trim() && email.text) {
+    // Take the first paragraph as fallback
+    const lines = email.text.split("\n");
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith(">") && !trimmed.startsWith("On ") && !trimmed.startsWith("Am ")) {
+        replyText = trimmed;
+        break;
+      }
+    }
+  }
+
+  return replyText.trim() || email.text || "No content";
+}
+
+/**
+ * Extract ticket ID from various sources in the email
+ * Priority: In-Reply-To header > References header > Subject line > X-Ticket-ID header
+ */
+async function findTicketFromEmail(parsed: any): Promise<{ ticket: any; method: string } | null> {
+  const inReplyTo = parsed.inReplyTo;
+  const references = parsed.references;
+  const subject = parsed.subject || "";
+  const headers = parsed.headers;
+
+  // 1. Try In-Reply-To header - most reliable for direct replies
+  if (inReplyTo) {
+    const ticket = await prisma.ticket.findFirst({
+      where: { messageId: inReplyTo },
+    });
+    if (ticket) {
+      console.log(`Found ticket via In-Reply-To header: ${ticket.id}`);
+      return { ticket, method: "in-reply-to" };
+    }
+
+    // Try to extract ticket ID from the Message-ID format: <ticket-UUID-random@domain>
+    const ticketIdMatch = inReplyTo.match(/ticket-([0-9a-f-]{36})/i);
+    if (ticketIdMatch) {
+      const ticket = await prisma.ticket.findFirst({
+        where: { id: ticketIdMatch[1] },
+      });
+      if (ticket) {
+        console.log(`Found ticket via In-Reply-To ticket ID: ${ticket.id}`);
+        return { ticket, method: "in-reply-to-id" };
+      }
+    }
+  }
+
+  // 2. Try References header - contains thread history
+  if (references) {
+    const refArray = Array.isArray(references) ? references : [references];
+    for (const ref of refArray) {
+      const ticket = await prisma.ticket.findFirst({
+        where: { messageId: ref },
+      });
+      if (ticket) {
+        console.log(`Found ticket via References header: ${ticket.id}`);
+        return { ticket, method: "references" };
+      }
+
+      // Try to extract ticket ID from the Message-ID format
+      const ticketIdMatch = ref.match(/ticket-([0-9a-f-]{36})/i);
+      if (ticketIdMatch) {
+        const ticket = await prisma.ticket.findFirst({
+          where: { id: ticketIdMatch[1] },
+        });
+        if (ticket) {
+          console.log(`Found ticket via References ticket ID: ${ticket.id}`);
+          return { ticket, method: "references-id" };
+        }
+      }
+    }
+  }
+
+  // 3. Try X-Ticket-ID custom header
+  const xTicketId = headers?.get("x-ticket-id");
+  if (xTicketId) {
+    const ticket = await prisma.ticket.findFirst({
+      where: { id: xTicketId },
+    });
+    if (ticket) {
+      console.log(`Found ticket via X-Ticket-ID header: ${ticket.id}`);
+      return { ticket, method: "x-ticket-id" };
+    }
+  }
+
+  // 4. Try to extract from subject line with multiple patterns
+  const subjectPatterns = [
+    // [Ticket #uuid] format
+    /\[Ticket\s*#?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\]/i,
+    // #uuid or ref:uuid format
+    /(?:ref:|#)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+    // Ticket uuid anywhere in subject
+    /ticket[:\s#]*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+    // Just UUID pattern as last resort
+    /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+  ];
+
+  for (const pattern of subjectPatterns) {
+    const match = subject.match(pattern);
+    if (match) {
+      const ticket = await prisma.ticket.findFirst({
+        where: { id: match[1] },
+      });
+      if (ticket) {
+        console.log(`Found ticket via subject pattern: ${ticket.id}`);
+        return { ticket, method: "subject" };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Check if an email appears to be a reply based on subject and headers
+ */
+function isEmailReply(parsed: any): boolean {
+  const subject = (parsed.subject || "").toLowerCase();
+  const hasReplySubject =
+    subject.startsWith("re:") ||
+    subject.startsWith("aw:") ||     // German
+    subject.startsWith("sv:") ||     // Swedish/Norwegian
+    subject.startsWith("r:") ||
+    subject.startsWith("rép:") ||    // French
+    subject.startsWith("res:") ||    // Portuguese
+    subject.includes("ref:") ||
+    subject.includes("[ticket");
+
+  const hasReplyHeaders = !!(parsed.inReplyTo || parsed.references);
+
+  return hasReplySubject || hasReplyHeaders;
 }
 
 export class ImapService {
@@ -59,85 +190,119 @@ export class ImapService {
 
   private static async processEmail(
     parsed: any,
-    isReply: boolean
+    isReplyHint: boolean
   ): Promise<void> {
     const { from, subject, text, html, textAsHtml } = parsed;
+    const senderEmail = from?.value?.[0]?.address;
+    const senderName = from?.value?.[0]?.name || senderEmail;
 
-    console.log("isReply", isReply);
-
-    if (isReply) {
-      // First try to match UUID format
-      const uuidMatch = subject.match(
-        /(?:ref:|#)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i
-      );
-      console.log("UUID MATCH", uuidMatch);
-
-      const ticketId = uuidMatch?.[1];
-
-      console.log("TICKET ID", ticketId);
-
-      if (!ticketId) {
-        throw new Error(`Could not extract ticket ID from subject: ${subject}`);
-      }
-
-      const ticket = await prisma.ticket.findFirst({
-        where: {
-          id: ticketId,
-        },
-      });
-
-      console.log("TICKET", ticket);
-
-      if (!ticket) {
-        throw new Error(`Ticket not found: ${ticketId}`);
-      }
-
-      const replyText = getReplyText(parsed);
-
-      await prisma.comment.create({
-        data: {
-          text: text ? replyText : "No Body",
-          userId: null,
-          ticketId: ticket.id,
-          reply: true,
-          replyEmail: from.value[0].address,
-          public: true,
-        },
-      });
-    } else {
-      const imapEmail = await prisma.imap_Email.create({
-        data: {
-          from: from.value[0].address,
-          subject: subject || "No Subject",
-          body: text || "No Body",
-          html: html || "",
-          text: textAsHtml,
-        },
-      });
-
-      const ticket = await prisma.ticket.create({
-        data: {
-          email: from.value[0].address,
-          name: from.value[0].name,
-          title: imapEmail.subject || "-",
-          isComplete: false,
-          priority: "low",
-          fromImap: true,
-          detail: html || textAsHtml,
-        },
-      });
-
-      // Track metrics
-      metrics.incrementTicketsCreated(true);
-      metrics.incrementEmailsReceived();
-
-      // Send confirmation email with ticket link
-      try {
-        await sendTicketConfirmation(ticket);
-      } catch (emailError) {
-        console.error("Failed to send ticket confirmation:", emailError);
-      }
+    if (!senderEmail) {
+      console.error("No sender email found, skipping");
+      return;
     }
+
+    // Check if this looks like a reply using multiple methods
+    const looksLikeReply = isReplyHint || isEmailReply(parsed);
+    console.log(`Processing email from ${senderEmail}, subject: "${subject}", isReply: ${looksLikeReply}`);
+
+    // If it looks like a reply, try to find the original ticket
+    if (looksLikeReply) {
+      const result = await findTicketFromEmail(parsed);
+
+      if (result) {
+        const { ticket, method } = result;
+        console.log(`Found ticket ${ticket.id} via ${method}, adding as comment`);
+
+        const replyText = getReplyText(parsed);
+
+        await prisma.comment.create({
+          data: {
+            text: replyText,
+            userId: null,
+            ticketId: ticket.id,
+            reply: true,
+            replyEmail: senderEmail,
+            public: true,
+          },
+        });
+
+        // Track metrics
+        metrics.incrementEmailsReceived();
+        console.log(`Added reply as comment to ticket ${ticket.id}`);
+        return;
+      }
+
+      // Fallback: Try to find an open ticket from the same sender
+      const recentTicket = await prisma.ticket.findFirst({
+        where: {
+          email: senderEmail,
+          isComplete: false,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      if (recentTicket) {
+        console.log(`Found recent open ticket ${recentTicket.id} from same sender, adding as comment`);
+
+        const replyText = getReplyText(parsed);
+
+        await prisma.comment.create({
+          data: {
+            text: replyText,
+            userId: null,
+            ticketId: recentTicket.id,
+            reply: true,
+            replyEmail: senderEmail,
+            public: true,
+          },
+        });
+
+        metrics.incrementEmailsReceived();
+        console.log(`Added reply as comment to ticket ${recentTicket.id} (fallback by sender)`);
+        return;
+      }
+
+      // If no ticket found but it looked like a reply, log and create new ticket
+      console.log(`Email looked like reply but no matching ticket found, creating new ticket`);
+    }
+
+    // Create new ticket
+    const imapEmail = await prisma.imap_Email.create({
+      data: {
+        from: senderEmail,
+        subject: subject || "No Subject",
+        body: text || "No Body",
+        html: html || "",
+        text: textAsHtml,
+      },
+    });
+
+    const ticket = await prisma.ticket.create({
+      data: {
+        email: senderEmail,
+        name: senderName,
+        title: imapEmail.subject || "-",
+        isComplete: false,
+        priority: "low",
+        fromImap: true,
+        detail: html || textAsHtml,
+      },
+    });
+
+    // Track metrics
+    metrics.incrementTicketsCreated(true);
+    metrics.incrementEmailsReceived();
+
+    // Send confirmation email with ticket link
+    try {
+      await sendTicketConfirmation(ticket);
+    } catch (emailError) {
+      console.error("Failed to send ticket confirmation:", emailError);
+    }
+
+    console.log(`Created new ticket ${ticket.id} from email`);
   }
 
   static async fetchEmails(): Promise<void> {

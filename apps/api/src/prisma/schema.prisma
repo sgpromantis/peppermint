@@ -140,6 +140,7 @@ model Ticket {
   createdBy  Json?
   locked     Boolean      @default(false)
   following  Json?
+  messageId  String?      // Email Message-ID for threading replies
 
   TicketFile   TicketFile[]
   Comment      Comment[]

@@ -2,6 +2,7 @@ import handlebars from "handlebars";
 import { prisma } from "../../../prisma";
 import { createTransportProvider } from "../transport";
 import { metrics } from "../../prometheus-metrics";
+import { randomUUID } from "crypto";
 
 export async function sendTicketConfirmation(ticket: any) {
   const startTime = Date.now();
@@ -15,6 +16,10 @@ export async function sendTicketConfirmation(ticket: any) {
     }
 
     const transport = await createTransportProvider();
+
+    // Generate a unique Message-ID for threading
+    const domain = email.reply?.split("@")[1] || "peppermint.local";
+    const messageId = `<ticket-${ticket.id}-${randomUUID()}@${domain}>`;
 
     // Get custom template or use default
     const customTemplate = await prisma.emailTemplate.findFirst({
@@ -99,6 +104,16 @@ export async function sendTicketConfirmation(ticket: any) {
       subject: `[Ticket #${ticket.id}] Ihre Anfrage wurde erfasst - ${ticket.title}`,
       text: `Hallo ${ticket.name || "Kunde"},\n\nVielen Dank für Ihre Anfrage. Ihr Ticket #${ticket.id} wurde erfolgreich angelegt.\n\nBetreff: ${ticket.title}\n\nSie können den Status hier einsehen: ${ticketUrl}\n\nBei Rückfragen antworten Sie bitte auf diese E-Mail mit ref:${ticket.id} im Betreff.\n\nMit freundlichen Grüßen,\nIhr Support-Team`,
       html: htmlToSend,
+      messageId: messageId,
+      headers: {
+        "X-Ticket-ID": ticket.id,
+      },
+    });
+
+    // Store the Message-ID in the ticket for reply matching
+    await prisma.ticket.update({
+      where: { id: ticket.id },
+      data: { messageId: messageId },
     });
 
     // Track metrics
@@ -106,7 +121,7 @@ export async function sendTicketConfirmation(ticket: any) {
     metrics.incrementEmailsSent("ticket_confirmation");
     metrics.recordSmtpLatency(latency);
 
-    console.log("Ticket confirmation sent: %s", info.messageId);
+    console.log("Ticket confirmation sent: %s with Message-ID: %s", info.messageId, messageId);
     return info;
   } catch (error: any) {
     metrics.incrementEmailsFailed(error.message);
