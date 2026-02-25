@@ -24,7 +24,7 @@ export async function sendTicketConfirmation(ticket: any) {
     // Get custom template or use default
     const customTemplate = await prisma.emailTemplate.findFirst({
       where: {
-        type: "ticket_created",
+        type: "ticket_confirmation",
       },
     });
 

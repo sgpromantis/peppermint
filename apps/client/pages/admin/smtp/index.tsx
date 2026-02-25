@@ -35,8 +35,9 @@ export default function Notifications() {
   const templateLabels: Record<string, string> = {
     ticket_assigned: "Ticket zugewiesen",
     ticket_comment: "Ticket-Kommentar",
-    ticket_created: "Ticket erstellt",
+    ticket_created: "Ticket erstellt (intern)",
     ticket_status_changed: "Ticket-Status geändert",
+    ticket_confirmation: "Ticket-Bestätigung (Kunde)",
   };
 
   async function deleteEmailConfig() {

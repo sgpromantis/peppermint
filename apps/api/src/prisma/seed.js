@@ -226,6 +226,45 @@ async function main() {
           </html>`,
           type: "ticket_status_changed",
         },
+        {
+          html: `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+          <html lang="de">
+            <head>
+              <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+            </head>
+            <body style="background-color:#ffffff;margin:0 auto;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif">
+              <table align="center" role="presentation" cellSpacing="0" cellPadding="0" border="0" width="100%" style="max-width:600px;margin:0 auto">
+                <tr style="width:100%">
+                  <td>
+                    <div style="background-color:#10b981;color:white;padding:20px;text-align:center;border-radius:8px 8px 0 0">
+                      <h1 style="margin:0;font-size:24px">Ticket erstellt</h1>
+                    </div>
+                    <div style="background-color:#f9fafb;padding:20px;border:1px solid #e5e7eb">
+                      <p>Hallo {{name}},</p>
+                      <p>Vielen Dank für Ihre Anfrage. Wir haben Ihr Ticket erfolgreich angelegt und werden uns schnellstmöglich darum kümmern.</p>
+                      <div style="background-color:white;padding:15px;border-radius:8px;margin:15px 0">
+                        <p style="margin:0"><strong>Ticket-Nummer:</strong></p>
+                        <p style="font-size:24px;font-weight:bold;color:#10b981;margin:5px 0">#{{id}}</p>
+                        <p><strong>Betreff:</strong> {{title}}</p>
+                        <p><strong>Erstellt am:</strong> {{createdAt}}</p>
+                      </div>
+                      <p>Sie können den Status Ihres Tickets jederzeit über den folgenden Link einsehen:</p>
+                      <p style="text-align:center">
+                        <a href="{{ticketUrl}}" style="display:inline-block;background-color:#10b981;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;margin:15px 0">Ticket ansehen</a>
+                      </p>
+                      <p>Bei Rückfragen zu diesem Ticket antworten Sie bitte auf diese E-Mail.</p>
+                      <p>Mit freundlichen Grüßen,<br>Ihr Support-Team</p>
+                    </div>
+                    <div style="text-align:center;padding:20px;color:#6b7280;font-size:12px">
+                      <p>Ticket-Referenz: #{{id}}</p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </body>
+          </html>`,
+          type: "ticket_confirmation",
+        },
       ],
     });
   }
