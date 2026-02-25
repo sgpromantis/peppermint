@@ -9,6 +9,7 @@ import { track } from "../lib/hog";
 import { sendAssignedEmail } from "../lib/nodemailer/ticket/assigned";
 import { sendComment } from "../lib/nodemailer/ticket/comment";
 import { sendTicketCreate } from "../lib/nodemailer/ticket/create";
+import { sendTicketConfirmation } from "../lib/nodemailer/ticket/confirmation";
 import { sendTicketStatus } from "../lib/nodemailer/ticket/status";
 import { assignedNotification } from "../lib/notifications/issue/assigned";
 import { commentNotification } from "../lib/notifications/issue/comment";
@@ -87,8 +88,9 @@ export function ticketRoutes(fastify: FastifyInstance) {
         },
       });
 
-      if (!email && !validateEmail(email)) {
+      if (email && validateEmail(email)) {
         await sendTicketCreate(ticket);
+        await sendTicketConfirmation(ticket);
       }
 
       if (engineer && engineer.name !== "Unassigned") {
@@ -98,7 +100,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           },
         });
 
-        await sendAssignedEmail(assgined!.email);
+        await sendAssignedEmail(assgined!.email, ticket.id, ticket.title);
 
         await assignedNotification(engineer, ticket, user);
       }
@@ -208,8 +210,9 @@ export function ticketRoutes(fastify: FastifyInstance) {
         },
       });
 
-      if (!email && !validateEmail(email)) {
+      if (email && validateEmail(email)) {
         await sendTicketCreate(ticket);
+        await sendTicketConfirmation(ticket);
       }
 
       if (engineer && engineer.name !== "Unassigned") {
@@ -219,7 +222,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           },
         });
 
-        await sendAssignedEmail(assgined!.email);
+        await sendAssignedEmail(assgined!.email, ticket.id, ticket.title);
 
         const user = await checkSession(request);
 
@@ -732,6 +735,16 @@ export function ticketRoutes(fastify: FastifyInstance) {
       const { email, title } = ticket;
       if (public_comment && email) {
         sendComment(text, title, ticket.id, email);
+      }
+
+      // Notify assigned engineer about the comment via email
+      if (ticket.userId) {
+        const assignedUser = await prisma.user.findUnique({
+          where: { id: ticket.userId },
+        });
+        if (assignedUser?.email && assignedUser.id !== user!.id) {
+          sendComment(text, title, ticket.id, assignedUser.email);
+        }
       }
 
       await commentNotification(ticket, user);

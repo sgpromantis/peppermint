@@ -93,15 +93,8 @@ export async function sendAssignedEmail(email: any, ticketId?: string, ticketTit
       };
 
       // Add BCC if support mailbox is configured
-      try {
-        const smResult: any[] = await prisma.$queryRawUnsafe(
-          'SELECT "supportMailbox" FROM "Email" LIMIT 1'
-        );
-        if (smResult.length > 0 && smResult[0].supportMailbox) {
-          mailOptions.bcc = smResult[0].supportMailbox;
-        }
-      } catch (e) {
-        // supportMailbox column not available
+      if (provider.supportMailbox) {
+        mailOptions.bcc = provider.supportMailbox;
       }
 
       await mail

@@ -304,6 +304,7 @@ model Email {
   accessToken    String?
   expiresIn      BigInt?
   redirectUri    String?
+  supportMailbox String?
 }
 
 model Config {

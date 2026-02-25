@@ -203,23 +203,11 @@ export function configRoutes(fastify: FastifyInstance) {
             port: true,
             reply: true,
             user: true,
+            supportMailbox: true,
           },
         });
 
-        // Try to get supportMailbox separately (column may not exist yet)
-        let supportMailbox = null;
-        try {
-          const smResult: any[] = await prisma.$queryRawUnsafe(
-            'SELECT "supportMailbox" FROM "Email" LIMIT 1'
-          );
-          if (smResult.length > 0) {
-            supportMailbox = smResult[0].supportMailbox;
-          }
-        } catch (e) {
-          // Column doesn't exist yet, ignore
-        }
-
-        const emailConfig = config ? { ...config, supportMailbox } : null;
+        const emailConfig = config || null;
 
         if (emailConfig && emailConfig?.active) {
           const provider = await createTransportProvider();
@@ -303,6 +291,7 @@ export function configRoutes(fastify: FastifyInstance) {
               clientSecret: clientSecret || undefined,
               serviceType: serviceType || "other",
               redirectUri: redirectUri || undefined,
+              supportMailbox: supportMailbox || undefined,
             },
           });
         } else {
@@ -319,24 +308,9 @@ export function configRoutes(fastify: FastifyInstance) {
               clientSecret: clientSecret || undefined,
               serviceType: serviceType || "other",
               redirectUri: redirectUri || undefined,
+              supportMailbox: supportMailbox || null,
             },
           });
-        }
-
-        // Try to save supportMailbox separately (column may not exist yet)
-        if (supportMailbox !== undefined) {
-          try {
-            const emailRecord = await prisma.email.findFirst();
-            if (emailRecord) {
-              await prisma.$executeRawUnsafe(
-                'UPDATE "Email" SET "supportMailbox" = $1 WHERE "id" = $2',
-                supportMailbox || null,
-                emailRecord.id
-              );
-            }
-          } catch (e) {
-            console.log("supportMailbox column not available, skipping");
-          }
         }
 
         console.log("Email config saved successfully");
