@@ -70,21 +70,6 @@ export default function ShadLayout({ children }: any) {
                     </Link>
                   </Button>
 
-                  {user.isAdmin && (
-                    <Link
-                      href="https://github.com/Peppermint-Lab/peppermint/discussions"
-                      target="_blank"
-                      className="hover:cursor-pointer"
-                    >
-                      <Button
-                        variant="outline"
-                        className="text-foreground hover:cursor-pointer whitespace-nowrap"
-                      >
-                        Feedback senden
-                      </Button>
-                    </Link>
-                  )}
-
                   <AccountDropdown />
                 </div>
               </div>

@@ -118,15 +118,6 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: any) {
     );
   }
 
-  if (router.pathname === "/onboarding") {
-    return (
-      <SessionProvider>
-        <Component {...pageProps} />
-        <Toaster />
-      </SessionProvider>
-    );
-  }
-
   if (router.pathname === "/submit") {
     return (
       <>

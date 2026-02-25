@@ -74,9 +74,9 @@ jobs:
             # Short SHA
             type=sha,prefix=sha-
           labels: |
-            org.opencontainers.image.title=Peppermint
-            org.opencontainers.image.description=Open-source ticket management system
-            org.opencontainers.image.vendor=Peppermint-Lab
+            org.opencontainers.image.title=Helpdesk
+            org.opencontainers.image.description=Self-hosted ticket management system
+            org.opencontainers.image.vendor=Custom
 
       - name: Build and push Docker image
         id: build-push

@@ -27,11 +27,7 @@ export default function Login({}) {
             if (res.user.external_user) {
               router.push("/portal");
             } else {
-              if (res.user.firstLogin) {
-                router.push("/onboarding");
-              } else {
-                router.push("/");
-              }
+              router.push("/");
             }
           } else {
             toast({
@@ -181,15 +177,8 @@ export default function Login({}) {
 
         <div className="mt-8 text-center flex flex-col space-y-2">
           <span className="font-bold text-foreground">
-            Built with 💚 by Peppermint Labs
+            Helpdesk System
           </span>
-          <a
-            href="https://docs.peppermint.sh/"
-            target="_blank"
-            className="text-foreground"
-          >
-            Documentation
-          </a>
         </div>
       </div>
     </div>

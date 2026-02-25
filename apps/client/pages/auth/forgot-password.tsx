@@ -38,13 +38,11 @@ export default function Login({}) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <a target="_blank" href="https://peppermint.sh/">
-          <img
-            className="mx-auto h-36 w-auto"
-            src="/login.svg"
-            alt="peppermint.sh logo"
-          />
-        </a>
+        <img
+          className="mx-auto h-36 w-auto"
+          src="/login.svg"
+          alt="Logo"
+        />
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Request Password Reset
         </h2>
@@ -97,10 +95,7 @@ export default function Login({}) {
         </div>
 
         <div className="mt-8 text-center flex flex-col space-y-2">
-          <span className="font-bold">Built with 💚 by Peppermint Labs</span>
-          <a href="https://docs.peppermint.sh/" target="_blank">
-            Documentation
-          </a>
+          <span className="font-bold">Helpdesk System</span>
         </div>
       </div>
     </div>
