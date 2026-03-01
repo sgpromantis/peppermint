@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "isManager" BOOLEAN NOT NULL DEFAULT false;
+
+-- AlterTable
+ALTER TABLE "Email" ADD COLUMN IF NOT EXISTS "supportMailbox" TEXT;

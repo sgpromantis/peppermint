@@ -1,0 +1,53 @@
+# QUICK FIX COMMANDS - Copy and paste these on your VPS
+
+# ==============================================
+# FOR IMMEDIATE FIX (Copy everything below)
+# ==============================================
+
+# Step 1: Mark the failed migration as rolled back
+docker exec -it peppermint-rental sh -c "cd apps/api && npx prisma migrate resolve --rolled-back 20260301000001_remove_ticket_confirmation"
+
+# Step 2: Pull the new fixed image
+docker pull ghcr.io/sgpromantis/peppermint:latest
+
+# Step 3: Restart the container
+docker restart peppermint-rental
+
+# Step 4: Watch the logs (press Ctrl+C when done)
+docker logs peppermint-rental -f
+
+# ==============================================
+# IF THE ABOVE DOESN'T WORK - Manual Database Fix
+# ==============================================
+
+# Find your PostgreSQL container
+docker ps | grep postgres
+
+# Replace YOUR_POSTGRES_CONTAINER with actual container name
+docker exec -it YOUR_POSTGRES_CONTAINER psql -U peppermint peppermint_rental
+
+# Run in psql prompt:
+# UPDATE "_prisma_migrations" SET finished_at = NULL, rolled_back_at = NOW(), applied_steps_count = 0 WHERE migration_name = '20260301000001_remove_ticket_confirmation';
+# \q
+
+# Then restart
+docker restart peppermint-rental
+docker logs peppermint-rental -f
+
+# ==============================================
+# VERIFY IT WORKED
+# ==============================================
+
+# Check migration status
+docker exec -it peppermint-rental sh -c "cd apps/api && npx prisma migrate status"
+
+# Should show all migrations applied successfully
+
+# ==============================================
+# SAME STEPS FOR peppermint-admin
+# ==============================================
+
+docker exec -it peppermint-admin sh -c "cd apps/api && npx prisma migrate resolve --rolled-back 20260301000001_remove_ticket_confirmation"
+docker pull ghcr.io/sgpromantis/peppermint:latest
+docker restart peppermint-admin
+docker logs peppermint-admin -f

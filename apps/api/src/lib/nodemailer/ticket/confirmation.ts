@@ -24,7 +24,7 @@ export async function sendTicketConfirmation(ticket: any) {
     // Get custom template or use default
     const customTemplate = await prisma.emailTemplate.findFirst({
       where: {
-        type: "ticket_confirmation",
+        type: "ticket_created",
       },
     });
 
@@ -126,7 +126,7 @@ export async function sendTicketConfirmation(ticket: any) {
 
     // Track metrics
     const latency = Date.now() - startTime;
-    metrics.incrementEmailsSent("ticket_confirmation");
+    metrics.incrementEmailsSent("ticket_created");
     metrics.recordSmtpLatency(latency);
 
     console.log("Ticket confirmation sent: %s with Message-ID: %s", info.messageId, messageId);
