@@ -646,4 +646,94 @@ export function configRoutes(fastify: FastifyInstance) {
       });
     }
   );
+
+  // Get ticket portal URL configuration
+  fastify.get(
+    "/api/v1/config/ticket-portal-url",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const session = await checkSession(request);
+
+      if (!session?.isAdmin) {
+        return reply.code(403).send({
+          message: "Unauthorized. Admin access required.",
+          success: false,
+        });
+      }
+
+      const config = await prisma.config.findFirst();
+
+      // Show effective URL (what emails would actually use)
+      const effectiveUrl = config?.ticketPortalUrl
+        || process.env.BASE_URL
+        || process.env.NEXT_PUBLIC_URL
+        || "http://localhost:3000";
+
+      reply.send({
+        success: true,
+        ticketPortalUrl: config?.ticketPortalUrl || "",
+        effectiveUrl,
+      });
+    }
+  );
+
+  // Update ticket portal URL configuration
+  fastify.put(
+    "/api/v1/config/ticket-portal-url",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const session = await checkSession(request);
+
+      if (!session?.isAdmin) {
+        return reply.code(403).send({
+          message: "Unauthorized. Admin access required.",
+          success: false,
+        });
+      }
+
+      const { ticketPortalUrl }: any = request.body;
+
+      // Validate URL format if provided
+      if (ticketPortalUrl && ticketPortalUrl.trim() !== "") {
+        try {
+          new URL(ticketPortalUrl);
+        } catch {
+          return reply.code(400).send({
+            success: false,
+            message: "Ungültige URL. Bitte eine gültige URL eingeben (z.B. https://helpdesk.example.com).",
+          });
+        }
+      }
+
+      let config = await prisma.config.findFirst();
+
+      const urlValue = ticketPortalUrl?.trim() || null;
+
+      if (!config) {
+        config = await prisma.config.create({
+          data: {
+            ticketPortalUrl: urlValue,
+          },
+        });
+      } else {
+        config = await prisma.config.update({
+          where: { id: config.id },
+          data: {
+            ticketPortalUrl: urlValue,
+          },
+        });
+      }
+
+      // Return the effective URL after the change
+      const effectiveUrl = config.ticketPortalUrl
+        || process.env.BASE_URL
+        || process.env.NEXT_PUBLIC_URL
+        || "http://localhost:3000";
+
+      reply.send({
+        success: true,
+        message: "Ticket-Portal-URL wurde aktualisiert!",
+        ticketPortalUrl: config.ticketPortalUrl || "",
+        effectiveUrl,
+      });
+    }
+  );
 }

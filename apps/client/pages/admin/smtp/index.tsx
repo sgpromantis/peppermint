@@ -30,6 +30,9 @@ export default function Notifications() {
   const [config, setConfig] = useState();
   const [error, setError]: any = useState();
   const [templates, setTemplates] = useState([]);
+  const [portalUrl, setPortalUrl] = useState("");
+  const [effectiveUrl, setEffectiveUrl] = useState("");
+  const [portalUrlSaving, setPortalUrlSaving] = useState(false);
 
   // German labels for template types
   const templateLabels: Record<string, string> = {
@@ -110,8 +113,64 @@ export default function Notifications() {
       .then(() => setLoading(false));
   }
 
+  async function fetchPortalUrl() {
+    try {
+      const res = await fetch("/api/v1/config/ticket-portal-url", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("session")}`,
+        },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPortalUrl(data.ticketPortalUrl || "");
+        setEffectiveUrl(data.effectiveUrl || "");
+      }
+    } catch (err) {
+      console.error("Failed to fetch portal URL:", err);
+    }
+  }
+
+  async function savePortalUrl() {
+    setPortalUrlSaving(true);
+    try {
+      const res = await fetch("/api/v1/config/ticket-portal-url", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("session")}`,
+        },
+        body: JSON.stringify({ ticketPortalUrl: portalUrl }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEffectiveUrl(data.effectiveUrl || "");
+        toast({
+          title: "Gespeichert",
+          description: "Ticket-Portal-URL wurde aktualisiert.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Fehler",
+          description: data.message || "Konnte URL nicht speichern.",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: err?.message || "Verbindungsfehler",
+      });
+    } finally {
+      setPortalUrlSaving(false);
+    }
+  }
+
   useEffect(() => {
     fetchEmailConfig();
+    fetchPortalUrl();
   }, []);
 
   return (
@@ -142,6 +201,47 @@ export default function Notifications() {
 
         {!loading ? (
           <div className="px-4 sm:px-6 md:px-0">
+            {/* Ticket Portal URL Setting */}
+            <div className="mb-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ticket-Portal-URL</CardTitle>
+                  <CardDescription>
+                    Die Basis-URL für Links in E-Mail-Benachrichtigungen (z.B. &quot;Ticket ansehen&quot;-Links).
+                    Ohne diese Einstellung zeigen E-Mails auf localhost:3000.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col space-y-3">
+                    <div>
+                      <Label htmlFor="portalUrl">Portal URL</Label>
+                      <div className="mt-1 flex rounded-md shadow-sm gap-2">
+                        <Input
+                          id="portalUrl"
+                          type="url"
+                          placeholder="https://helpdesk.example.com"
+                          value={portalUrl}
+                          onChange={(e) => setPortalUrl(e.target.value)}
+                        />
+                        <Button
+                          onClick={() => savePortalUrl()}
+                          disabled={portalUrlSaving}
+                          size="sm"
+                        >
+                          {portalUrlSaving ? "Speichern..." : "Speichern"}
+                        </Button>
+                      </div>
+                    </div>
+                    {effectiveUrl && (
+                      <p className="text-xs text-muted-foreground">
+                        Aktive URL: <span className="font-mono">{effectiveUrl}</span>
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             <div className="mb-6">
               {enabled ? (
                 <div>

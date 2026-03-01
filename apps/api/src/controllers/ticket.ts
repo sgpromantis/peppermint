@@ -638,7 +638,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           where: { id: id },
         });
 
-        await sendAssignedEmail(email);
+        await sendAssignedEmail(email, ticket!.id, ticket!.title);
         await assignedNotification(assigned, ticket, assigner);
       } else {
         await prisma.ticket.update({
