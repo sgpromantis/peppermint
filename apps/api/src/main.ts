@@ -61,28 +61,38 @@ server.get(
 // JWT authentication hook
 server.addHook("preHandler", async function (request: any, reply: any) {
   try {
+    // Use routeOptions.url (the registered route pattern without query string)
+    // Fallback: strip query string from request.url for safety
+    const routePath = request.routeOptions?.url || request.url.split("?")[0];
+
     // Public endpoints that don't require authentication
-    if (request.url === "/api/v1/auth/login" && request.method === "POST") {
+    if (routePath === "/api/v1/auth/login" && request.method === "POST") {
       return true;
     }
-    if (request.url === "/api/v1/auth/microsoft/check" && request.method === "GET") {
+    if (routePath === "/api/v1/auth/check" && request.method === "GET") {
       return true;
     }
-    if (request.url === "/api/v1/auth/microsoft/callback" && request.method === "GET") {
+    if (routePath === "/api/v1/auth/microsoft/check" && request.method === "GET") {
       return true;
     }
-    if (
-      request.url === "/api/v1/ticket/public/create" &&
-      request.method === "POST"
-    ) {
+    if (routePath === "/api/v1/auth/microsoft/callback" && request.method === "GET") {
+      return true;
+    }
+    if (routePath === "/api/v1/auth/oidc/callback" && request.method === "GET") {
+      return true;
+    }
+    if (routePath === "/api/v1/auth/oauth/callback" && request.method === "GET") {
+      return true;
+    }
+    if (routePath === "/api/v1/ticket/public/create" && request.method === "POST") {
       return true;
     }
     // Prometheus metrics endpoint (auth via METRICS_TOKEN if set)
-    if (request.url === "/metrics" && request.method === "GET") {
+    if (routePath === "/metrics" && request.method === "GET") {
       return true;
     }
     // Health check
-    if (request.url === "/" && request.method === "GET") {
+    if (routePath === "/" && request.method === "GET") {
       return true;
     }
     const bearer = request.headers.authorization!.split(" ")[1];
