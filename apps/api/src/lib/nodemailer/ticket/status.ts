@@ -99,7 +99,7 @@ export async function sendTicketStatus(ticket: any) {
 
   // Build mail options with optional BCC
   const mailOptions: any = {
-    from: email.reply,
+    from: email.user,
     replyTo: imapQueue?.username || email.reply,
     to: ticket.replyTo || ticket.email,
     subject: `[Ticket #${ticket.id}] Status geändert: ${statusTextGerman} - ${ticket.title}`,

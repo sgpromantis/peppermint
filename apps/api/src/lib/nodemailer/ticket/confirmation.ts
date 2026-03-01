@@ -104,7 +104,7 @@ export async function sendTicketConfirmation(ticket: any) {
 
     // Build mail options with optional BCC
     const mailOptions: any = {
-      from: email.reply,
+      from: email.user,
       replyTo: imapQueue?.username || email.reply,
       to: ticket.email,
       subject: `[Ticket #${ticket.id}] Ihre Anfrage wurde erfasst - ${ticket.title}`,

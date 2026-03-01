@@ -91,7 +91,7 @@ export async function sendAssignedEmail(email: any, ticketId?: string, ticketTit
 
       // Build mail options with optional BCC
       const mailOptions: any = {
-        from: provider.reply, 
+        from: provider.user, 
         replyTo: imapQueue?.username || provider.reply,
         to: email, 
         subject: ticketId ? `[Ticket #${ticketId}] Ein neues Ticket wurde Ihnen zugewiesen` : `Ein neues Ticket wurde Ihnen zugewiesen`, 

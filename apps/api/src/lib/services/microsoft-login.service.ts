@@ -125,7 +125,8 @@ export class MicrosoftLoginService {
     }
 
     // Exchange code for tokens
-    const tokenSet = await client.callback(config.redirectUri, { code, state });
+    // openid-client v5 requires checks.state when state is in params
+    const tokenSet = await client.callback(config.redirectUri, { code, state }, { state });
 
     // Get user info from token
     const userInfo = await client.userinfo(tokenSet.access_token);
@@ -140,13 +141,14 @@ export class MicrosoftLoginService {
 
   /**
    * Get user groups from Microsoft Graph for role assignment
+   * Uses /users/{id}/memberOf with app token (client_credentials)
    */
   static async getUserGroups(userAzureId: string): Promise<string[]> {
     try {
       const token = await MicrosoftGraphService.getAccessToken();
       
       const response = await axios.get(
-        `https://graph.microsoft.com/v1.0/me/memberOf/microsoft.graph.group`,
+        `https://graph.microsoft.com/v1.0/users/${userAzureId}/memberOf/microsoft.graph.group`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
