@@ -91,36 +91,62 @@ server.addHook("preHandler", async function (request: any, reply: any) {
 
 const start = async () => {
   try {
+    // Connect to database first to clean up any failed migrations
+    console.log("Connecting to database for cleanup...");
+    
+    try {
+      // Delete any failed migration records that no longer exist in the codebase
+      // This handles the case where migration files were removed but database still has the record
+      const result = await prisma.$executeRawUnsafe(`
+        DELETE FROM "_prisma_migrations" 
+        WHERE migration_name = '20260301000001_remove_ticket_confirmation'
+      `);
+      if (result > 0) {
+        console.log("✓ Cleaned up orphaned migration record");
+      }
+    } catch (cleanupError) {
+      console.log("Note: Cleanup skipped (first startup or already clean)");
+    }
+
     // Pass current environment (including constructed DATABASE_URL) to child processes
     const execOptions = { env: { ...process.env } };
     
-    // Run prisma generate and migrate commands before starting the server
+    // Now run prisma migrations with clean slate
     await new Promise<void>((resolve, reject) => {
       exec("npx prisma migrate deploy", execOptions, (err, stdout, stderr) => {
         if (err) {
-          console.error(err);
+          console.error("Migration failed:", err);
           reject(err);
+          return;
         }
         console.log(stdout);
-        console.error(stderr);
+        if (stderr && !stderr.includes("DeprecationWarning")) {
+          console.error(stderr);
+        }
 
         exec("npx prisma generate", execOptions, (err, stdout, stderr) => {
           if (err) {
             console.error(err);
             reject(err);
+            return;
           }
           console.log(stdout);
-          console.error(stderr);
-        });
+          if (stderr && !stderr.includes("DeprecationWarning")) {
+            console.error(stderr);
+          }
 
-        exec("npx prisma db seed", execOptions, (err, stdout, stderr) => {
-          if (err) {
-            console.error(err);
-            reject(err);
-          }
-          console.log(stdout);
-          console.error(stderr);
-          resolve();
+          exec("npx prisma db seed", execOptions, (err, stdout, stderr) => {
+            if (err) {
+              console.error(err);
+              reject(err);
+              return;
+            }
+            console.log(stdout);
+            if (stderr && !stderr.includes("DeprecationWarning")) {
+              console.error(stderr);
+            }
+            resolve();
+          });
         });
       });
     });
