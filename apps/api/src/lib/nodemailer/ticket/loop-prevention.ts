@@ -1,7 +1,16 @@
 import { prisma } from "../../../prisma";
 
 /**
- * Loop prevention: Check if an email address belongs to a system-monitored mailbox.
+ * Hardcoded list of prohibited addresses.
+ * Emails to these addresses are ALWAYS blocked, regardless of any configuration.
+ */
+const PROHIBITED_ADDRESSES: string[] = [
+  "pool@ticket.promantis.de",
+];
+
+/**
+ * Loop prevention: Check if an email address belongs to a system-monitored mailbox
+ * or is on the hardcoded prohibited list.
  * 
  * Prevents sending outgoing emails (confirmations, notifications) to addresses
  * that are monitored by the IMAP service or used as the SMTP sender.
@@ -9,6 +18,7 @@ import { prisma } from "../../../prisma";
  *   IMAP receives → creates ticket → sends confirmation → IMAP receives → ...
  * 
  * Checks against:
+ * 0. Hardcoded prohibited addresses (ALWAYS blocked)
  * 1. All IMAP queue addresses (emailQueue.username)
  * 2. The SMTP sender address (email.user)
  * 3. The SMTP reply address (email.reply)
@@ -17,6 +27,12 @@ export async function isSystemAddress(emailAddress: string): Promise<boolean> {
   if (!emailAddress) return false;
 
   const addr = emailAddress.toLowerCase().trim();
+
+  // Check hardcoded prohibited addresses first
+  if (PROHIBITED_ADDRESSES.includes(addr)) {
+    console.warn(`[Loop Prevention] Blocked send to PROHIBITED address: ${addr}`);
+    return true;
+  }
 
   // Check IMAP queue addresses
   const queues = await prisma.emailQueue.findMany({
