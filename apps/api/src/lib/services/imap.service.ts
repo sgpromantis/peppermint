@@ -7,6 +7,7 @@ import { AuthService } from "./auth.service";
 import { metrics } from "../prometheus-metrics";
 import { sendTicketConfirmation } from "../nodemailer/ticket/confirmation";
 import { sendTicketCreate } from "../nodemailer/ticket/create";
+import { PROHIBITED_ADDRESSES } from "../nodemailer/ticket/loop-prevention";
 import { getNextTicketNumber } from "../ticket-number";
 
 function getReplyText(email: any): string {
@@ -315,7 +316,7 @@ export class ImapService {
     
     // Also collect SMTP sender/reply addresses as system addresses
     const smtpConfig = await prisma.email.findFirst({ select: { user: true, reply: true } });
-    const systemAddresses = [...imapAddresses];
+    const systemAddresses = [...imapAddresses, ...PROHIBITED_ADDRESSES.map(a => a.toLowerCase())];
     if (smtpConfig?.user) systemAddresses.push(smtpConfig.user.toLowerCase());
     if (smtpConfig?.reply) systemAddresses.push(smtpConfig.reply.toLowerCase());
     

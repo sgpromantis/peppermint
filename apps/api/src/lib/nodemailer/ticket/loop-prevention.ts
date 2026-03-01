@@ -4,7 +4,7 @@ import { prisma } from "../../../prisma";
  * Hardcoded list of prohibited addresses.
  * Emails to these addresses are ALWAYS blocked, regardless of any configuration.
  */
-const PROHIBITED_ADDRESSES: string[] = [
+export const PROHIBITED_ADDRESSES: string[] = [
   "pool@ticket.promantis.de",
 ];
 
