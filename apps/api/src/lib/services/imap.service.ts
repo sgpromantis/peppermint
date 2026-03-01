@@ -249,7 +249,19 @@ export class ImapService {
       }
     }
 
-    // 3. Return-Path / envelope-from (often the real sender when forwarded)
+    // 3. Sender header (RFC 5322 — set when someone sends on behalf of a shared mailbox)
+    const senderHeader = headers.get("sender");
+    if (senderHeader) {
+      const match = String(senderHeader).match(/<([^>]+)>/) ||
+                    String(senderHeader).match(/([^\s<]+@[^\s>]+)/);
+      if (match && imapAddress && match[1].toLowerCase() !== imapAddress.toLowerCase()) {
+        const senderName = String(senderHeader).match(/^([^<]+)\s*</);
+        console.log(`Found original sender via Sender header: ${match[1]}`);
+        return { email: match[1].toLowerCase(), name: senderName?.[1]?.trim() || match[1] };
+      }
+    }
+
+    // 4. Return-Path / envelope-from (often the real sender when forwarded)
     const returnPath = headers.get("return-path");
     if (returnPath) {
       const rpAddr = String(returnPath).match(/<([^>]+)>/)?.[1] || 
@@ -260,13 +272,13 @@ export class ImapService {
       }
     }
 
-    // 4. Delivered-To might reveal the chain
+    // 5. Delivered-To might reveal the chain
     const deliveredTo = headers.get("delivered-to");
     if (deliveredTo) {
       // This is usually the recipient, not the sender - skip
     }
 
-    // 5. If Reply-To differs from IMAP address, use it as fallback sender
+    // 6. If Reply-To differs from IMAP address, use it as fallback sender
     const replyTo = parsed.replyTo?.value?.[0]?.address;
     if (replyTo && imapAddress && replyTo.toLowerCase() !== imapAddress.toLowerCase()) {
       console.log(`Using Reply-To as original sender: ${replyTo}`);
@@ -317,7 +329,26 @@ export class ImapService {
       } else if (originalSender) {
         console.warn(`Resolved sender ${originalSender.email} is also a system address — keeping ${senderEmail}`);
       } else {
-        console.warn(`Could not resolve original sender — keeping system address ${senderEmail}`);
+        console.warn(`Could not resolve original sender via headers — attempting name-based user lookup`);
+        // Last resort: try to find a user by the display name from the From header.
+        // If the email was sent as "Sebastian Gorr <pool@ticket.promantis.de>",
+        // the display name might match a real user in the database.
+        if (senderName && senderName !== senderEmail) {
+          const userByName = await prisma.user.findFirst({
+            where: {
+              name: { equals: senderName, mode: "insensitive" },
+              email: { not: { in: systemAddresses } },
+            },
+            select: { email: true, name: true },
+          });
+          if (userByName) {
+            console.log(`Resolved original sender via name lookup: ${userByName.email} (name: "${senderName}")`);
+            senderEmail = userByName.email.toLowerCase();
+            senderName = userByName.name || senderName;
+          } else {
+            console.warn(`Name-based lookup for "${senderName}" found no non-system user — keeping ${senderEmail}`);
+          }
+        }
       }
     }
 
@@ -411,10 +442,30 @@ export class ImapService {
     });
 
     // Also try matching by Reply-To if direct match failed
-    const matchedUser = existingUser || (emailReplyTo ? await prisma.user.findUnique({
+    let matchedUser = existingUser || (emailReplyTo ? await prisma.user.findUnique({
       where: { email: emailReplyTo.toLowerCase() },
       include: { client: true },
     }) : null);
+
+    // If still no match and senderName differs from senderEmail, try name-based lookup
+    if (!matchedUser && senderName && senderName !== senderEmail) {
+      matchedUser = await prisma.user.findFirst({
+        where: { name: { equals: senderName, mode: "insensitive" } },
+        include: { client: true },
+      });
+      if (matchedUser) {
+        console.log(`Matched user "${matchedUser.name}" (${matchedUser.email}) via name lookup`);
+      }
+    }
+
+    // CRITICAL: If senderEmail is still a system/prohibited address but we found a real user
+    // with a different email, override senderEmail so the ticket gets the correct address
+    // and confirmation emails are sent to the right person.
+    if (matchedUser && matchedUser.email.toLowerCase() !== senderEmail.toLowerCase()
+        && systemAddresses.includes(senderEmail.toLowerCase())) {
+      console.log(`Overriding senderEmail from system address ${senderEmail} → ${matchedUser.email} (matched user)`);
+      senderEmail = matchedUser.email.toLowerCase();
+    }
 
     // Determine display name: use matched user's name, or fall back to sender name
     const displayName = matchedUser?.name || senderName;
