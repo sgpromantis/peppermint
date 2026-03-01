@@ -451,4 +451,76 @@ export function configRoutes(fastify: FastifyInstance) {
       });
     }
   );
+
+  // Get Microsoft Graph configuration
+  fastify.get(
+    "/api/v1/config/microsoft-graph",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const session = await checkSession(request);
+
+      if (!session?.isAdmin) {
+        return reply.code(403).send({
+          message: "Unauthorized. Admin access required.",
+          success: false,
+        });
+      }
+
+      const config = await prisma.config.findFirst();
+
+      reply.send({
+        success: true,
+        clientId: config?.ms_graph_client_id || "",
+        clientSecret: config?.ms_graph_client_secret || "",
+        tenantId: config?.ms_graph_tenant_id || "",
+      });
+    }
+  );
+
+  // Update Microsoft Graph configuration
+  fastify.put(
+    "/api/v1/config/microsoft-graph",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const session = await checkSession(request);
+
+      if (!session?.isAdmin) {
+        return reply.code(403).send({
+          message: "Unauthorized. Admin access required.",
+          success: false,
+        });
+      }
+
+      const { clientId, clientSecret, tenantId }: any = request.body;
+
+      let config = await prisma.config.findFirst();
+
+      if (!config) {
+        // Create if doesn't exist
+        config = await prisma.config.create({
+          data: {
+            ms_graph_client_id: clientId,
+            ms_graph_client_secret: clientSecret,
+            ms_graph_tenant_id: tenantId,
+          },
+        });
+      } else {
+        // Update existing
+        config = await prisma.config.update({
+          where: { id: config.id },
+          data: {
+            ms_graph_client_id: clientId,
+            ms_graph_client_secret: clientSecret,
+            ms_graph_tenant_id: tenantId,
+          },
+        });
+      }
+
+      reply.send({
+        success: true,
+        message: "Microsoft Graph configuration updated!",
+        clientId: config.ms_graph_client_id,
+        clientSecret: config.ms_graph_client_secret,
+        tenantId: config.ms_graph_tenant_id,
+      });
+    }
+  );
 }

@@ -14,8 +14,10 @@ import {
   SelectValue,
 } from "@/shadcn/ui/select";
 import { getCookie } from "cookies-next";
-import { Cloud, RefreshCw, Users, Shield, UserCog, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Cloud, RefreshCw, Users, Shield, UserCog, AlertCircle, CheckCircle2, Copy, Eye, EyeOff, Key } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "@/shadcn/hooks/use-toast";
+import { Input } from "@/shadcn/ui/input";
 
 interface M365Group {
   id: string;
@@ -54,6 +56,15 @@ export default function MicrosoftSync() {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Credentials state
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [tenantId, setTenantId] = useState("");
+  const [showSecret, setShowSecret] = useState(false);
+  const [credentialsLoading, setCredentialsLoading] = useState(false);
+  const [credentialsSaving, setCredentialsSaving] = useState(false);
+  const [credentialsConfigured, setCredentialsConfigured] = useState(false);
 
   const [mapping, setMapping] = useState<GroupMapping>({});
   const [preview, setPreview] = useState<SyncPreview | null>(null);
@@ -96,6 +107,93 @@ export default function MicrosoftSync() {
     } catch (err) {
       console.error("Error fetching mapping:", err);
     }
+  }
+
+  // Fetch Microsoft Graph credentials
+  async function fetchCredentials() {
+    setCredentialsLoading(true);
+    try {
+      const res = await fetch("/api/v1/config/microsoft-graph", {
+        headers: {
+          Authorization: `Bearer ${getCookie("session")}`,
+        },
+      });
+      const data = await res.json();
+      if (data.success && data.config) {
+        setClientId(data.config.clientId || "");
+        setTenantId(data.config.tenantId || "");
+        setClientSecret(data.config.clientSecret || "");
+        setCredentialsConfigured(
+          !!(data.config.clientId && data.config.tenantId && data.config.clientSecret)
+        );
+      }
+    } catch (err) {
+      console.error("Error fetching credentials:", err);
+    }
+    setCredentialsLoading(false);
+  }
+
+  // Save Microsoft Graph credentials
+  async function saveCredentials() {
+    if (!clientId.trim() || !tenantId.trim() || !clientSecret.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Validierungsfehler",
+        description: "Bitte füllen Sie alle erforderlichen Felder aus.",
+      });
+      return;
+    }
+
+    setCredentialsSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch("/api/v1/config/microsoft-graph", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("session")}`,
+        },
+        body: JSON.stringify({
+          clientId: clientId.trim(),
+          clientSecret: clientSecret.trim(),
+          tenantId: tenantId.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCredentialsConfigured(true);
+        setSuccess("Microsoft Graph Anmeldedaten gespeichert");
+        toast({
+          title: "Erfolgreich gespeichert",
+          description: "Die Microsoft Graph Anmeldedaten wurden aktualisiert.",
+        });
+      } else {
+        setError(data.message || "Fehler beim Speichern");
+        toast({
+          variant: "destructive",
+          title: "Fehler",
+          description: data.message || "Fehler beim Speichern der Anmeldedaten",
+        });
+      }
+    } catch (err: any) {
+      setError("Fehler: " + err.message);
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: err.message,
+      });
+    }
+    setCredentialsSaving(false);
+  }
+
+  // Copy to clipboard
+  function copyToClipboard(text: string, label: string) {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Kopiert",
+      description: `${label} wurde in die Zwischenablage kopiert.`,
+    });
   }
 
   // Save mapping
@@ -197,6 +295,7 @@ export default function MicrosoftSync() {
   useEffect(() => {
     fetchGroups();
     fetchMapping();
+    fetchCredentials();
   }, []);
 
   return (
@@ -234,6 +333,156 @@ export default function MicrosoftSync() {
           )}
 
           <div className="mt-8 px-4 sm:px-6 md:px-0 space-y-6">
+            {/* Credentials Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Key className="h-5 w-5" />
+                  Microsoft Graph API Anmeldedaten
+                </CardTitle>
+                <CardDescription>
+                  Konfigurieren Sie Ihre Microsoft Graph API Anmeldedaten für die Integration mit Microsoft 365.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {credentialsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <span className="ml-2 text-muted-foreground">Lade Konfiguration...</span>
+                  </div>
+                ) : (
+                  <>
+                    {credentialsConfigured && (
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 flex items-center gap-2 text-green-700 dark:text-green-400 text-sm">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Microsoft Graph API ist konfiguriert
+                      </div>
+                    )}
+
+                    {/* Client ID */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Client ID
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={clientId}
+                          onChange={(e) => setClientId(e.target.value)}
+                          placeholder="z.B. 12345678-1234-1234-1234-123456789012"
+                          className="flex-1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyToClipboard(clientId, "Client ID")}
+                          disabled={!clientId}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Tenant ID */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Tenant ID (Verzeichnis-ID)
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          value={tenantId}
+                          onChange={(e) => setTenantId(e.target.value)}
+                          placeholder="z.B. 12345678-1234-1234-1234-123456789012"
+                          className="flex-1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyToClipboard(tenantId, "Tenant ID")}
+                          disabled={!tenantId}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Client Secret */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Client Secret
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          type={showSecret ? "text" : "password"}
+                          value={clientSecret}
+                          onChange={(e) => setClientSecret(e.target.value)}
+                          placeholder="Ihr Client Geheimnis"
+                          className="flex-1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setShowSecret(!showSecret)}
+                        >
+                          {showSecret ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyToClipboard(clientSecret, "Client Secret")}
+                          disabled={!clientSecret}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Help Section */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm space-y-2">
+                      <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                        Wie Man die Anmeldedaten Erhält
+                      </h4>
+                      <ol className="space-y-1 text-blue-800 dark:text-blue-200 list-decimal list-inside">
+                        <li>Gehen Sie zu <a href="https://portal.azure.com" target="_blank" rel="noopener noreferrer" className="font-medium underline">Azure Portal</a></li>
+                        <li>Navigieren Sie zu "App-Registrierungen"</li>
+                        <li>Erstellen Sie eine neue Anwendung oder wählen Sie eine bestehende aus</li>
+                        <li>Kopieren Sie die "Anwendungs-ID" (Client ID)</li>
+                        <li>Gehen Sie zu "Zertifikate & Geheimnisse" und erstellen Sie einen neuen Client-Geheimnis</li>
+                        <li>Kopieren Sie das Geheimnis (Wert)</li>
+                        <li>Notieren Sie Ihre "Verzeichnis-ID" (Tenant ID)</li>
+                      </ol>
+                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-3">
+                        <strong>API-Berechtigungen:</strong> Stellen Sie sicher, dass Ihre App die Berechtigungen "Group.Read.All" und "User.Read.All" hat.
+                      </p>
+                    </div>
+
+                    {/* Save Button */}
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        onClick={saveCredentials}
+                        disabled={credentialsSaving}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {credentialsSaving ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Speichern...
+                          </>
+                        ) : (
+                          "Anmeldedaten speichern"
+                        )}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Group Mapping Card */}
             <Card>
               <CardHeader>
@@ -522,22 +771,25 @@ export default function MicrosoftSync() {
             {/* Help Card */}
             <Card>
               <CardHeader>
-                <CardTitle>Konfiguration</CardTitle>
+                <CardTitle>Über diese Seite</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
+              <CardContent className="text-sm text-muted-foreground space-y-3">
                 <p>
-                  <strong>Voraussetzungen:</strong> Microsoft Graph API muss konfiguriert sein.
+                  <strong className="text-foreground">Schritt 1: Anmeldedaten eingeben</strong><br />
+                  Geben Sie Ihre Microsoft Graph API Anmeldedaten ein und speichern Sie diese. Die Anmeldedaten werden verschlüsselt in der Datenbank gespeichert.
                 </p>
-                <p>Setzen Sie folgende Umgebungsvariablen:</p>
-                <ul className="list-disc list-inside ml-4 space-y-1">
-                  <li><code className="bg-muted px-1 rounded">MS_GRAPH_CLIENT_ID</code> - Azure App Client ID</li>
-                  <li><code className="bg-muted px-1 rounded">MS_GRAPH_CLIENT_SECRET</code> - Azure App Client Secret</li>
-                  <li><code className="bg-muted px-1 rounded">MS_GRAPH_TENANT_ID</code> - Azure Tenant ID</li>
-                </ul>
-                <p className="mt-4">
-                  <strong>Azure App Berechtigungen:</strong>
+                <p>
+                  <strong className="text-foreground">Schritt 2: Gruppen-Rollen-Zuordnung</strong><br />
+                  Wählen Sie Microsoft 365 Gruppen aus und ordnen Sie diese Benutzerrollen (Benutzer, Manager, Admins) zu.
                 </p>
-                <ul className="list-disc list-inside ml-4 space-y-1">
+                <p>
+                  <strong className="text-foreground">Schritt 3: Synchronisierung</strong><br />
+                  Führen Sie die Synchronisierung aus, um Benutzer aus Microsoft 365 Gruppen zu importieren und automatisch Rollen zuzuweisen.
+                </p>
+                <p className="mt-4 pt-4 border-t">
+                  <strong className="text-foreground">API-Berechtigungen erforderlich:</strong>
+                </p>
+                <ul className="list-disc list-inside ml-2 space-y-1">
                   <li>Group.Read.All (Application)</li>
                   <li>User.Read.All (Application)</li>
                 </ul>
