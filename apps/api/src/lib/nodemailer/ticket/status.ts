@@ -2,6 +2,8 @@ import handlebars from "handlebars";
 import { prisma } from "../../../prisma";
 import { createTransportProvider } from "../transport";
 import { randomUUID } from "crypto";
+import { metrics } from "../../prometheus-metrics";
+import { InstanceConfigService } from "../../services/instance-config.service";
 
 export async function sendTicketStatus(ticket: any) {
   const email = await prisma.email.findFirst();
@@ -13,9 +15,9 @@ export async function sendTicketStatus(ticket: any) {
 
   const transport = await createTransportProvider();
 
-  // Build ticket URL
-  const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-  const ticketUrl = `${baseUrl}/portal/ticket/${ticket.id}`;
+  // Build ticket URL from instance config (database-first) or environment variables
+  const baseUrl = await InstanceConfigService.getTicketPortalUrl();
+  const ticketUrl = `${baseUrl}/ticket/${ticket.id}`;
   const statusText = ticket.isComplete ? "ABGESCHLOSSEN" : "OFFEN";
   const statusTextGerman = ticket.isComplete ? "Abgeschlossen" : "Offen";
   const statusColor = ticket.isComplete ? "#10b981" : "#f59e0b";

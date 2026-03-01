@@ -2,6 +2,7 @@ import axios from "axios";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { prisma } from "../../prisma";
+import { InstanceConfigService } from "./instance-config.service";
 
 interface MicrosoftGraphConfig {
   clientId: string;
@@ -39,9 +40,16 @@ export class MicrosoftGraphService {
 
   /**
    * Get Microsoft Graph configuration from database
+   * Priority: Instance Config > OAuth Provider > Environment Variables
    */
   static async getConfig(): Promise<MicrosoftGraphConfig | null> {
-    // Try to get from OAuth provider configured for Microsoft
+    // 1. Try instance-specific config first (database-first approach)
+    const instanceConfig = await InstanceConfigService.getMicrosoftGraphConfig();
+    if (instanceConfig) {
+      return instanceConfig;
+    }
+
+    // 2. Try to get from OAuth provider configured for Microsoft (legacy support)
     const oauthProvider = await prisma.oAuthProvider.findFirst({
       where: {
         name: { contains: "microsoft", mode: "insensitive" },
@@ -62,19 +70,7 @@ export class MicrosoftGraphService {
       };
     }
 
-    // Try environment variables as fallback
-    if (
-      process.env.MS_GRAPH_CLIENT_ID &&
-      process.env.MS_GRAPH_CLIENT_SECRET &&
-      process.env.MS_GRAPH_TENANT_ID
-    ) {
-      return {
-        clientId: process.env.MS_GRAPH_CLIENT_ID,
-        clientSecret: process.env.MS_GRAPH_CLIENT_SECRET,
-        tenantId: process.env.MS_GRAPH_TENANT_ID,
-      };
-    }
-
+    // 3. Config not found
     return null;
   }
 

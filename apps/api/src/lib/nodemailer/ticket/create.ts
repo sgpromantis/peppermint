@@ -2,6 +2,8 @@ import handlebars from "handlebars";
 import { prisma } from "../../../prisma";
 import { createTransportProvider } from "../transport";
 import { randomUUID } from "crypto";
+import { metrics } from "../../prometheus-metrics";
+import { InstanceConfigService } from "../../services/instance-config.service";
 
 export async function sendTicketCreate(ticket: any) {
   try {
@@ -10,9 +12,9 @@ export async function sendTicketCreate(ticket: any) {
     if (email) {
       const transport = await createTransportProvider();
 
-      // Build ticket URL
-      const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-      const ticketUrl = `${baseUrl}/portal/ticket/${ticket.id}`;
+      // Build ticket URL from instance config (database-first) or environment variables
+      const baseUrl = await InstanceConfigService.getTicketPortalUrl();
+      const ticketUrl = `${baseUrl}/ticket/${ticket.id}`;
 
       // Generate a unique Message-ID for threading
       const domain = email.reply?.split("@")[1] || "helpdesk.local";

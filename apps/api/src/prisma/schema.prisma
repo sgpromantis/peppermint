@@ -322,6 +322,14 @@ model Config {
 
   encryption_key   Bytes?
   first_time_setup Boolean @default(true)
+
+  // Instance-specific configuration for multi-instance deployments
+  ticketPortalUrl  String? // e.g., "https://rental.example.com/portal" - overrides BASE_URL env var
+  
+  // Microsoft Graph configuration (instance-specific, overrides env vars)
+  ms_graph_client_id     String?
+  ms_graph_client_secret String?
+  ms_graph_tenant_id     String?
 }
 
 model Uptime {

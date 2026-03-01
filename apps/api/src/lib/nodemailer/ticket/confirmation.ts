@@ -3,6 +3,7 @@ import { prisma } from "../../../prisma";
 import { createTransportProvider } from "../transport";
 import { metrics } from "../../prometheus-metrics";
 import { randomUUID } from "crypto";
+import { InstanceConfigService } from "../../services/instance-config.service";
 
 export async function sendTicketConfirmation(ticket: any) {
   const startTime = Date.now();
@@ -28,9 +29,9 @@ export async function sendTicketConfirmation(ticket: any) {
       },
     });
 
-    // Get base URL from environment or default
-    const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-    const ticketUrl = `${baseUrl}/portal/ticket/${ticket.id}`;
+    // Get base URL from instance config (database-first) or environment variables
+    const baseUrl = await InstanceConfigService.getTicketPortalUrl();
+    const ticketUrl = `${baseUrl}/ticket/${ticket.id}`;
 
     let htmlToSend: string;
 
