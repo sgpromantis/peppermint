@@ -167,9 +167,11 @@ export function ticketRoutes(fastify: FastifyInstance) {
       }: any = request.body;
 
       // Security: Validate email exists as a user in the system
+      let existingUser: any = null;
       if (email) {
-        const existingUser = await prisma.user.findUnique({
+        existingUser = await prisma.user.findUnique({
           where: { email: email.toLowerCase() },
+          include: { client: true },
         });
 
         if (!existingUser) {
@@ -180,12 +182,33 @@ export function ticketRoutes(fastify: FastifyInstance) {
         }
       }
 
+      // Auto-detect client: use provided company, or user's linked client, or match by email domain
+      let resolvedClientConnect: any = undefined;
+      if (company !== undefined) {
+        resolvedClientConnect = { connect: { id: company.id || company } };
+      } else if (existingUser?.clientId) {
+        resolvedClientConnect = { connect: { id: existingUser.clientId } };
+      } else if (email) {
+        const domain = email.split("@")[1]?.toLowerCase();
+        if (domain) {
+          const clientByDomain = await prisma.client.findFirst({
+            where: { domains: { has: domain } },
+          });
+          if (clientByDomain) {
+            resolvedClientConnect = { connect: { id: clientByDomain.id } };
+          }
+        }
+      }
+
+      // Use existing user's display name if available and no name was provided
+      const resolvedName = name || existingUser?.name || email;
+
       const nextNumber = await getNextTicketNumber();
 
       const ticket: any = await prisma.ticket.create({
         data: {
           Number: nextNumber,
-          name,
+          name: resolvedName,
           title,
           detail: JSON.stringify(detail),
           priority: priority ? priority : "low",
@@ -200,12 +223,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
                 email: createdBy.email,
               }
             : undefined,
-          client:
-            company !== undefined
-              ? {
-                  connect: { id: company.id || company },
-                }
-              : undefined,
+          client: resolvedClientConnect,
           fromImap: false,
           assignedTo:
             engineer && engineer.name !== "Unassigned"

@@ -31,7 +31,7 @@ export async function sendComment(
 
     // Build ticket URL from instance config (database-first) or environment variables
     const baseUrl = await InstanceConfigService.getTicketPortalUrl();
-    const ticketUrl = `${baseUrl}/ticket/${id}`;
+    const ticketUrl = `${baseUrl}/issue/${id}`;
 
     const testhtml = await prisma.emailTemplate.findFirst({
       where: {

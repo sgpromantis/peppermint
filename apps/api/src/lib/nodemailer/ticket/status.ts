@@ -20,7 +20,7 @@ export async function sendTicketStatus(ticket: any) {
 
   // Build ticket URL from instance config (database-first) or environment variables
   const baseUrl = await InstanceConfigService.getTicketPortalUrl();
-  const ticketUrl = `${baseUrl}/ticket/${ticket.id}`;
+  const ticketUrl = `${baseUrl}/issue/${ticket.id}`;
   const statusText = ticket.isComplete ? "ABGESCHLOSSEN" : "OFFEN";
   const statusTextGerman = ticket.isComplete ? "Abgeschlossen" : "Offen";
   const statusColor = ticket.isComplete ? "#10b981" : "#f59e0b";

@@ -109,6 +109,8 @@ model User {
   notifications notifications[]
   TicketFile    TicketFile[]
   roles         Role[]
+  client        Client?         @relation(fields: [clientId], references: [id])
+  clientId      String?
 }
 
 model Team {
@@ -202,9 +204,11 @@ model Client {
   contactName  String
   number       String?
   notes        String?
+  domains      String[]       @default([])
   tickets      Ticket[]
   active       Boolean        @default(true)
   TimeTracking TimeTracking[]
+  users        User[]
 }
 
 model UserFile {

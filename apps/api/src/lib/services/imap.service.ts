@@ -280,18 +280,46 @@ export class ImapService {
       },
     });
 
+    // Look up user by email address for display name and client linking
+    const existingUser = await prisma.user.findUnique({
+      where: { email: senderEmail.toLowerCase() },
+      include: { client: true },
+    });
+
+    // Determine display name: use existing user's name, or fall back to sender name
+    const displayName = existingUser?.name || senderName;
+
+    // Auto-detect client: first try user's linked client, then match by email domain
+    let detectedClientId: string | undefined = existingUser?.clientId || undefined;
+
+    if (!detectedClientId) {
+      const domain = senderEmail.split("@")[1]?.toLowerCase();
+      if (domain) {
+        const clientByDomain = await prisma.client.findFirst({
+          where: { domains: { has: domain } },
+        });
+        if (clientByDomain) {
+          detectedClientId = clientByDomain.id;
+          console.log(`Auto-linked client "${clientByDomain.name}" via domain "${domain}"`);
+        }
+      }
+    } else {
+      console.log(`Auto-linked client "${existingUser?.client?.name}" via user "${existingUser?.email}"`);
+    }
+
     const nextNumber = await getNextTicketNumber();
 
     const ticket = await prisma.ticket.create({
       data: {
         Number: nextNumber,
         email: senderEmail,
-        name: senderName,
+        name: displayName,
         title: imapEmail.subject || "-",
         isComplete: false,
         priority: "low",
         fromImap: true,
         detail: html || textAsHtml,
+        clientId: detectedClientId || undefined,
       },
     });
 

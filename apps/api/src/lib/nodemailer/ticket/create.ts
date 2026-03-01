@@ -17,7 +17,7 @@ export async function sendTicketCreate(ticket: any) {
 
       // Build ticket URL from instance config (database-first) or environment variables
       const baseUrl = await InstanceConfigService.getTicketPortalUrl();
-      const ticketUrl = `${baseUrl}/ticket/${ticket.id}`;
+      const ticketUrl = `${baseUrl}/issue/${ticket.id}`;
 
       // Generate a unique Message-ID for threading
       const domain = email.reply?.split("@")[1] || "helpdesk.local";

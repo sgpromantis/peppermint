@@ -31,6 +31,8 @@ export async function sendAssignedEmail(email: any, ticketId?: string, ticketTit
       if (testhtml?.html) {
         var template = handlebars.compile(testhtml.html);
         var replacements = {
+          id: ticketId,
+          title: ticketTitle,
           ticketId: ticketId,
           ticketTitle: ticketTitle,
           ticketUrl: ticketUrl,

@@ -34,7 +34,7 @@ export async function sendTicketConfirmation(ticket: any) {
 
     // Get base URL from instance config (database-first) or environment variables
     const baseUrl = await InstanceConfigService.getTicketPortalUrl();
-    const ticketUrl = `${baseUrl}/ticket/${ticket.id}`;
+    const ticketUrl = `${baseUrl}/issue/${ticket.id}`;
 
     let htmlToSend: string;
 
