@@ -60,6 +60,29 @@ export function microsoftGraphRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // Search Microsoft 365 groups by name or mail
+  fastify.get(
+    "/api/v1/admin/microsoft-graph/groups/search",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await checkSession(request);
+      if (!user?.isAdmin) {
+        return reply.status(403).send({ error: "Admin access required" });
+      }
+
+      const { q } = request.query as { q?: string };
+      if (!q || q.trim().length < 1) {
+        return reply.send({ success: true, groups: [] });
+      }
+
+      try {
+        const groups = await MicrosoftGraphService.searchGroups(q.trim());
+        reply.send({ success: true, groups });
+      } catch (error: any) {
+        reply.status(500).send({ success: false, error: error.message });
+      }
+    }
+  );
+
   // Get members of a specific group
   fastify.get(
     "/api/v1/admin/microsoft-graph/groups/:groupId/members",

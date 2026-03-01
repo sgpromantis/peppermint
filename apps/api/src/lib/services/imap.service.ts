@@ -197,6 +197,12 @@ export class ImapService {
     const senderEmail = from?.value?.[0]?.address;
     const senderName = from?.value?.[0]?.name || senderEmail;
 
+    // Extract Reply-To header from the incoming email (if present)
+    const emailReplyTo = parsed.replyTo?.value?.[0]?.address || undefined;
+    if (emailReplyTo && emailReplyTo !== senderEmail) {
+      console.log(`Email has Reply-To header: ${emailReplyTo} (From: ${senderEmail})`);
+    }
+
     if (!senderEmail) {
       console.error("No sender email found, skipping");
       return;
@@ -233,10 +239,13 @@ export class ImapService {
         return;
       }
 
-      // Fallback: Try to find an open ticket from the same sender
+      // Fallback: Try to find an open ticket from the same sender (match on email or replyTo)
       const recentTicket = await prisma.ticket.findFirst({
         where: {
-          email: senderEmail,
+          OR: [
+            { email: senderEmail },
+            { replyTo: senderEmail },
+          ],
           isComplete: false,
         },
         orderBy: {
@@ -313,6 +322,7 @@ export class ImapService {
       data: {
         Number: nextNumber,
         email: senderEmail,
+        replyTo: emailReplyTo || undefined,
         name: displayName,
         title: imapEmail.subject || "-",
         isComplete: false,

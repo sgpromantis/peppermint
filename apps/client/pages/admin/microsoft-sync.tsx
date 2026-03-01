@@ -7,17 +7,24 @@ import {
   CardTitle,
 } from "@/shadcn/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shadcn/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/shadcn/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/shadcn/ui/popover";
 import { getCookie } from "cookies-next";
-import { Cloud, RefreshCw, Users, Shield, UserCog, AlertCircle, CheckCircle2, Copy, Eye, EyeOff, Key } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Cloud, RefreshCw, Users, Shield, UserCog, AlertCircle, CheckCircle2, Copy, Eye, EyeOff, Key, ChevronsUpDown, Check } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { toast } from "@/shadcn/hooks/use-toast";
 import { Input } from "@/shadcn/ui/input";
+import { cn } from "@/shadcn/lib/utils";
 
 interface M365Group {
   id: string;
@@ -69,6 +76,41 @@ export default function MicrosoftSync() {
   const [mapping, setMapping] = useState<GroupMapping>({});
   const [preview, setPreview] = useState<SyncPreview | null>(null);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+
+  // Combobox open states
+  const [usersOpen, setUsersOpen] = useState(false);
+  const [managersOpen, setManagersOpen] = useState(false);
+  const [adminsOpen, setAdminsOpen] = useState(false);
+
+  // Search/filter state per combobox
+  const [usersSearch, setUsersSearch] = useState("");
+  const [managersSearch, setManagersSearch] = useState("");
+  const [adminsSearch, setAdminsSearch] = useState("");
+
+  // Manual input state (for pasting group name/mail when not in list)
+  const [usersManualInput, setUsersManualInput] = useState("");
+  const [managersManualInput, setManagersManualInput] = useState("");
+  const [adminsManualInput, setAdminsManualInput] = useState("");
+
+  // Filter groups based on search text
+  const filterGroups = useCallback((search: string) => {
+    if (!search) return groups;
+    const lower = search.toLowerCase();
+    return groups.filter(
+      (g) =>
+        g.displayName?.toLowerCase().includes(lower) ||
+        g.mail?.toLowerCase().includes(lower) ||
+        g.id?.toLowerCase().includes(lower)
+    );
+  }, [groups]);
+
+  // Get display label for a selected group
+  const getGroupLabel = (groupId: string | undefined, groupName: string | undefined) => {
+    if (!groupId) return "";
+    const group = groups.find((g) => g.id === groupId);
+    if (group) return group.displayName;
+    return groupName || groupId;
+  };
 
   // Fetch M365 groups
   async function fetchGroups() {
@@ -268,7 +310,7 @@ export default function MicrosoftSync() {
     setSyncing(false);
   }
 
-  // Update mapping when group selection changes
+  // Update mapping when group selection changes (from combobox)
   function updateGroupMapping(role: "users" | "managers" | "admins", groupId: string) {
     const group = groups.find((g) => g.id === groupId);
     if (role === "users") {
@@ -277,18 +319,91 @@ export default function MicrosoftSync() {
         usersGroupId: groupId,
         usersGroupName: group?.displayName,
       }));
+      setUsersManualInput("");
+      setUsersOpen(false);
     } else if (role === "managers") {
       setMapping((prev) => ({
         ...prev,
         managersGroupId: groupId,
         managersGroupName: group?.displayName,
       }));
+      setManagersManualInput("");
+      setManagersOpen(false);
     } else {
       setMapping((prev) => ({
         ...prev,
         adminsGroupId: groupId,
         adminsGroupName: group?.displayName,
       }));
+      setAdminsManualInput("");
+      setAdminsOpen(false);
+    }
+  }
+
+  // Resolve a group by name or mail (for manual input / paste)
+  async function resolveGroupByNameOrMail(role: "users" | "managers" | "admins", input: string) {
+    if (!input.trim()) return;
+
+    // First try to find in already-loaded groups
+    const lower = input.trim().toLowerCase();
+    const localMatch = groups.find(
+      (g) =>
+        g.displayName?.toLowerCase() === lower ||
+        g.mail?.toLowerCase() === lower
+    );
+
+    if (localMatch) {
+      updateGroupMapping(role, localMatch.id);
+      toast({
+        title: "Gruppe gefunden",
+        description: `"${localMatch.displayName}" wurde zugeordnet.`,
+      });
+      return;
+    }
+
+    // If not found locally, search via API
+    try {
+      const res = await fetch(
+        `/api/v1/admin/microsoft-graph/groups/search?q=${encodeURIComponent(input.trim())}`,
+        {
+          headers: {
+            Authorization: `Bearer ${getCookie("session")}`,
+          },
+        }
+      );
+      const data = await res.json();
+      if (data.success && data.groups?.length > 0) {
+        // Find exact match first
+        const exactMatch = data.groups.find(
+          (g: M365Group) =>
+            g.displayName?.toLowerCase() === lower ||
+            g.mail?.toLowerCase() === lower
+        );
+        const match = exactMatch || data.groups[0];
+
+        // Add to local groups list if not there yet
+        if (!groups.find((g) => g.id === match.id)) {
+          setGroups((prev) => [...prev, match]);
+        }
+
+        updateGroupMapping(role, match.id);
+        toast({
+          title: "Gruppe gefunden",
+          description: `"${match.displayName}" wurde zugeordnet.`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Gruppe nicht gefunden",
+          description: `Keine Gruppe mit dem Namen oder der Mail "${input.trim()}" gefunden.`,
+        });
+      }
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Fehler bei der Suche",
+        description: err.message,
+      });
     }
   }
 
@@ -500,87 +615,301 @@ export default function MicrosoftSync() {
                     <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
                     <span className="ml-2 text-muted-foreground">Lade Gruppen...</span>
                   </div>
-                ) : groups.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-                    <p>Keine Microsoft 365 Gruppen gefunden.</p>
-                    <p className="text-sm mt-2">
-                      Stellen Sie sicher, dass die Microsoft Graph API konfiguriert ist.
-                    </p>
-                    <Button onClick={fetchGroups} variant="outline" className="mt-4">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Erneut laden
-                    </Button>
-                  </div>
                 ) : (
                   <>
+                    <p className="text-sm text-muted-foreground">
+                      {groups.length} Gruppen geladen. Sie können in der Liste suchen oder einen Gruppennamen / eine E-Mail-Adresse einfügen.
+                    </p>
+
                     {/* Users Group */}
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 w-32">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-blue-500" />
                         <span className="font-medium">Benutzer</span>
                       </div>
-                      <Select
-                        value={mapping.usersGroupId || ""}
-                        onValueChange={(value) => updateGroupMapping("users", value)}
-                      >
-                        <SelectTrigger className="flex-1">
-                          <SelectValue placeholder="Gruppe auswählen..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {groups.map((group) => (
-                            <SelectItem key={group.id} value={group.id}>
-                              {group.displayName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex gap-2">
+                        <Popover open={usersOpen} onOpenChange={setUsersOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={usersOpen}
+                              className="flex-1 justify-between font-normal"
+                            >
+                              <span className="truncate">
+                                {mapping.usersGroupId
+                                  ? getGroupLabel(mapping.usersGroupId, mapping.usersGroupName)
+                                  : "Gruppe auswählen oder suchen..."}
+                              </span>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[500px] p-0" align="start">
+                            <Command shouldFilter={false}>
+                              <CommandInput
+                                placeholder="Gruppenname oder E-Mail suchen..."
+                                value={usersSearch}
+                                onValueChange={setUsersSearch}
+                              />
+                              <CommandList>
+                                <CommandEmpty>
+                                  <div className="py-2 text-sm">
+                                    Keine Gruppe gefunden.
+                                    <br />
+                                    <button
+                                      className="text-blue-500 underline mt-1"
+                                      onClick={() => {
+                                        if (usersSearch.trim()) {
+                                          resolveGroupByNameOrMail("users", usersSearch);
+                                        }
+                                      }}
+                                    >
+                                      "{usersSearch}" in Azure AD suchen
+                                    </button>
+                                  </div>
+                                </CommandEmpty>
+                                <CommandGroup className="max-h-[300px] overflow-auto">
+                                  {filterGroups(usersSearch).map((group) => (
+                                    <CommandItem
+                                      key={group.id}
+                                      value={group.id}
+                                      onSelect={() => updateGroupMapping("users", group.id)}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          mapping.usersGroupId === group.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      <div className="flex flex-col">
+                                        <span>{group.displayName}</span>
+                                        {group.mail && (
+                                          <span className="text-xs text-muted-foreground">{group.mail}</span>
+                                        )}
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Oder Gruppenname / E-Mail hier einfügen..."
+                          value={usersManualInput}
+                          onChange={(e) => setUsersManualInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              resolveGroupByNameOrMail("users", usersManualInput);
+                            }
+                          }}
+                          className="flex-1 text-sm"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => resolveGroupByNameOrMail("users", usersManualInput)}
+                          disabled={!usersManualInput.trim()}
+                        >
+                          Zuordnen
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Managers Group */}
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 w-32">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
                         <UserCog className="h-4 w-4 text-orange-500" />
                         <span className="font-medium">Manager</span>
                       </div>
-                      <Select
-                        value={mapping.managersGroupId || ""}
-                        onValueChange={(value) => updateGroupMapping("managers", value)}
-                      >
-                        <SelectTrigger className="flex-1">
-                          <SelectValue placeholder="Gruppe auswählen..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {groups.map((group) => (
-                            <SelectItem key={group.id} value={group.id}>
-                              {group.displayName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex gap-2">
+                        <Popover open={managersOpen} onOpenChange={setManagersOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={managersOpen}
+                              className="flex-1 justify-between font-normal"
+                            >
+                              <span className="truncate">
+                                {mapping.managersGroupId
+                                  ? getGroupLabel(mapping.managersGroupId, mapping.managersGroupName)
+                                  : "Gruppe auswählen oder suchen..."}
+                              </span>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[500px] p-0" align="start">
+                            <Command shouldFilter={false}>
+                              <CommandInput
+                                placeholder="Gruppenname oder E-Mail suchen..."
+                                value={managersSearch}
+                                onValueChange={setManagersSearch}
+                              />
+                              <CommandList>
+                                <CommandEmpty>
+                                  <div className="py-2 text-sm">
+                                    Keine Gruppe gefunden.
+                                    <br />
+                                    <button
+                                      className="text-blue-500 underline mt-1"
+                                      onClick={() => {
+                                        if (managersSearch.trim()) {
+                                          resolveGroupByNameOrMail("managers", managersSearch);
+                                        }
+                                      }}
+                                    >
+                                      "{managersSearch}" in Azure AD suchen
+                                    </button>
+                                  </div>
+                                </CommandEmpty>
+                                <CommandGroup className="max-h-[300px] overflow-auto">
+                                  {filterGroups(managersSearch).map((group) => (
+                                    <CommandItem
+                                      key={group.id}
+                                      value={group.id}
+                                      onSelect={() => updateGroupMapping("managers", group.id)}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          mapping.managersGroupId === group.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      <div className="flex flex-col">
+                                        <span>{group.displayName}</span>
+                                        {group.mail && (
+                                          <span className="text-xs text-muted-foreground">{group.mail}</span>
+                                        )}
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Oder Gruppenname / E-Mail hier einfügen..."
+                          value={managersManualInput}
+                          onChange={(e) => setManagersManualInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              resolveGroupByNameOrMail("managers", managersManualInput);
+                            }
+                          }}
+                          className="flex-1 text-sm"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => resolveGroupByNameOrMail("managers", managersManualInput)}
+                          disabled={!managersManualInput.trim()}
+                        >
+                          Zuordnen
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Admins Group */}
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 w-32">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
                         <Shield className="h-4 w-4 text-red-500" />
                         <span className="font-medium">Admins</span>
                       </div>
-                      <Select
-                        value={mapping.adminsGroupId || ""}
-                        onValueChange={(value) => updateGroupMapping("admins", value)}
-                      >
-                        <SelectTrigger className="flex-1">
-                          <SelectValue placeholder="Gruppe auswählen..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {groups.map((group) => (
-                            <SelectItem key={group.id} value={group.id}>
-                              {group.displayName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex gap-2">
+                        <Popover open={adminsOpen} onOpenChange={setAdminsOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={adminsOpen}
+                              className="flex-1 justify-between font-normal"
+                            >
+                              <span className="truncate">
+                                {mapping.adminsGroupId
+                                  ? getGroupLabel(mapping.adminsGroupId, mapping.adminsGroupName)
+                                  : "Gruppe auswählen oder suchen..."}
+                              </span>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[500px] p-0" align="start">
+                            <Command shouldFilter={false}>
+                              <CommandInput
+                                placeholder="Gruppenname oder E-Mail suchen..."
+                                value={adminsSearch}
+                                onValueChange={setAdminsSearch}
+                              />
+                              <CommandList>
+                                <CommandEmpty>
+                                  <div className="py-2 text-sm">
+                                    Keine Gruppe gefunden.
+                                    <br />
+                                    <button
+                                      className="text-blue-500 underline mt-1"
+                                      onClick={() => {
+                                        if (adminsSearch.trim()) {
+                                          resolveGroupByNameOrMail("admins", adminsSearch);
+                                        }
+                                      }}
+                                    >
+                                      "{adminsSearch}" in Azure AD suchen
+                                    </button>
+                                  </div>
+                                </CommandEmpty>
+                                <CommandGroup className="max-h-[300px] overflow-auto">
+                                  {filterGroups(adminsSearch).map((group) => (
+                                    <CommandItem
+                                      key={group.id}
+                                      value={group.id}
+                                      onSelect={() => updateGroupMapping("admins", group.id)}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          mapping.adminsGroupId === group.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      <div className="flex flex-col">
+                                        <span>{group.displayName}</span>
+                                        {group.mail && (
+                                          <span className="text-xs text-muted-foreground">{group.mail}</span>
+                                        )}
+                                      </div>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Oder Gruppenname / E-Mail hier einfügen..."
+                          value={adminsManualInput}
+                          onChange={(e) => setAdminsManualInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              resolveGroupByNameOrMail("admins", adminsManualInput);
+                            }
+                          }}
+                          className="flex-1 text-sm"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => resolveGroupByNameOrMail("admins", adminsManualInput)}
+                          disabled={!adminsManualInput.trim()}
+                        >
+                          Zuordnen
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="flex gap-2 pt-4">

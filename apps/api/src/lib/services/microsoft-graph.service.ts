@@ -115,23 +115,37 @@ export class MicrosoftGraphService {
   }
 
   /**
-   * List users from Azure AD
+   * Helper: follow @odata.nextLink to fetch all pages
+   */
+  private static async fetchAllPages<T>(initialUrl: string, token: string): Promise<T[]> {
+    const results: T[] = [];
+    let url: string | null = initialUrl;
+
+    while (url) {
+      const response: { data: { value?: T[]; "@odata.nextLink"?: string } } = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      results.push(...(response.data.value || []));
+      url = response.data["@odata.nextLink"] || null;
+    }
+
+    return results;
+  }
+
+  /**
+   * List users from Azure AD (with pagination)
    */
   static async listUsers(
     filter?: string
   ): Promise<GraphUser[]> {
     const token = await this.getAccessToken();
 
-    let url = "https://graph.microsoft.com/v1.0/users?$select=id,displayName,mail,userPrincipalName";
+    let url = "https://graph.microsoft.com/v1.0/users?$select=id,displayName,mail,userPrincipalName&$top=999";
     if (filter) {
       url += `&$filter=${encodeURIComponent(filter)}`;
     }
 
-    const response = await axios.get(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    return response.data.value;
+    return this.fetchAllPages<GraphUser>(url, token);
   }
 
   /**
@@ -260,32 +274,45 @@ export class MicrosoftGraphService {
   }
 
   /**
-   * List all Microsoft 365 groups
+   * List all Microsoft 365 groups (with pagination - fetches ALL groups)
    */
   static async listGroups(): Promise<GraphGroup[]> {
     const token = await this.getAccessToken();
-
-    const response = await axios.get(
-      "https://graph.microsoft.com/v1.0/groups?$select=id,displayName,description,mail&$top=100",
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    return response.data.value;
+    const url = "https://graph.microsoft.com/v1.0/groups?$select=id,displayName,description,mail&$top=999";
+    return this.fetchAllPages<GraphGroup>(url, token);
   }
 
   /**
-   * Get members of a specific group
+   * Search groups by displayName or mail (for combobox search)
+   */
+  static async searchGroups(query: string): Promise<GraphGroup[]> {
+    const token = await this.getAccessToken();
+    const filter = `startswith(displayName,'${query.replace(/'/g, "''")}') or startswith(mail,'${query.replace(/'/g, "''")}')`;    const url = `https://graph.microsoft.com/v1.0/groups?$select=id,displayName,description,mail&$top=50&$filter=${encodeURIComponent(filter)}`;
+    try {
+      return this.fetchAllPages<GraphGroup>(url, token);
+    } catch (error) {
+      // If filter fails, fall back to client-side filtering
+      console.error("Group search filter failed, falling back to full list:", error);
+      const allGroups = await this.listGroups();
+      const lowerQuery = query.toLowerCase();
+      return allGroups.filter(
+        (g) =>
+          g.displayName?.toLowerCase().includes(lowerQuery) ||
+          g.mail?.toLowerCase().includes(lowerQuery)
+      );
+    }
+  }
+
+  /**
+   * Get members of a specific group (with pagination)
    */
   static async getGroupMembers(groupId: string): Promise<GraphUser[]> {
     const token = await this.getAccessToken();
-
-    const response = await axios.get(
-      `https://graph.microsoft.com/v1.0/groups/${groupId}/members?$select=id,displayName,mail,userPrincipalName`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const url = `https://graph.microsoft.com/v1.0/groups/${groupId}/members?$select=id,displayName,mail,userPrincipalName&$top=999`;
+    const allMembers = await this.fetchAllPages<any>(url, token);
 
     // Filter to only users (not nested groups or other object types)
-    return response.data.value.filter(
+    return allMembers.filter(
       (member: any) => member["@odata.type"] === "#microsoft.graph.user"
     );
   }
