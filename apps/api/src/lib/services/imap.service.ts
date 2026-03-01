@@ -108,7 +108,7 @@ async function findTicketFromEmail(parsed: any): Promise<{ ticket: any; method: 
     }
   }
 
-  // 4. Try to extract from subject line with multiple patterns
+  // 4. Try to extract UUID from subject line with multiple patterns
   const subjectPatterns = [
     // [Ticket #uuid] format
     /\[Ticket\s*#?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\]/i,
@@ -127,8 +127,33 @@ async function findTicketFromEmail(parsed: any): Promise<{ ticket: any; method: 
         where: { id: match[1] },
       });
       if (ticket) {
-        console.log(`Found ticket via subject pattern: ${ticket.id}`);
-        return { ticket, method: "subject" };
+        console.log(`Found ticket via subject UUID pattern: ${ticket.id}`);
+        return { ticket, method: "subject-uuid" };
+      }
+    }
+  }
+
+  // 5. Try to match numeric ticket Number from subject line
+  // This handles replies like "Re: [Ticket #42] ..." or "Ticket #42 update"
+  const numberPatterns = [
+    // [Ticket #42] format (most specific)
+    /\[Ticket\s*#(\d+)\]/i,
+    // Ticket #42 or ticket#42 or Ticket: 42
+    /ticket\s*[:#]?\s*(\d+)/i,
+  ];
+
+  for (const pattern of numberPatterns) {
+    const match = subject.match(pattern);
+    if (match) {
+      const ticketNumber = parseInt(match[1], 10);
+      if (!isNaN(ticketNumber) && ticketNumber > 0) {
+        const ticket = await prisma.ticket.findFirst({
+          where: { Number: ticketNumber },
+        });
+        if (ticket) {
+          console.log(`Found ticket via subject Number pattern: #${ticketNumber} → ${ticket.id}`);
+          return { ticket, method: "subject-number" };
+        }
       }
     }
   }
@@ -300,34 +325,36 @@ export class ImapService {
     const looksLikeReply = isReplyHint || isEmailReply(parsed);
     console.log(`Processing email from ${senderEmail}, subject: "${subject}", isReply: ${looksLikeReply}`);
 
-    // If it looks like a reply, try to find the original ticket
+    // ALWAYS try to find a matching ticket via headers or subject patterns.
+    // This ensures that emails with [Ticket #42] in the subject are added as comments
+    // regardless of whether the email has a Re:/Aw: prefix.
+    const result = await findTicketFromEmail(parsed);
+
+    if (result) {
+      const { ticket, method } = result;
+      console.log(`Found ticket ${ticket.id} (Number: ${ticket.Number}) via ${method}, adding as comment`);
+
+      const replyText = getReplyText(parsed);
+
+      await prisma.comment.create({
+        data: {
+          text: replyText,
+          userId: null,
+          ticketId: ticket.id,
+          reply: true,
+          replyEmail: senderEmail,
+          public: true,
+        },
+      });
+
+      // Track metrics
+      metrics.incrementEmailsReceived();
+      console.log(`Added reply as comment to ticket ${ticket.id}`);
+      return;
+    }
+
+    // Fallback for reply-like emails: try to find an open ticket from the same sender
     if (looksLikeReply) {
-      const result = await findTicketFromEmail(parsed);
-
-      if (result) {
-        const { ticket, method } = result;
-        console.log(`Found ticket ${ticket.id} via ${method}, adding as comment`);
-
-        const replyText = getReplyText(parsed);
-
-        await prisma.comment.create({
-          data: {
-            text: replyText,
-            userId: null,
-            ticketId: ticket.id,
-            reply: true,
-            replyEmail: senderEmail,
-            public: true,
-          },
-        });
-
-        // Track metrics
-        metrics.incrementEmailsReceived();
-        console.log(`Added reply as comment to ticket ${ticket.id}`);
-        return;
-      }
-
-      // Fallback: Try to find an open ticket from the same sender (match on email or replyTo)
       const recentTicket = await prisma.ticket.findFirst({
         where: {
           OR: [

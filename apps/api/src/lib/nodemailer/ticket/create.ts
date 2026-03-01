@@ -77,7 +77,7 @@ export async function sendTicketCreate(ticket: any) {
       
       <div class="ticket-info">
         <p><strong>Ticket-Nummer:</strong></p>
-        <p class="ticket-id">#${ticket.id}</p>
+        <p class="ticket-id">#${ticket.Number || ticket.id}</p>
         <p><strong>Betreff:</strong> ${ticket.title || "Kein Betreff"}</p>
         <p><strong>Erstellt am:</strong> ${new Date(ticket.createdAt).toLocaleString("de-DE")}</p>
       </div>
@@ -88,12 +88,12 @@ export async function sendTicketCreate(ticket: any) {
         <a href="${ticketUrl}" class="button">Ticket ansehen</a>
       </p>
       
-      <p>Bei Rückfragen zu diesem Ticket antworten Sie bitte auf diese E-Mail mit der Referenznummer <strong>ref:${ticket.id}</strong> im Betreff.</p>
+      <p>Bei Rückfragen zu diesem Ticket antworten Sie bitte einfach auf diese E-Mail.</p>
       
       <p>Mit freundlichen Grüßen,<br>Ihr Support-Team</p>
     </div>
     <div class="footer">
-      <p>Diese E-Mail wurde automatisch generiert. Ticket-Referenz: #${ticket.id}</p>
+      <p>Diese E-Mail wurde automatisch generiert. Ticket-Referenz: #${ticket.Number || ticket.id}</p>
     </div>
   </div>
 </body>
@@ -101,14 +101,14 @@ export async function sendTicketCreate(ticket: any) {
         `;
       }
 
-      const textContent = `Ticket erfasst\n\nGuten Tag,\n\nIhr Ticket #${ticket.id} wurde erfolgreich erstellt.\n\nBetreff: ${ticket.title || "Kein Betreff"}\nErstellt am: ${new Date(ticket.createdAt).toLocaleString("de-DE")}\n\nTicket ansehen: ${ticketUrl}\n\nMit freundlichen Grüßen,\nIhr Support-Team\n\nRef: #${ticket.id}`;
+      const textContent = `Ticket erfasst\n\nGuten Tag,\n\nIhr Ticket #${ticket.Number || ticket.id} wurde erfolgreich erstellt.\n\nBetreff: ${ticket.title || "Kein Betreff"}\nErstellt am: ${new Date(ticket.createdAt).toLocaleString("de-DE")}\n\nTicket ansehen: ${ticketUrl}\n\nMit freundlichen Grüßen,\nIhr Support-Team\n\nRef: #${ticket.id}`;
 
       // Build mail options with optional BCC
       const mailOptions: any = {
         from: email.user,
         replyTo: imapQueue?.username || email.reply,
         to: ticket.email,
-        subject: `[Ticket #${ticket.id}] Anfrage wurde erfasst - ${ticket.title || "Neue Anfrage"}`,
+        subject: `[Ticket #${ticket.Number || ticket.id}] Anfrage wurde erfasst - ${ticket.title || "Neue Anfrage"}`,
         text: textContent,
         html: htmlToSend,
         messageId: messageId,

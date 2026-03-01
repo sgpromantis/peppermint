@@ -103,14 +103,14 @@ export async function sendTicketStatus(ticket: any) {
   const references = ticket.messageId ? [ticket.messageId] : [];
   const inReplyTo = ticket.messageId || undefined;
 
-  const textContent = `Ticket-Status aktualisiert\n\nTicket #${ticket.id}\nBetreff: ${ticket.title}\nNeuer Status: ${statusTextGerman}\n\nTicket online ansehen: ${ticketUrl}\n\nAntworten Sie auf diese E-Mail bei Rückfragen.\n\nRef: #${ticket.id}`;
+  const textContent = `Ticket-Status aktualisiert\n\nTicket #${ticket.Number || ticket.id}\nBetreff: ${ticket.title}\nNeuer Status: ${statusTextGerman}\n\nTicket online ansehen: ${ticketUrl}\n\nAntworten Sie auf diese E-Mail bei Rückfragen.\n\nRef: #${ticket.id}`;
 
   // Build mail options with optional BCC
   const mailOptions: any = {
     from: email.user,
     replyTo: imapQueue?.username || email.reply,
     to: ticket.replyTo || ticket.email,
-    subject: `[Ticket #${ticket.id}] Status geändert: ${statusTextGerman} - ${ticket.title}`,
+    subject: `[Ticket #${ticket.Number || ticket.id}] Status geändert: ${statusTextGerman} - ${ticket.title}`,
     text: textContent,
     html: htmlToSend,
     messageId: messageId,

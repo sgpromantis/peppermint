@@ -4,7 +4,7 @@ import { createTransportProvider } from "../transport";
 import { InstanceConfigService } from "../../services/instance-config.service";
 import { isSystemAddress } from "./loop-prevention";
 
-export async function sendAssignedEmail(email: any, ticketId?: string, ticketTitle?: string) {
+export async function sendAssignedEmail(email: any, ticketId?: string, ticketTitle?: string, ticketNumber?: number) {
   try {
     // Loop prevention: never send assigned notification to a system-monitored address
     if (await isSystemAddress(email)) {
@@ -93,14 +93,14 @@ export async function sendAssignedEmail(email: any, ticketId?: string, ticketTit
         `;
       }
 
-      const textContent = `Ticket zugewiesen\n\nGuten Tag,\n\nEin neues Ticket wurde Ihnen zugewiesen.${ticketId ? `\n\nTicket-Nummer: #${ticketId}` : ''}${ticketTitle ? `\nBetreff: ${ticketTitle}` : ''}\n\nTicket ansehen: ${ticketUrl}\n\nMit freundlichen Grüßen,\nIhr Helpdesk-System`;
+      const textContent = `Ticket zugewiesen\n\nGuten Tag,\n\nEin neues Ticket wurde Ihnen zugewiesen.${ticketNumber ? `\n\nTicket-Nummer: #${ticketNumber}` : (ticketId ? `\n\nTicket-ID: #${ticketId}` : '')}${ticketTitle ? `\nBetreff: ${ticketTitle}` : ''}\n\nTicket ansehen: ${ticketUrl}\n\nMit freundlichen Grüßen,\nIhr Helpdesk-System`;
 
       // Build mail options with optional BCC
       const mailOptions: any = {
         from: provider.user, 
         replyTo: imapQueue?.username || provider.reply,
         to: email, 
-        subject: ticketId ? `[Ticket #${ticketId}] Ein neues Ticket wurde Ihnen zugewiesen` : `Ein neues Ticket wurde Ihnen zugewiesen`, 
+        subject: ticketNumber ? `[Ticket #${ticketNumber}] Ein neues Ticket wurde Ihnen zugewiesen` : (ticketId ? `[Ticket #${ticketId}] Ein neues Ticket wurde Ihnen zugewiesen` : `Ein neues Ticket wurde Ihnen zugewiesen`), 
         text: textContent, 
         html: htmlToSend,
       };

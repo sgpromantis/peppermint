@@ -77,7 +77,7 @@ export async function sendComment(
 <body>
   <div class="container">
     <div class="header">
-      <h2 style="margin: 0;">Neuer Kommentar zu Ticket #${id}</h2>
+      <h2 style="margin: 0;">Neuer Kommentar zu Ticket #${ticket?.Number || id}</h2>
     </div>
     <div class="content">
       <p><strong>Ticket:</strong> ${title}</p>
@@ -94,7 +94,7 @@ export async function sendComment(
       <p style="color: #6b7280; font-size: 14px;">Oder antworten Sie einfach auf diese E-Mail, um Ihre Antwort zum Ticket hinzuzufügen.</p>
     </div>
     <div class="footer">
-      <p>Ticket-Referenz: #${id}</p>
+      <p>Ticket-Referenz: #${ticket?.Number || id}</p>
       <p>Antworten Sie auf diese E-Mail oder <a href="${ticketUrl}">online ansehen</a></p>
     </div>
   </div>
@@ -109,7 +109,7 @@ export async function sendComment(
     const references = ticket?.messageId ? [ticket.messageId] : [];
     const inReplyTo = ticket?.messageId || undefined;
 
-    const textContent = `Neuer Kommentar zu Ticket #${id}\n\nTicket: ${title}\n\nKommentar:\n${comment}\n\nTicket online ansehen: ${ticketUrl}\n\nSie können auf diese E-Mail antworten, um zum Ticket zu antworten.\n\nRef: #${id}`;
+    const textContent = `Neuer Kommentar zu Ticket #${ticket?.Number || id}\n\nTicket: ${title}\n\nKommentar:\n${comment}\n\nTicket online ansehen: ${ticketUrl}\n\nSie können auf diese E-Mail antworten, um zum Ticket zu antworten.\n\nRef: #${id}`;
 
     console.log("Sending comment notification to: ", email);
     
@@ -118,7 +118,7 @@ export async function sendComment(
       from: provider.user,
       replyTo: imapQueue?.username || provider.reply,
       to: email,
-      subject: `[Ticket #${id}] Neuer Kommentar - ${title}`,
+      subject: `[Ticket #${ticket?.Number || id}] Neuer Kommentar - ${title}`,
       text: textContent,
       html: htmlToSend,
       messageId: messageId,

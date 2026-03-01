@@ -85,7 +85,7 @@ export async function sendTicketConfirmation(ticket: any) {
       
       <div class="ticket-info">
         <p><strong>Ticket-Nummer:</strong></p>
-        <p class="ticket-id">#${ticket.id}</p>
+        <p class="ticket-id">#${ticket.Number || ticket.id}</p>
         <p><strong>Betreff:</strong> ${ticket.title}</p>
         <p><strong>Erstellt am:</strong> ${new Date(ticket.createdAt).toLocaleString("de-DE")}</p>
       </div>
@@ -96,12 +96,12 @@ export async function sendTicketConfirmation(ticket: any) {
         <a href="${ticketUrl}" class="button">Ticket ansehen</a>
       </p>
       
-      <p>Bei Rückfragen zu diesem Ticket antworten Sie bitte auf diese E-Mail mit der Referenznummer <strong>ref:${ticket.id}</strong> im Betreff.</p>
+      <p>Bei Rückfragen zu diesem Ticket antworten Sie bitte einfach auf diese E-Mail.</p>
       
       <p>Mit freundlichen Grüßen,<br>Ihr Support-Team</p>
     </div>
     <div class="footer">
-      <p>Diese E-Mail wurde automatisch generiert. Bitte antworten Sie mit ref:${ticket.id} im Betreff.</p>
+      <p>Diese E-Mail wurde automatisch generiert. Antworten Sie einfach auf diese E-Mail bei Rückfragen.</p>
     </div>
   </div>
 </body>
@@ -114,8 +114,8 @@ export async function sendTicketConfirmation(ticket: any) {
       from: email.user,
       replyTo: imapQueue?.username || email.reply,
       to: ticket.email,
-      subject: `[Ticket #${ticket.id}] Ihre Anfrage wurde erfasst - ${ticket.title}`,
-      text: `Hallo ${ticket.name || "Kunde"},\n\nVielen Dank für Ihre Anfrage. Ihr Ticket #${ticket.id} wurde erfolgreich angelegt.\n\nBetreff: ${ticket.title}\n\nSie können den Status hier einsehen: ${ticketUrl}\n\nBei Rückfragen antworten Sie bitte auf diese E-Mail mit ref:${ticket.id} im Betreff.\n\nMit freundlichen Grüßen,\nIhr Support-Team`,
+      subject: `[Ticket #${ticket.Number || ticket.id}] Ihre Anfrage wurde erfasst - ${ticket.title}`,
+      text: `Hallo ${ticket.name || "Kunde"},\n\nVielen Dank für Ihre Anfrage. Ihr Ticket #${ticket.Number || ticket.id} wurde erfolgreich angelegt.\n\nBetreff: ${ticket.title}\n\nSie können den Status hier einsehen: ${ticketUrl}\n\nBei Rückfragen antworten Sie bitte auf diese E-Mail.\n\nMit freundlichen Grüßen,\nIhr Support-Team`,
       html: htmlToSend,
       messageId: messageId,
       headers: {

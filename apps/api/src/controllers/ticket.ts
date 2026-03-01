@@ -105,7 +105,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           },
         });
 
-        await sendAssignedEmail(assgined!.email, ticket.id, ticket.title);
+        await sendAssignedEmail(assgined!.email, ticket.id, ticket.title, ticket.Number);
 
         await assignedNotification(engineer, ticket, user);
       }
@@ -250,7 +250,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           },
         });
 
-        await sendAssignedEmail(assgined!.email, ticket.id, ticket.title);
+        await sendAssignedEmail(assgined!.email, ticket.id, ticket.title, ticket.Number);
 
         const user = await checkSession(request);
 
@@ -638,7 +638,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           where: { id: id },
         });
 
-        await sendAssignedEmail(email, ticket!.id, ticket!.title);
+        await sendAssignedEmail(email, ticket!.id, ticket!.title, ticket!.Number);
         await assignedNotification(assigned, ticket, assigner);
       } else {
         await prisma.ticket.update({
