@@ -4,9 +4,16 @@ import { createTransportProvider } from "../transport";
 import { randomUUID } from "crypto";
 import { metrics } from "../../prometheus-metrics";
 import { InstanceConfigService } from "../../services/instance-config.service";
+import { isSystemAddress } from "./loop-prevention";
 
 export async function sendTicketCreate(ticket: any) {
   try {
+    // Loop prevention: never send ticket-create notification to a system-monitored address
+    if (await isSystemAddress(ticket.email)) {
+      console.log(`[sendTicketCreate] Skipped — recipient ${ticket.email} is a system address`);
+      return;
+    }
+
     const email = await prisma.email.findFirst();
 
     if (email) {

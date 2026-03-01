@@ -4,6 +4,7 @@ import { createTransportProvider } from "../transport";
 import { randomUUID } from "crypto";
 import { metrics } from "../../prometheus-metrics";
 import { InstanceConfigService } from "../../services/instance-config.service";
+import { isSystemAddress } from "./loop-prevention";
 
 export async function sendComment(
   comment: string,
@@ -12,6 +13,12 @@ export async function sendComment(
   email: string
 ) {
   try {
+    // Loop prevention: never send comment notification to a system-monitored address
+    if (await isSystemAddress(email)) {
+      console.log(`[sendComment] Skipped — recipient ${email} is a system address`);
+      return;
+    }
+
     const provider = await prisma.email.findFirst();
 
     if (!provider) {

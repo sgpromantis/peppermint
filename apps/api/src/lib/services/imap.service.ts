@@ -276,15 +276,23 @@ export class ImapService {
     const activeQueues = await prisma.emailQueue.findMany({ where: { active: true } });
     const imapAddresses = activeQueues.map(q => q.username.toLowerCase());
     
-    if (imapAddresses.includes(senderEmail.toLowerCase())) {
-      console.log(`Sender "${senderEmail}" matches IMAP mailbox — looking for original sender`);
+    // Also collect SMTP sender/reply addresses as system addresses
+    const smtpConfig = await prisma.email.findFirst({ select: { user: true, reply: true } });
+    const systemAddresses = [...imapAddresses];
+    if (smtpConfig?.user) systemAddresses.push(smtpConfig.user.toLowerCase());
+    if (smtpConfig?.reply) systemAddresses.push(smtpConfig.reply.toLowerCase());
+    
+    if (systemAddresses.includes(senderEmail.toLowerCase())) {
+      console.log(`Sender "${senderEmail}" matches a system address — looking for original sender`);
       const originalSender = this.extractOriginalSender(parsed, senderEmail);
-      if (originalSender) {
+      if (originalSender && !systemAddresses.includes(originalSender.email.toLowerCase())) {
         console.log(`Resolved original sender: ${originalSender.email} (was: ${senderEmail})`);
         senderEmail = originalSender.email;
         senderName = originalSender.name;
+      } else if (originalSender) {
+        console.warn(`Resolved sender ${originalSender.email} is also a system address — keeping ${senderEmail}`);
       } else {
-        console.warn(`Could not resolve original sender — keeping IMAP address ${senderEmail}`);
+        console.warn(`Could not resolve original sender — keeping system address ${senderEmail}`);
       }
     }
 
@@ -449,12 +457,19 @@ export class ImapService {
     metrics.incrementTicketsCreated(true);
     metrics.incrementEmailsReceived();
 
-    // Send confirmation email with ticket link
-    try {
-      await sendTicketCreate(ticket);
-      await sendTicketConfirmation(ticket);
-    } catch (emailError) {
-      console.error("Failed to send ticket emails:", emailError);
+    // Loop prevention: only send confirmation/create emails if the resolved sender
+    // is NOT one of our own system addresses (IMAP queues, SMTP sender, etc.)
+    // This prevents infinite loops when a forwarder address is detected as the sender.
+    const isSysAddr = systemAddresses.includes(senderEmail.toLowerCase());
+    if (isSysAddr) {
+      console.warn(`[IMAP Loop Prevention] Skipping outgoing emails — resolved sender ${senderEmail} is still a system address`);
+    } else {
+      try {
+        await sendTicketCreate(ticket);
+        await sendTicketConfirmation(ticket);
+      } catch (emailError) {
+        console.error("Failed to send ticket emails:", emailError);
+      }
     }
   }
 

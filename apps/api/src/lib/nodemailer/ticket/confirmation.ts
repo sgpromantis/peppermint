@@ -4,11 +4,18 @@ import { createTransportProvider } from "../transport";
 import { metrics } from "../../prometheus-metrics";
 import { randomUUID } from "crypto";
 import { InstanceConfigService } from "../../services/instance-config.service";
+import { isSystemAddress } from "./loop-prevention";
 
 export async function sendTicketConfirmation(ticket: any) {
   const startTime = Date.now();
   
   try {
+    // Loop prevention: never send confirmation to a system-monitored address
+    if (await isSystemAddress(ticket.email)) {
+      console.log(`[sendTicketConfirmation] Skipped — recipient ${ticket.email} is a system address`);
+      return;
+    }
+
     const email = await prisma.email.findFirst({});
 
     if (!email) {

@@ -2,9 +2,15 @@ import handlebars from "handlebars";
 import { prisma } from "../../../prisma";
 import { createTransportProvider } from "../transport";
 import { InstanceConfigService } from "../../services/instance-config.service";
+import { isSystemAddress } from "./loop-prevention";
 
 export async function sendAssignedEmail(email: any, ticketId?: string, ticketTitle?: string) {
   try {
+    // Loop prevention: never send assigned notification to a system-monitored address
+    if (await isSystemAddress(email)) {
+      console.log(`[sendAssignedEmail] Skipped — recipient ${email} is a system address`);
+      return;
+    }
 
     const provider = await prisma.email.findFirst();
 
