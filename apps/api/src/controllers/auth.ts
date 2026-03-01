@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import { LRUCache } from "lru-cache";
 import { generators } from "openid-client";
 import { AuthorizationCode } from "simple-oauth2";
-import { getOAuthProvider, getOidcConfig } from "../lib/auth";
+import { getOAuthProvider, getOidcConfig, getAzureAdConfig, isAzureAdConfigured } from "../lib/auth";
 import { track } from "../lib/hog";
 import { forgotPassword } from "../lib/nodemailer/auth/forgot-password";
 import { metrics } from "../lib/prometheus-metrics";
@@ -14,6 +14,7 @@ import { requirePermission } from "../lib/roles";
 import { checkSession } from "../lib/session";
 import { getOAuthClient } from "../lib/utils/oauth_client";
 import { getOidcClient } from "../lib/utils/oidc_client";
+import { MicrosoftLoginService } from "../lib/services/microsoft-login.service";
 import { prisma } from "../prisma";
 
 const options = {
@@ -725,6 +726,172 @@ export function authRoutes(fastify: FastifyInstance) {
         reply.status(403).send({
           success: false,
           error: "OAuth callback error",
+          details: error.message,
+        });
+      }
+    }
+  );
+
+  // Microsoft 365 / Azure AD login - Get authorization URL
+  fastify.get(
+    "/api/v1/auth/microsoft/check",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const isConfigured = await isAzureAdConfigured();
+
+        if (!isConfigured) {
+          return reply.code(200).send({
+            success: true,
+            configured: false,
+            message: "Azure AD not configured",
+          });
+        }
+
+        // Generate state parameter
+        const state = generators.state();
+
+        // Store state in cache for validation on callback
+        cache.set(state, {
+          type: "microsoft",
+          createdAt: Date.now(),
+        });
+
+        // Get the authorization URL from Microsoft Login Service
+        const url = await MicrosoftLoginService.getAuthorizationUrl(state);
+
+        reply.send({
+          type: "microsoft",
+          success: true,
+          configured: true,
+          url: url,
+        });
+      } catch (error: any) {
+        console.error("Microsoft login check error:", error);
+        reply.code(500).send({
+          success: false,
+          configured: false,
+          error: error.message,
+        });
+      }
+    }
+  );
+
+  // Microsoft 365 / Azure AD callback handler
+  fastify.get(
+    "/api/v1/auth/microsoft/callback",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { code, state, error, error_description } = request.query as {
+          code?: string;
+          state?: string;
+          error?: string;
+          error_description?: string;
+        };
+
+        // Handle OAuth error from Azure AD
+        if (error) {
+          console.error("Azure AD error:", error, error_description);
+          return reply.code(400).send({
+            success: false,
+            error: error,
+            error_description: error_description,
+          });
+        }
+
+        if (!code || !state) {
+          return reply.code(400).send({
+            success: false,
+            error: "Missing required parameters",
+          });
+        }
+
+        // Validate state parameter
+        const sessionData = cache.get(state);
+        if (!sessionData) {
+          return reply.code(400).send({
+            success: false,
+            error: "Invalid or expired state parameter",
+          });
+        }
+
+        // Clean up state from cache
+        cache.delete(state);
+
+        // Exchange code for token and get user info
+        const userInfo = await MicrosoftLoginService.handleCallback(code, state);
+
+        // Get or create user
+        let user = await MicrosoftLoginService.loginOrCreateUser(userInfo);
+
+        // Update last login
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { updatedAt: new Date() },
+        });
+
+        // Generate JWT token
+        const b64string = process.env.SECRET;
+        const secret = Buffer.from(b64string!, "base64");
+
+        const token = jwt.sign(
+          {
+            data: {
+              id: user.id,
+              sessionId: crypto.randomBytes(32).toString("hex"),
+            },
+          },
+          secret,
+          {
+            expiresIn: "8h",
+            algorithm: "HS256",
+          }
+        );
+
+        // Create session
+        await prisma.session.create({
+          data: {
+            userId: user.id,
+            sessionToken: token,
+            expires: new Date(Date.now() + 8 * 60 * 60 * 1000),
+            userAgent: request.headers["user-agent"] || "",
+            ipAddress: request.ip,
+          },
+        });
+
+        await tracking("user_logged_in_microsoft", {
+          isNew: user.createdAt === user.updatedAt,
+          isAdmin: user.isAdmin,
+          isManager: user.isManager,
+        });
+
+        metrics.incrementLogins("microsoft");
+
+        // Return token and user info
+        const userData = {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          isAdmin: user.isAdmin,
+          isManager: user.isManager,
+          language: user.language,
+          ticket_created: user.notify_ticket_created,
+          ticket_status_changed: user.notify_ticket_status_changed,
+          ticket_comments: user.notify_ticket_comments,
+          ticket_assigned: user.notify_ticket_assigned,
+          firstLogin: user.firstLogin,
+          external_user: user.external_user,
+        };
+
+        reply.send({
+          success: true,
+          token: token,
+          user: userData,
+        });
+      } catch (error: any) {
+        console.error("Microsoft callback error:", error);
+        reply.code(500).send({
+          success: false,
+          error: "Authentication failed",
           details: error.message,
         });
       }

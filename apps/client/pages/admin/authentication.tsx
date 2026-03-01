@@ -37,8 +37,16 @@ export default function Authentication() {
   const [redirectUri, setRedirectUri] = useState("");
   const [providerType, setProviderType] = useState("");
   const [jwtSecret, setJwtSecret] = useState("");
+  const [microsoftEnabled, setMicrosoftEnabled] = useState(false);
+  const [microsoftRedirectUri, setMicrosoftRedirectUri] = useState("");
+  const [isSavingMicrosoft, setIsSavingMicrosoft] = useState(false);
 
   async function postData() {
+    if (providerType === "microsoft-365") {
+      await saveMicrosoftConfig();
+      return;
+    }
+    
     if (providerType === "oidc") {
       await fetch(`/api/v1/config/authentication/oidc/update`, {
         method: "POST",
@@ -118,8 +126,84 @@ export default function Authentication() {
   async function setUri() {
     if (providerType === "oidc") {
       setRedirectUri(`${window.location.origin}/auth/oidc`);
-    } else {
+    } else if (providerType === "oauth") {
       setRedirectUri(`${window.location.origin}/auth/oauth`);
+    } else if (providerType === "microsoft-365") {
+      setMicrosoftRedirectUri(`${window.location.origin}/auth/microsoft/callback`);
+    }
+  }
+
+  async function checkMicrosoftStatus() {
+    try {
+      const res = await fetch(`/api/v1/config/authentication/azure-ad/status`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("session")}`,
+        },
+      });
+      const data = await res.json();
+      if (data.enabled !== undefined) {
+        setMicrosoftEnabled(data.enabled);
+        setMicrosoftRedirectUri(data.redirectUri || `${window.location.origin}/auth/microsoft/callback`);
+      }
+    } catch (error) {
+      console.error("Failed to check Microsoft status:", error);
+    }
+  }
+
+  async function saveMicrosoftConfig() {
+    if (!microsoftEnabled) {
+      // Disable Microsoft 365 SSO
+      setIsSavingMicrosoft(true);
+      try {
+        const res = await fetch(`/api/v1/config/authentication/azure-ad/disable`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("session")}`,
+          },
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("Microsoft 365 SSO has been disabled");
+          setProviderType("");
+        }
+      } catch (error) {
+        console.error("Failed to disable Microsoft SSO:", error);
+        alert("Failed to disable Microsoft 365 SSO");
+      } finally {
+        setIsSavingMicrosoft(false);
+      }
+    } else {
+      // Enable Microsoft 365 SSO
+      setIsSavingMicrosoft(true);
+      try {
+        const res = await fetch(`/api/v1/config/authentication/azure-ad/enable`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getCookie("session")}`,
+          },
+          body: JSON.stringify({
+            redirectUri: microsoftRedirectUri,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("Microsoft 365 SSO has been enabled");
+          setProviderType("");
+        } else {
+          alert(data.message || "Failed to enable Microsoft 365 SSO");
+          setMicrosoftEnabled(false);
+        }
+      } catch (error) {
+        console.error("Failed to enable Microsoft SSO:", error);
+        alert("Failed to enable Microsoft 365 SSO. Make sure Graph credentials are configured.");
+        setMicrosoftEnabled(false);
+      } finally {
+        setIsSavingMicrosoft(false);
+      }
     }
   }
 
@@ -129,6 +213,9 @@ export default function Authentication() {
 
   useEffect(() => {
     setUri();
+    if (providerType === "microsoft-365") {
+      checkMicrosoftStatus();
+    }
   }, [providerType]);
 
   return (
@@ -194,6 +281,7 @@ export default function Authentication() {
                       Bitte wählen Sie einen Anbietertyp
                     </option>
                     <option value="oidc">OIDC</option>
+                    <option value="microsoft-365">Microsoft 365 / Azure AD SSO</option>
                     <option value="oauth" disabled>
                       OAuth
                     </option>
@@ -304,6 +392,60 @@ export default function Authentication() {
                         </div>
                       </>
                     )}
+                    {providerType === "microsoft-365" && (
+                      <>
+                        <div className="space-y-4 mt-2 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                          <div className="mb-6">
+                            <h3 className="text-base font-semibold text-gray-900 mb-2">
+                              Microsoft 365 / Azure AD SSO Status
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                              {microsoftEnabled ? (
+                                <span className="text-green-700 font-medium">✓ Microsoft 365 SSO is currently ENABLED</span>
+                              ) : (
+                                <span className="text-orange-700 font-medium">⚠ Microsoft 365 SSO is currently DISABLED</span>
+                              )}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Before enabling, make sure you have configured Microsoft Graph credentials in the "Microsoft 365" settings section.
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={microsoftEnabled}
+                                onChange={(e) => setMicrosoftEnabled(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300"
+                              />
+                              <span className="text-sm font-medium text-gray-900">
+                                Enable Microsoft 365 / Azure AD Login
+                              </span>
+                            </label>
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="microsoftRedirectUri"
+                              className="block text-sm font-medium leading-6 text-gray-900 mb-2"
+                            >
+                              Redirect URI
+                            </label>
+                            <input
+                              type="text"
+                              id="microsoftRedirectUri"
+                              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                              onChange={(e) => setMicrosoftRedirectUri(e.target.value)}
+                              value={microsoftRedirectUri}
+                            />
+                            <p className="text-xs text-gray-500 mt-2">
+                              Use this URI when configuring your Azure AD application. It must match exactly in the Azure portal.
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
                     {/* Example for SAML */}
                     {/* {providerType === "saml" && (
                   <>
@@ -325,9 +467,10 @@ export default function Authentication() {
                       <button
                         type="submit"
                         onClick={() => postData()}
-                        className="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                        disabled={isSavingMicrosoft && providerType === "microsoft-365"}
+                        className="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Speichern
+                        {isSavingMicrosoft && providerType === "microsoft-365" ? "Speichern..." : "Speichern"}
                       </button>
                     </div>
                   </div>

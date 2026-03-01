@@ -1,6 +1,7 @@
 import handlebars from "handlebars";
 import { prisma } from "../../../prisma";
 import { createTransportProvider } from "../transport";
+import { InstanceConfigService } from "../../services/instance-config.service";
 
 export async function sendAssignedEmail(email: any, ticketId?: string, ticketTitle?: string) {
   try {
@@ -10,10 +11,13 @@ export async function sendAssignedEmail(email: any, ticketId?: string, ticketTit
     if (provider) {
       const mail = await createTransportProvider();
 
+      // Look up the IMAP queue address for Reply-To so replies go to the monitored mailbox
+      const imapQueue = await prisma.emailQueue.findFirst({ where: { active: true } });
+
       console.log("Sending email to: ", email);
 
       // Build ticket URL if ticketId is provided
-      const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+      const baseUrl = await InstanceConfigService.getTicketPortalUrl();
       const ticketUrl = ticketId ? `${baseUrl}/issue/${ticketId}` : baseUrl;
 
       const testhtml = await prisma.emailTemplate.findFirst({
@@ -86,6 +90,7 @@ export async function sendAssignedEmail(email: any, ticketId?: string, ticketTit
       // Build mail options with optional BCC
       const mailOptions: any = {
         from: provider.reply, 
+        replyTo: imapQueue?.username || provider.reply,
         to: email, 
         subject: ticketId ? `[Ticket #${ticketId}] Ein neues Ticket wurde Ihnen zugewiesen` : `Ein neues Ticket wurde Ihnen zugewiesen`, 
         text: textContent, 

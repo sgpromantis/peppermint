@@ -15,6 +15,9 @@ export async function sendTicketStatus(ticket: any) {
 
   const transport = await createTransportProvider();
 
+  // Look up the IMAP queue address for Reply-To so replies go to the monitored mailbox
+  const imapQueue = await prisma.emailQueue.findFirst({ where: { active: true } });
+
   // Build ticket URL from instance config (database-first) or environment variables
   const baseUrl = await InstanceConfigService.getTicketPortalUrl();
   const ticketUrl = `${baseUrl}/ticket/${ticket.id}`;
@@ -97,7 +100,8 @@ export async function sendTicketStatus(ticket: any) {
   // Build mail options with optional BCC
   const mailOptions: any = {
     from: email.reply,
-    to: ticket.email,
+    replyTo: imapQueue?.username || email.reply,
+    to: ticket.replyTo || ticket.email,
     subject: `[Ticket #${ticket.id}] Status geändert: ${statusTextGerman} - ${ticket.title}`,
     text: textContent,
     html: htmlToSend,

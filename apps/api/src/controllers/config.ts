@@ -12,6 +12,7 @@ import { track } from "../lib/hog";
 import { createTransportProvider } from "../lib/nodemailer/transport";
 import { requirePermission } from "../lib/roles";
 import { checkSession } from "../lib/session";
+import { EncryptionService } from "../lib/services/encryption.service";
 import { prisma } from "../prisma";
 
 async function tracking(event: string, properties: any) {
@@ -124,6 +125,9 @@ export function configRoutes(fastify: FastifyInstance) {
         },
       });
 
+      // Encrypt sensitive credentials
+      const encryptedClientSecret = await EncryptionService.encrypt(clientSecret);
+
       // Check if the provider exists
       const existingProvider = await prisma.oAuthProvider.findFirst();
 
@@ -132,7 +136,7 @@ export function configRoutes(fastify: FastifyInstance) {
           data: {
             name: name,
             clientId: clientId,
-            clientSecret: clientSecret,
+            clientSecret: encryptedClientSecret,
             redirectUri: redirectUri,
             scope: "", // Add appropriate scope if needed
             authorizationUrl: "", // Add appropriate URL if needed
@@ -145,7 +149,7 @@ export function configRoutes(fastify: FastifyInstance) {
           where: { id: existingProvider.id },
           data: {
             clientId: clientId,
-            clientSecret: clientSecret,
+            clientSecret: encryptedClientSecret,
             redirectUri: redirectUri,
           },
         });
@@ -185,6 +189,125 @@ export function configRoutes(fastify: FastifyInstance) {
         success: true,
         message: "SSO Provider deleted!",
       });
+    }
+  );
+
+  // Check if Azure AD / Microsoft 365 SSO is enabled
+  fastify.get(
+    "/api/v1/config/authentication/azure-ad/status",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await checkSession(request);
+      if (!user?.isAdmin) {
+        return reply.status(403).send({ error: "Admin access required" });
+      }
+
+      try {
+        const config = await prisma.config.findFirst();
+        const isEnabled = (config?.microsoft_ad_enabled as boolean) || false;
+        const redirectUri = (config?.microsoft_ad_redirect_uri as string) || "";
+
+        reply.send({
+          success: true,
+          enabled: isEnabled,
+          redirectUri: redirectUri,
+        });
+      } catch (error: any) {
+        reply.status(500).send({
+          success: false,
+          error: error.message,
+        });
+      }
+    }
+  );
+
+  // Enable Azure AD / Microsoft 365 SSO
+  fastify.post(
+    "/api/v1/config/authentication/azure-ad/enable",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await checkSession(request);
+      if (!user?.isAdmin) {
+        return reply.status(403).send({ error: "Admin access required" });
+      }
+
+      try {
+        const { redirectUri } = request.body as { redirectUri?: string };
+        const conf = await prisma.config.findFirst();
+
+        // Verify Graph config exists (required for Azure AD)
+        const graphConfig = await prisma.config.findFirst({
+          where: {
+            AND: [
+              { ms_graph_client_id: { not: null } },
+              { ms_graph_client_secret: { not: null } },
+              { ms_graph_tenant_id: { not: null } },
+            ],
+          },
+        });
+
+        if (!graphConfig) {
+          return reply.status(400).send({
+            success: false,
+            error: "Microsoft Graph configuration required. Please configure Microsoft Graph credentials first.",
+          });
+        }
+
+        const finalRedirectUri = redirectUri || `${process.env.REDIRECT_URI || "http://localhost:3000"}/auth/microsoft/callback`;
+
+        await prisma.config.update({
+          where: { id: conf!.id },
+          data: {
+            microsoft_ad_enabled: true,
+            microsoft_ad_redirect_uri: finalRedirectUri,
+          },
+        });
+
+        await tracking("azure_ad_sso_enabled", {});
+
+        reply.send({
+          success: true,
+          message: "Azure AD SSO enabled!",
+          redirectUri: finalRedirectUri,
+        });
+      } catch (error: any) {
+        reply.status(500).send({
+          success: false,
+          error: error.message,
+        });
+      }
+    }
+  );
+
+  // Disable Azure AD / Microsoft 365 SSO
+  fastify.post(
+    "/api/v1/config/authentication/azure-ad/disable",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await checkSession(request);
+      if (!user?.isAdmin) {
+        return reply.status(403).send({ error: "Admin access required" });
+      }
+
+      try {
+        const conf = await prisma.config.findFirst();
+
+        await prisma.config.update({
+          where: { id: conf!.id },
+          data: {
+            microsoft_ad_enabled: false,
+          },
+        });
+
+        await tracking("azure_ad_sso_disabled", {});
+
+        reply.send({
+          success: true,
+          message: "Azure AD SSO disabled!",
+        });
+      } catch (error: any) {
+        reply.status(500).send({
+          success: false,
+          error: error.message,
+        });
+      }
     }
   );
 

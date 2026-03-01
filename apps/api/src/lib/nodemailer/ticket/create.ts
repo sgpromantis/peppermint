@@ -12,6 +12,9 @@ export async function sendTicketCreate(ticket: any) {
     if (email) {
       const transport = await createTransportProvider();
 
+      // Look up the IMAP queue address for Reply-To so replies go to the monitored mailbox
+      const imapQueue = await prisma.emailQueue.findFirst({ where: { active: true } });
+
       // Build ticket URL from instance config (database-first) or environment variables
       const baseUrl = await InstanceConfigService.getTicketPortalUrl();
       const ticketUrl = `${baseUrl}/ticket/${ticket.id}`;
@@ -96,6 +99,7 @@ export async function sendTicketCreate(ticket: any) {
       // Build mail options with optional BCC
       const mailOptions: any = {
         from: email.reply,
+        replyTo: imapQueue?.username || email.reply,
         to: ticket.email,
         subject: `[Ticket #${ticket.id}] Anfrage wurde erfasst - ${ticket.title || "Neue Anfrage"}`,
         text: textContent,

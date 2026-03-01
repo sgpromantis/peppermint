@@ -21,6 +21,9 @@ export async function sendComment(
 
     const transport = await createTransportProvider();
 
+    // Look up the IMAP queue address for Reply-To so replies go to the monitored mailbox
+    const imapQueue = await prisma.emailQueue.findFirst({ where: { active: true } });
+
     // Get the ticket to retrieve its messageId for threading
     const ticket = await prisma.ticket.findUnique({
       where: { id },
@@ -106,6 +109,7 @@ export async function sendComment(
     // Build mail options with optional BCC
     const mailOptions: any = {
       from: provider.reply,
+      replyTo: imapQueue?.username || provider.reply,
       to: email,
       subject: `[Ticket #${id}] Neuer Kommentar - ${title}`,
       text: textContent,

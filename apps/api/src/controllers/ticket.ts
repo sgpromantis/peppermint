@@ -48,6 +48,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
         engineer,
         type,
         createdBy,
+        replyTo,
       }: any = request.body;
 
       const user = await checkSession(request);
@@ -62,6 +63,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           detail: JSON.stringify(detail),
           priority: priority ? priority : "low",
           email,
+          replyTo: replyTo || undefined,
           type: type ? type.toLowerCase() : "support",
           createdBy: createdBy
             ? {
@@ -88,9 +90,12 @@ export function ticketRoutes(fastify: FastifyInstance) {
         },
       });
 
-      if (email && validateEmail(email)) {
-        await sendTicketCreate(ticket);
-        await sendTicketConfirmation(ticket);
+      // Use replyTo address if available (for forwarded tickets from n8n)
+      const recipientEmail = ticket.replyTo || ticket.email;
+
+      if (recipientEmail && validateEmail(recipientEmail)) {
+        await sendTicketCreate({ ...ticket, email: recipientEmail });
+        await sendTicketConfirmation({ ...ticket, email: recipientEmail });
       }
 
       if (engineer && engineer.name !== "Unassigned") {
@@ -158,6 +163,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
         engineer,
         type,
         createdBy,
+        replyTo,
       }: any = request.body;
 
       // Security: Validate email exists as a user in the system
@@ -184,6 +190,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           detail: JSON.stringify(detail),
           priority: priority ? priority : "low",
           email,
+          replyTo: replyTo || undefined,
           type: type ? type.toLowerCase() : "support",
           createdBy: createdBy
             ? {
@@ -210,9 +217,12 @@ export function ticketRoutes(fastify: FastifyInstance) {
         },
       });
 
-      if (email && validateEmail(email)) {
-        await sendTicketCreate(ticket);
-        await sendTicketConfirmation(ticket);
+      // Use replyTo address if available (for forwarded tickets from n8n)
+      const recipientEmail = ticket.replyTo || ticket.email;
+
+      if (recipientEmail && validateEmail(recipientEmail)) {
+        await sendTicketCreate({ ...ticket, email: recipientEmail });
+        await sendTicketConfirmation({ ...ticket, email: recipientEmail });
       }
 
       if (engineer && engineer.name !== "Unassigned") {
@@ -243,6 +253,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
             title: ticket.title,
             priority: ticket.priority,
             email: ticket.email,
+            replyTo: ticket.replyTo,
             name: ticket.name,
             type: ticket.type,
             createdBy: ticket.createdBy,
@@ -732,9 +743,11 @@ export function ticketRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ message: "Ticket not found" });
       }
 
-      const { email, title } = ticket;
-      if (public_comment && email) {
-        sendComment(text, title, ticket.id, email);
+      const { email, title, replyTo } = ticket;
+      // Use replyTo address if available (for forwarded tickets from n8n)
+      const ticketRecipient = replyTo || email;
+      if (public_comment && ticketRecipient) {
+        sendComment(text, title, ticket.id, ticketRecipient);
       }
 
       // Notify assigned engineer about the comment via email

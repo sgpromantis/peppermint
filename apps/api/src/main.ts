@@ -65,6 +65,12 @@ server.addHook("preHandler", async function (request: any, reply: any) {
     if (request.url === "/api/v1/auth/login" && request.method === "POST") {
       return true;
     }
+    if (request.url === "/api/v1/auth/microsoft/check" && request.method === "GET") {
+      return true;
+    }
+    if (request.url === "/api/v1/auth/microsoft/callback" && request.method === "GET") {
+      return true;
+    }
     if (
       request.url === "/api/v1/ticket/public/create" &&
       request.method === "POST"

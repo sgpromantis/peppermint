@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { prisma } from "../../prisma";
 import { InstanceConfigService } from "./instance-config.service";
+import { EncryptionService } from "./encryption.service";
 
 interface MicrosoftGraphConfig {
   clientId: string;
@@ -63,9 +64,12 @@ export class MicrosoftGraphService {
       );
       const tenantId = tenantMatch ? tenantMatch[1] : "common";
 
+      // Decrypt sensitive credentials
+      const decryptedSecret = await EncryptionService.decrypt(oauthProvider.clientSecret);
+
       return {
         clientId: oauthProvider.clientId,
-        clientSecret: oauthProvider.clientSecret,
+        clientSecret: decryptedSecret,
         tenantId,
       };
     }

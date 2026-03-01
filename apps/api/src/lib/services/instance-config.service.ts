@@ -1,4 +1,5 @@
 import { prisma } from "../../prisma";
+import { EncryptionService } from "./encryption.service";
 
 /**
  * Instance configuration service
@@ -45,6 +46,7 @@ export class InstanceConfigService {
 
   /**
    * Get Microsoft Graph configuration for this instance
+   * Automatically decrypts credentials stored in database
    * 
    * @returns Object with clientId, clientSecret, and tenantId
    */
@@ -52,16 +54,21 @@ export class InstanceConfigService {
     try {
       const config = await prisma.config.findFirst();
 
-      // 1. Try database config first (instance-specific)
+      // 1. Try database config first (instance-specific, decrypted)
       if (
         config?.ms_graph_client_id &&
         config?.ms_graph_client_secret &&
         config?.ms_graph_tenant_id
       ) {
+        // Decrypt credentials from database
+        const clientId = await EncryptionService.decrypt(config.ms_graph_client_id);
+        const clientSecret = await EncryptionService.decrypt(config.ms_graph_client_secret);
+        const tenantId = await EncryptionService.decrypt(config.ms_graph_tenant_id);
+
         return {
-          clientId: config.ms_graph_client_id,
-          clientSecret: config.ms_graph_client_secret,
-          tenantId: config.ms_graph_tenant_id,
+          clientId,
+          clientSecret,
+          tenantId,
         };
       }
     } catch (error) {
@@ -87,6 +94,7 @@ export class InstanceConfigService {
 
   /**
    * Update instance configuration
+   * Automatically encrypts sensitive credentials before storing in database
    * Used by admin API to save configuration changes
    */
   static async updateConfig(updates: {
@@ -95,13 +103,28 @@ export class InstanceConfigService {
     ms_graph_client_secret?: string;
     ms_graph_tenant_id?: string;
   }) {
+    // Encrypt sensitive credentials
+    const encryptedUpdates: any = { ...updates };
+
+    if (updates.ms_graph_client_id) {
+      encryptedUpdates.ms_graph_client_id = await EncryptionService.encrypt(updates.ms_graph_client_id);
+    }
+
+    if (updates.ms_graph_client_secret) {
+      encryptedUpdates.ms_graph_client_secret = await EncryptionService.encrypt(updates.ms_graph_client_secret);
+    }
+
+    if (updates.ms_graph_tenant_id) {
+      encryptedUpdates.ms_graph_tenant_id = await EncryptionService.encrypt(updates.ms_graph_tenant_id);
+    }
+
     const config = await prisma.config.findFirst();
 
     if (!config) {
       // Create if doesn't exist
       return prisma.config.create({
         data: {
-          ...updates,
+          ...encryptedUpdates,
         },
       });
     }
@@ -109,7 +132,7 @@ export class InstanceConfigService {
     // Update existing
     return prisma.config.update({
       where: { id: config.id },
-      data: updates,
+      data: encryptedUpdates,
     });
   }
 }

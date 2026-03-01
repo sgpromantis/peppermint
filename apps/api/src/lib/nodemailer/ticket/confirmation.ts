@@ -18,6 +18,9 @@ export async function sendTicketConfirmation(ticket: any) {
 
     const transport = await createTransportProvider();
 
+    // Look up the IMAP queue address for Reply-To so replies go to the monitored mailbox
+    const imapQueue = await prisma.emailQueue.findFirst({ where: { active: true } });
+
     // Generate a unique Message-ID for threading
     const domain = email.reply?.split("@")[1] || "helpdesk.local";
     const messageId = `<ticket-${ticket.id}-${randomUUID()}@${domain}>`;
@@ -102,6 +105,7 @@ export async function sendTicketConfirmation(ticket: any) {
     // Build mail options with optional BCC
     const mailOptions: any = {
       from: email.reply,
+      replyTo: imapQueue?.username || email.reply,
       to: ticket.email,
       subject: `[Ticket #${ticket.id}] Ihre Anfrage wurde erfasst - ${ticket.title}`,
       text: `Hallo ${ticket.name || "Kunde"},\n\nVielen Dank für Ihre Anfrage. Ihr Ticket #${ticket.id} wurde erfolgreich angelegt.\n\nBetreff: ${ticket.title}\n\nSie können den Status hier einsehen: ${ticketUrl}\n\nBei Rückfragen antworten Sie bitte auf diese E-Mail mit ref:${ticket.id} im Betreff.\n\nMit freundlichen Grüßen,\nIhr Support-Team`,

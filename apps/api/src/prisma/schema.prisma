@@ -95,6 +95,7 @@ model User {
   out_of_office_message        String?
   out_of_office_start          DateTime?
   out_of_office_end            DateTime?
+  microsoftAzureId             String?   @unique
 
   todos         Todos[]
   tickets       Ticket[]
@@ -140,6 +141,7 @@ model Ticket {
   createdBy  Json?
   locked     Boolean      @default(false)
   following  Json?
+  replyTo    String?      // Original sender's reply-to address (for forwarded tickets from n8n)
   messageId  String?      // Email Message-ID for threading replies
 
   TicketFile   TicketFile[]
@@ -330,6 +332,10 @@ model Config {
   ms_graph_client_id     String?
   ms_graph_client_secret String?
   ms_graph_tenant_id     String?
+
+  // Azure AD SSO configuration
+  microsoft_ad_enabled      Boolean @default(false)
+  microsoft_ad_redirect_uri String?
 }
 
 model Uptime {

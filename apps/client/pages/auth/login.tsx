@@ -12,6 +12,8 @@ export default function Login({}) {
   const [status, setStatus] = useState("idle");
   const [auth, setAuth] = useState("oauth");
   const [url, setUrl] = useState("");
+  const [microsoftUrl, setMicrosoftUrl] = useState("");
+  const [microsoftEnabled, setMicrosoftEnabled] = useState(false);
 
   async function postData() {
     try {
@@ -62,8 +64,26 @@ export default function Login({}) {
       });
   }
 
+  async function getMicrosoftLoginUrl() {
+    try {
+      const response = await fetch(`/api/v1/auth/microsoft/check`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      
+      if (data.success && data.configured && data.url) {
+        setMicrosoftUrl(data.url);
+        setMicrosoftEnabled(true);
+      }
+    } catch (error) {
+      console.error("Error fetching Microsoft login URL:", error);
+    }
+  }
+
   useEffect(() => {
     oidcLogin();
+    getMicrosoftLoginUrl();
   }, []);
 
   useEffect(() => {
@@ -168,6 +188,22 @@ export default function Login({}) {
                     className="w-full flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >
                     Mit SSO anmelden
+                  </button>
+                )}
+
+                {microsoftEnabled && microsoftUrl && (
+                  <button
+                    type="button"
+                    onClick={() => router.push(microsoftUrl)}
+                    className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-blue-300 rounded-md shadow-sm text-sm font-medium bg-white text-gray-900 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 21 21" fill="currentColor">
+                      <path d="M11.573 8.066H21v10.934H11.573z" fill="#00A4EF"/>
+                      <path d="M0 8.066h10.427v10.934H0z" fill="#7FBA00"/>
+                      <path d="M11.573 0h10.427v9.934H11.573z" fill="#FFB900"/>
+                      <path d="M0 0h10.427v9.934H0z" fill="#F25022"/>
+                    </svg>
+                    Mit Microsoft 365 anmelden
                   </button>
                 )}
               </div>
