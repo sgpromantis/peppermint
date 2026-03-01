@@ -189,16 +189,78 @@ export class ImapService {
     }
   }
 
+  /**
+   * Try to extract the original sender from forwarding headers.
+   * When an email is forwarded/relayed through a pool/catchall address,
+   * the real sender may be in X-Original-From, X-Forwarded-For, or
+   * the envelope-from (Return-Path).
+   */
+  private static extractOriginalSender(parsed: any, imapAddress?: string): {
+    email: string;
+    name: string;
+  } | null {
+    const headers = parsed.headers;
+    if (!headers) return null;
+
+    // 1. X-Original-From header (set by some forwarders)
+    const xOriginalFrom = headers.get("x-original-from");
+    if (xOriginalFrom) {
+      const match = String(xOriginalFrom).match(/<([^>]+)>/) || 
+                    String(xOriginalFrom).match(/([^\s<]+@[^\s>]+)/);
+      if (match) {
+        console.log(`Found original sender via X-Original-From: ${match[1]}`);
+        return { email: match[1].toLowerCase(), name: match[1] };
+      }
+    }
+
+    // 2. X-Forwarded-To / X-Forwarded-For (Postfix/Poste style)
+    const xForwardedFor = headers.get("x-forwarded-for") || headers.get("x-original-sender");
+    if (xForwardedFor) {
+      const match = String(xForwardedFor).match(/([^\s<]+@[^\s>]+)/);
+      if (match) {
+        console.log(`Found original sender via X-Forwarded-For: ${match[1]}`);
+        return { email: match[1].toLowerCase(), name: match[1] };
+      }
+    }
+
+    // 3. Return-Path / envelope-from (often the real sender when forwarded)
+    const returnPath = headers.get("return-path");
+    if (returnPath) {
+      const rpAddr = String(returnPath).match(/<([^>]+)>/)?.[1] || 
+                     String(returnPath).match(/([^\s<]+@[^\s>]+)/)?.[1];
+      if (rpAddr && imapAddress && rpAddr.toLowerCase() !== imapAddress.toLowerCase()) {
+        console.log(`Found original sender via Return-Path: ${rpAddr}`);
+        return { email: rpAddr.toLowerCase(), name: rpAddr };
+      }
+    }
+
+    // 4. Delivered-To might reveal the chain
+    const deliveredTo = headers.get("delivered-to");
+    if (deliveredTo) {
+      // This is usually the recipient, not the sender - skip
+    }
+
+    // 5. If Reply-To differs from IMAP address, use it as fallback sender
+    const replyTo = parsed.replyTo?.value?.[0]?.address;
+    if (replyTo && imapAddress && replyTo.toLowerCase() !== imapAddress.toLowerCase()) {
+      console.log(`Using Reply-To as original sender: ${replyTo}`);
+      const replyToName = parsed.replyTo?.value?.[0]?.name || replyTo;
+      return { email: replyTo.toLowerCase(), name: replyToName };
+    }
+
+    return null;
+  }
+
   private static async processEmail(
     parsed: any,
     isReplyHint: boolean
   ): Promise<void> {
     const { from, subject, text, html, textAsHtml } = parsed;
-    const senderEmail = from?.value?.[0]?.address;
-    const senderName = from?.value?.[0]?.name || senderEmail;
+    let senderEmail = from?.value?.[0]?.address?.toLowerCase();
+    let senderName = from?.value?.[0]?.name || senderEmail;
 
     // Extract Reply-To header from the incoming email (if present)
-    const emailReplyTo = parsed.replyTo?.value?.[0]?.address || undefined;
+    const emailReplyTo = parsed.replyTo?.value?.[0]?.address?.toLowerCase() || undefined;
     if (emailReplyTo && emailReplyTo !== senderEmail) {
       console.log(`Email has Reply-To header: ${emailReplyTo} (From: ${senderEmail})`);
     }
@@ -206,6 +268,23 @@ export class ImapService {
     if (!senderEmail) {
       console.error("No sender email found, skipping");
       return;
+    }
+
+    // Check if the sender is the IMAP mailbox itself (forwarded email)
+    // If so, try to find the real sender from forwarding headers
+    const activeQueues = await prisma.emailQueue.findMany({ where: { active: true } });
+    const imapAddresses = activeQueues.map(q => q.username.toLowerCase());
+    
+    if (imapAddresses.includes(senderEmail.toLowerCase())) {
+      console.log(`Sender "${senderEmail}" matches IMAP mailbox — looking for original sender`);
+      const originalSender = this.extractOriginalSender(parsed, senderEmail);
+      if (originalSender) {
+        console.log(`Resolved original sender: ${originalSender.email} (was: ${senderEmail})`);
+        senderEmail = originalSender.email;
+        senderName = originalSender.name;
+      } else {
+        console.warn(`Could not resolve original sender — keeping IMAP address ${senderEmail}`);
+      }
     }
 
     // Check if this looks like a reply using multiple methods
@@ -295,11 +374,23 @@ export class ImapService {
       include: { client: true },
     });
 
-    // Determine display name: use existing user's name, or fall back to sender name
-    const displayName = existingUser?.name || senderName;
+    // Also try matching by Reply-To if direct match failed
+    const matchedUser = existingUser || (emailReplyTo ? await prisma.user.findUnique({
+      where: { email: emailReplyTo.toLowerCase() },
+      include: { client: true },
+    }) : null);
+
+    // Determine display name: use matched user's name, or fall back to sender name
+    const displayName = matchedUser?.name || senderName;
+
+    // Determine if this is an internal user or external/unknown
+    const isInternal = matchedUser ? !matchedUser.external_user : false;
+    const userType = matchedUser 
+      ? (matchedUser.external_user ? "external" : (matchedUser.isAdmin ? "admin" : (matchedUser.isManager ? "manager" : "internal")))
+      : "unknown";
 
     // Auto-detect client: first try user's linked client, then match by email domain
-    let detectedClientId: string | undefined = existingUser?.clientId || undefined;
+    let detectedClientId: string | undefined = matchedUser?.clientId || undefined;
 
     if (!detectedClientId) {
       const domain = senderEmail.split("@")[1]?.toLowerCase();
@@ -313,10 +404,27 @@ export class ImapService {
         }
       }
     } else {
-      console.log(`Auto-linked client "${existingUser?.client?.name}" via user "${existingUser?.email}"`);
+      console.log(`Auto-linked client "${matchedUser?.client?.name}" via user "${matchedUser?.email}"`);
+    }
+
+    // If user is found but not linked to a client, auto-link them
+    if (matchedUser && !matchedUser.clientId && detectedClientId) {
+      await prisma.user.update({
+        where: { id: matchedUser.id },
+        data: { clientId: detectedClientId },
+      });
+      console.log(`Auto-linked user "${matchedUser.email}" to client via domain detection`);
     }
 
     const nextNumber = await getNextTicketNumber();
+
+    // Build createdBy metadata for internal user tracking
+    const createdByInfo = matchedUser ? {
+      id: matchedUser.id,
+      name: matchedUser.name,
+      email: matchedUser.email,
+      role: userType,
+    } : undefined;
 
     const ticket = await prisma.ticket.create({
       data: {
@@ -330,8 +438,11 @@ export class ImapService {
         fromImap: true,
         detail: html || textAsHtml,
         clientId: detectedClientId || undefined,
+        createdBy: createdByInfo || undefined,
       },
     });
+
+    console.log(`Created ticket ${ticket.id} | sender: ${senderEmail} | user: ${matchedUser?.email || "unknown"} | type: ${userType} | client: ${detectedClientId || "none"}`);
 
     // Track metrics
     metrics.incrementTicketsCreated(true);
@@ -343,8 +454,6 @@ export class ImapService {
     } catch (emailError) {
       console.error("Failed to send ticket confirmation:", emailError);
     }
-
-    console.log(`Created new ticket ${ticket.id} from email`);
   }
 
   static async fetchEmails(): Promise<void> {

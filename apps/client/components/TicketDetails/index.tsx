@@ -1019,18 +1019,70 @@ export default function Ticket() {
                         </div>
                       </div>
                       <div>
-                        <div className="flex flex-row items-center text-sm space-x-1">
+                        <div className="flex flex-row items-center text-sm space-x-1 flex-wrap">
                           {data.ticket.fromImap ? (
                             <>
-                              <span className="font-bold">
-                                {data.ticket.email}
-                              </span>
-                              <span>created via email at </span>
+                              {data.ticket.createdBy ? (
+                                <>
+                                  <span className="font-bold">
+                                    {data.ticket.createdBy.name}
+                                  </span>
+                                  {data.ticket.createdBy.role && (
+                                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                      data.ticket.createdBy.role === "external" 
+                                        ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                                        : data.ticket.createdBy.role === "admin"
+                                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                        : data.ticket.createdBy.role === "manager"
+                                        ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                                        : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                    }`}>
+                                      {data.ticket.createdBy.role === "external" ? "Extern" 
+                                        : data.ticket.createdBy.role === "admin" ? "Admin"
+                                        : data.ticket.createdBy.role === "manager" ? "Manager"
+                                        : "Intern"}
+                                    </span>
+                                  )}
+                                  <span>erstellt per E-Mail</span>
+                                  {data.ticket.email && data.ticket.email !== data.ticket.createdBy.email && (
+                                    <span>
+                                      ( <strong>{data.ticket.email}</strong> )
+                                    </span>
+                                  )}
+                                  {!data.ticket.email || data.ticket.email === data.ticket.createdBy.email ? (
+                                    <span>
+                                      ( <strong>{data.ticket.createdBy.email}</strong> )
+                                    </span>
+                                  ) : null}
+                                </>
+                              ) : (
+                                <>
+                                  <span className="font-bold">
+                                    {data.ticket.name || data.ticket.email}
+                                  </span>
+                                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                    Unbekannt
+                                  </span>
+                                  <span>erstellt per E-Mail</span>
+                                  {data.ticket.name && data.ticket.email && (
+                                    <span>
+                                      ( <strong>{data.ticket.email}</strong> )
+                                    </span>
+                                  )}
+                                </>
+                              )}
+                              <span>am</span>
                               <span className="font-bold">
                                 {moment(data.ticket.createdAt).format(
                                   "DD/MM/YYYY"
                                 )}
                               </span>
+                              {data.ticket.client && (
+                                <span>
+                                  — Kunde:{" "}
+                                  <strong>{data.ticket.client.name}</strong>
+                                </span>
+                              )}
                             </>
                           ) : (
                             <>
