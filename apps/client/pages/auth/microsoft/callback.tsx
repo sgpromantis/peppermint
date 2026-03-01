@@ -34,7 +34,14 @@ export default function MicrosoftCallback() {
 
       if (data.success && data.token) {
         setCookie("session", data.token, { maxAge: 60 * 6 * 24 });
-        router.push("/");
+        // Check for saved redirect URL (e.g. from clicking an email link while logged out)
+        const redirectUrl = typeof window !== "undefined" ? sessionStorage.getItem("redirectAfterLogin") : null;
+        if (redirectUrl) {
+          sessionStorage.removeItem("redirectAfterLogin");
+          router.push(redirectUrl);
+        } else {
+          router.push("/");
+        }
       } else {
         console.error("Microsoft login failed:", data.error);
         setError(data.error || "Anmeldung fehlgeschlagen");

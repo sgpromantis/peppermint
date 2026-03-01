@@ -31,12 +31,19 @@ export const SessionProvider = ({ children }) => {
             setLoading(false);
           } else {
             console.error("Failed to fetch user profile");
+            // Save the current URL so we can redirect back after login
+            if (typeof window !== "undefined" && router.asPath !== "/auth/login" && !router.asPath.startsWith("/auth/")) {
+              sessionStorage.setItem("redirectAfterLogin", router.asPath);
+            }
             router.push("/auth/login");
           }
         });
     } catch (error) {
       // Handle fetch errors if necessary
       console.error("Error fetching user profile:", error);
+      if (typeof window !== "undefined" && router.asPath !== "/auth/login" && !router.asPath.startsWith("/auth/")) {
+        sessionStorage.setItem("redirectAfterLogin", router.asPath);
+      }
       router.push("/auth/login");
     } finally {
       setLoading(false);

@@ -21,7 +21,14 @@ export default function Login() {
 
   function setandRedirect(token) {
     setCookie("session", token, { maxAge: 60 * 6 * 24 });
-    router.push("/");
+    // Check for saved redirect URL (e.g. from clicking an email link while logged out)
+    const redirectUrl = typeof window !== "undefined" ? sessionStorage.getItem("redirectAfterLogin") : null;
+    if (redirectUrl) {
+      sessionStorage.removeItem("redirectAfterLogin");
+      router.push(redirectUrl);
+    } else {
+      router.push("/");
+    }
   }
 
   useEffect(() => {

@@ -26,7 +26,12 @@ export default function Login({}) {
         .then(async (res) => {
           if (res.user) {
             setCookie("session", res.token);
-            if (res.user.external_user) {
+            // Check for saved redirect URL (e.g. from clicking an email link while logged out)
+            const redirectUrl = typeof window !== "undefined" ? sessionStorage.getItem("redirectAfterLogin") : null;
+            if (redirectUrl) {
+              sessionStorage.removeItem("redirectAfterLogin");
+              router.push(redirectUrl);
+            } else if (res.user.external_user) {
               router.push("/portal");
             } else {
               router.push("/");
