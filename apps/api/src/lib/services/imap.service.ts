@@ -335,19 +335,23 @@ export class ImapService {
         // If the email was sent as "Sebastian Gorr <pool@ticket.promantis.de>",
         // the display name might match a real user in the database.
         if (senderName && senderName !== senderEmail) {
-          const userByName = await prisma.user.findFirst({
-            where: {
-              name: { equals: senderName, mode: "insensitive" },
-              email: { not: { in: systemAddresses } },
-            },
-            select: { email: true, name: true },
-          });
-          if (userByName) {
-            console.log(`Resolved original sender via name lookup: ${userByName.email} (name: "${senderName}")`);
-            senderEmail = userByName.email.toLowerCase();
-            senderName = userByName.name || senderName;
-          } else {
-            console.warn(`Name-based lookup for "${senderName}" found no non-system user — keeping ${senderEmail}`);
+          try {
+            const userByName = await prisma.user.findFirst({
+              where: {
+                name: { equals: senderName, mode: "insensitive" },
+                email: { not: { in: systemAddresses } },
+              },
+              select: { email: true, name: true },
+            });
+            if (userByName) {
+              console.log(`Resolved original sender via name lookup: ${userByName.email} (name: "${senderName}")`);
+              senderEmail = userByName.email.toLowerCase();
+              senderName = userByName.name || senderName;
+            } else {
+              console.warn(`Name-based lookup for "${senderName}" found no non-system user — keeping ${senderEmail}`);
+            }
+          } catch (lookupErr) {
+            console.error(`[IMAP] Name-based user lookup failed for "${senderName}":`, lookupErr);
           }
         }
       }
@@ -450,12 +454,16 @@ export class ImapService {
 
     // If still no match and senderName differs from senderEmail, try name-based lookup
     if (!matchedUser && senderName && senderName !== senderEmail) {
-      matchedUser = await prisma.user.findFirst({
-        where: { name: { equals: senderName, mode: "insensitive" } },
-        include: { client: true },
-      });
-      if (matchedUser) {
-        console.log(`Matched user "${matchedUser.name}" (${matchedUser.email}) via name lookup`);
+      try {
+        matchedUser = await prisma.user.findFirst({
+          where: { name: { equals: senderName, mode: "insensitive" } },
+          include: { client: true },
+        });
+        if (matchedUser) {
+          console.log(`Matched user "${matchedUser.name}" (${matchedUser.email}) via name lookup`);
+        }
+      } catch (lookupErr) {
+        console.error(`[IMAP] Name-based user lookup (ticket creation) failed for "${senderName}":`, lookupErr);
       }
     }
 
@@ -590,12 +598,19 @@ export class ImapService {
                 fetch.on("message", (msg) => {
                   msg.on("body", (stream) => {
                     simpleParser(stream, async (err, parsed) => {
-                      if (err) throw err;
-                      const subjectLower = parsed.subject?.toLowerCase() || "";
-                      const isReply =
-                        subjectLower.includes("re:") ||
-                        subjectLower.includes("ref:");
-                      await this.processEmail(parsed, isReply || false);
+                      if (err) {
+                        console.error("[IMAP] Failed to parse email:", err);
+                        return;
+                      }
+                      try {
+                        const subjectLower = parsed.subject?.toLowerCase() || "";
+                        const isReply =
+                          subjectLower.includes("re:") ||
+                          subjectLower.includes("ref:");
+                        await this.processEmail(parsed, isReply || false);
+                      } catch (processError) {
+                        console.error(`[IMAP] CRITICAL: processEmail failed for subject "${parsed.subject}", from "${parsed.from?.value?.[0]?.address}":`, processError);
+                      }
                     });
                   });
 
