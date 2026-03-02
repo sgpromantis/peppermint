@@ -31,6 +31,28 @@ const validateEmail = (email: string) => {
     );
 };
 
+// Valid TicketType enum values
+const VALID_TICKET_TYPES = [
+  "bug", "feature", "support", "incident",
+  "service", "maintenance", "access", "feedback",
+];
+
+// Map localized (German) type names to Prisma enum values
+const TYPE_ALIASES: Record<string, string> = {
+  vorfall: "incident",
+  fehler: "bug",
+  wartung: "maintenance",
+  zugriff: "access",
+};
+
+function normalizeTicketType(raw?: string): string {
+  if (!raw) return "support";
+  const lower = raw.toLowerCase();
+  if (VALID_TICKET_TYPES.includes(lower)) return lower;
+  if (TYPE_ALIASES[lower]) return TYPE_ALIASES[lower];
+  return "support"; // fallback for unknown values
+}
+
 export function ticketRoutes(fastify: FastifyInstance) {
   fastify.post(
     "/api/v1/ticket/create",
@@ -64,7 +86,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           priority: priority ? priority : "low",
           email,
           replyTo: replyTo || undefined,
-          type: type ? type.toLowerCase() : "support",
+          type: normalizeTicketType(type),
           createdBy: createdBy
             ? {
                 id: createdBy.id,
@@ -214,7 +236,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
           priority: priority ? priority : "low",
           email,
           replyTo: replyTo || undefined,
-          type: type ? type.toLowerCase() : "support",
+          type: normalizeTicketType(type),
           createdBy: createdBy
             ? {
                 id: createdBy.id,

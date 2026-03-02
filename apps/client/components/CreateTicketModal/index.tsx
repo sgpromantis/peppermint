@@ -18,13 +18,13 @@ function classNames(...classes) {
 }
 
 const type = [
-  { id: 5, name: "Vorfall" },
-  { id: 1, name: "Service" },
-  { id: 2, name: "Feature" },
-  { id: 3, name: "Fehler" },
-  { id: 4, name: "Wartung" },
-  { id: 6, name: "Zugriff" },
-  { id: 8, name: "Feedback" },
+  { id: 5, name: "Vorfall", value: "incident" },
+  { id: 1, name: "Service", value: "service" },
+  { id: 2, name: "Feature", value: "feature" },
+  { id: 3, name: "Fehler", value: "bug" },
+  { id: 4, name: "Wartung", value: "maintenance" },
+  { id: 6, name: "Zugriff", value: "access" },
+  { id: 8, name: "Feedback", value: "feedback" },
 ];
 
 export default function CreateTicketModal({ keypress, setKeyPressDown }) {
@@ -102,7 +102,7 @@ export default function CreateTicketModal({ keypress, setKeyPressDown }) {
         detail: issue,
         priority,
         engineer,
-        type: selected.name,
+        type: selected.value || selected.name,
         createdBy: {
           id: user.id,
           name: user.name,
