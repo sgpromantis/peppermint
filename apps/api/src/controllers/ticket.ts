@@ -9,7 +9,6 @@ import { track } from "../lib/hog";
 import { sendAssignedEmail } from "../lib/nodemailer/ticket/assigned";
 import { sendComment } from "../lib/nodemailer/ticket/comment";
 import { sendTicketCreate } from "../lib/nodemailer/ticket/create";
-import { sendTicketConfirmation } from "../lib/nodemailer/ticket/confirmation";
 import { sendTicketStatus } from "../lib/nodemailer/ticket/status";
 import { assignedNotification } from "../lib/notifications/issue/assigned";
 import { commentNotification } from "../lib/notifications/issue/comment";
@@ -118,7 +117,6 @@ export function ticketRoutes(fastify: FastifyInstance) {
 
       if (recipientEmail && validateEmail(recipientEmail)) {
         await sendTicketCreate({ ...ticket, email: recipientEmail });
-        await sendTicketConfirmation({ ...ticket, email: recipientEmail });
       }
 
       if (engineer && engineer.name !== "Unassigned") {
@@ -263,7 +261,6 @@ export function ticketRoutes(fastify: FastifyInstance) {
 
       if (recipientEmail && validateEmail(recipientEmail)) {
         await sendTicketCreate({ ...ticket, email: recipientEmail });
-        await sendTicketConfirmation({ ...ticket, email: recipientEmail });
       }
 
       if (engineer && engineer.name !== "Unassigned") {

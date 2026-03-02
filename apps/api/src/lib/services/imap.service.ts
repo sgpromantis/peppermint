@@ -8,7 +8,6 @@ import { prisma } from "../../prisma";
 import { EmailConfig, EmailQueue } from "../types/email";
 import { AuthService } from "./auth.service";
 import { metrics } from "../prometheus-metrics";
-import { sendTicketConfirmation } from "../nodemailer/ticket/confirmation";
 import { sendTicketCreate } from "../nodemailer/ticket/create";
 import { PROHIBITED_ADDRESSES } from "../nodemailer/ticket/loop-prevention";
 import { getNextTicketNumber } from "../ticket-number";
@@ -608,7 +607,6 @@ export class ImapService {
     } else {
       try {
         await sendTicketCreate(ticket);
-        await sendTicketConfirmation(ticket);
       } catch (emailError) {
         console.error("Failed to send ticket emails:", emailError);
       }
