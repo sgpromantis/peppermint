@@ -232,8 +232,8 @@ model TicketFile {
 
   ticketId String
   ticket   Ticket @relation(fields: [ticketId], references: [id])
-  userId   String
-  user     User   @relation(fields: [userId], references: [id])
+  userId   String?
+  user     User?  @relation(fields: [userId], references: [id])
 }
 
 model Notes {

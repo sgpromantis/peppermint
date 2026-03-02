@@ -1,6 +1,9 @@
 import EmailReplyParser from "email-reply-parser";
+import fs from "fs";
 import Imap from "imap";
 import { simpleParser } from "mailparser";
+import path from "path";
+import crypto from "crypto";
 import { prisma } from "../../prisma";
 import { EmailConfig, EmailQueue } from "../types/email";
 import { AuthService } from "./auth.service";
@@ -9,6 +12,47 @@ import { sendTicketConfirmation } from "../nodemailer/ticket/confirmation";
 import { sendTicketCreate } from "../nodemailer/ticket/create";
 import { PROHIBITED_ADDRESSES } from "../nodemailer/ticket/loop-prevention";
 import { getNextTicketNumber } from "../ticket-number";
+
+/**
+ * Save email attachments to disk and create TicketFile records.
+ * Wrapped in try-catch so attachment failures never kill email processing.
+ */
+async function saveAttachments(
+  attachments: any[],
+  ticketId: string,
+  userId?: string | null
+): Promise<void> {
+  if (!attachments || attachments.length === 0) return;
+
+  const uploadsDir = path.resolve("uploads");
+  fs.mkdirSync(uploadsDir, { recursive: true });
+
+  for (const att of attachments) {
+    try {
+      const uniqueName = `${crypto.randomBytes(12).toString("hex")}-${att.filename || "attachment"}`;
+      const filePath = path.join(uploadsDir, uniqueName);
+
+      // att.content is a Buffer from mailparser
+      fs.writeFileSync(filePath, att.content);
+
+      await prisma.ticketFile.create({
+        data: {
+          ticketId,
+          filename: att.filename || "attachment",
+          path: `uploads/${uniqueName}`,
+          mime: att.contentType || "application/octet-stream",
+          encoding: att.encoding || "7bit",
+          size: att.size || att.content.length,
+          userId: userId || null,
+        },
+      });
+
+      console.log(`[IMAP] Saved attachment "${att.filename}" (${att.size} bytes) for ticket ${ticketId}`);
+    } catch (attErr) {
+      console.error(`[IMAP] Failed to save attachment "${att.filename}" for ticket ${ticketId}:`, attErr);
+    }
+  }
+}
 
 function getReplyText(email: any): string {
   const parsed = new EmailReplyParser().read(email.text || "");
@@ -386,6 +430,10 @@ export class ImapService {
       // Track metrics
       metrics.incrementEmailsReceived();
       console.log(`Added reply as comment to ticket ${ticket.id}`);
+
+      // Save any attachments from the reply email
+      await saveAttachments(parsed.attachments || [], ticket.id, null);
+
       return;
     }
 
@@ -422,6 +470,10 @@ export class ImapService {
 
         metrics.incrementEmailsReceived();
         console.log(`Added reply as comment to ticket ${recentTicket.id} (fallback by sender)`);
+
+        // Save any attachments from the reply email
+        await saveAttachments(parsed.attachments || [], recentTicket.id, null);
+
         return;
       }
 
@@ -543,6 +595,9 @@ export class ImapService {
     // Track metrics
     metrics.incrementTicketsCreated(true);
     metrics.incrementEmailsReceived();
+
+    // Save any email attachments to the new ticket
+    await saveAttachments(parsed.attachments || [], ticket.id, matchedUser?.id || null);
 
     // Loop prevention: only send confirmation/create emails if the resolved sender
     // is NOT one of our own system addresses (IMAP queues, SMTP sender, etc.)

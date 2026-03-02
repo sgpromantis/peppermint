@@ -46,6 +46,7 @@ import {
   CheckIcon,
   CircleCheck,
   CircleDotDashed,
+  Download,
   Ellipsis,
   Eye,
   EyeOff,
@@ -53,6 +54,7 @@ import {
   Loader,
   LoaderCircle,
   Lock,
+  Paperclip,
   PanelTopClose,
   SignalHigh,
   SignalLow,
@@ -1394,40 +1396,98 @@ export default function Ticket() {
                     </div>
                   )}
                 </div> */}
-                    {/* <div className="border-t border-gray-200">
-                  <div className="flex flex-row items-center justify-between mt-2">
-                    <span className="text-sm font-medium text-gray-500 dark:text-white">
-                      Attachments
-                    </span>
-                    <button
-                      className="text-sm font-medium text-gray-500 hover:underline dark:text-white"
-                      onClick={handleButtonClick}
-                    >
-                      upload
-                      <input
-                        id="file"
-                        type="file"
-                        hidden
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                      />
-                    </button>
-                  </div>
 
-                  <>
-                    {data.ticket.files.length > 0 &&
-                      data.ticket.files.map((file: any) => (
-                        <div className="p-1/2 px-1  hover:bg-gray-200 hover:cursor-pointer">
-                          <span className="text-xs">{file.filename}</span>
-                        </div>
-                      ))}
-                    {file && (
-                      <div className="p-1/2 px-1">
-                        <span className="text-xs">{file.name}</span>
+                    <div className="border-t border-gray-200">
+                      <div className="flex flex-row items-center justify-between mt-2">
+                        <span className="text-sm font-medium text-gray-500 dark:text-white flex items-center gap-1">
+                          <Paperclip className="h-4 w-4" />
+                          Attachments
+                        </span>
+                        <button
+                          className="text-sm font-medium text-gray-500 hover:underline dark:text-white"
+                          onClick={handleButtonClick}
+                        >
+                          upload
+                          <input
+                            id="file"
+                            type="file"
+                            hidden
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                          />
+                        </button>
                       </div>
-                    )}
-                  </>
-                </div> */}
+
+                      <div className="mt-1 space-y-1">
+                        {data.ticket.files && data.ticket.files.length > 0 ? (
+                          data.ticket.files.map((f: any) => (
+                            <div
+                              key={f.id}
+                              className="flex items-center justify-between p-1 px-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 group"
+                            >
+                              <span className="text-xs truncate max-w-[140px] dark:text-white">
+                                {f.filename}
+                              </span>
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a
+                                  href={`/api/v1/ticket/${id}/file/${f.id}/download`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                                  title="Download"
+                                >
+                                  <Download className="h-3.5 w-3.5 text-gray-500" />
+                                </a>
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch(
+                                        `/api/v1/ticket/${id}/file/${f.id}/delete`,
+                                        {
+                                          method: "DELETE",
+                                          headers: {
+                                            Authorization: `Bearer ${token}`,
+                                          },
+                                        }
+                                      );
+                                      const result = await res.json();
+                                      if (result.success) {
+                                        refetch();
+                                      } else {
+                                        toast({
+                                          variant: "destructive",
+                                          title: "Error",
+                                          description:
+                                            result.message ||
+                                            "Failed to delete file",
+                                        });
+                                      }
+                                    } catch (err) {
+                                      console.error("Delete file error:", err);
+                                    }
+                                  }}
+                                  className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
+                            No files attached
+                          </span>
+                        )}
+                        {file && (
+                          <div className="p-1 px-1.5">
+                            <span className="text-xs text-blue-500">
+                              Uploading: {file.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
