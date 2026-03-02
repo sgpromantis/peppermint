@@ -22,6 +22,7 @@ import { sendWebhookNotification } from "../lib/notifications/webhook";
 import { requirePermission } from "../lib/roles";
 import { checkSession } from "../lib/session";
 import { prisma } from "../prisma";
+import { TicketType } from "@prisma/client";
 
 const validateEmail = (email: string) => {
   return String(email)
@@ -45,12 +46,12 @@ const TYPE_ALIASES: Record<string, string> = {
   zugriff: "access",
 };
 
-function normalizeTicketType(raw?: string): string {
-  if (!raw) return "support";
+function normalizeTicketType(raw?: string): TicketType {
+  if (!raw) return "support" as TicketType;
   const lower = raw.toLowerCase();
-  if (VALID_TICKET_TYPES.includes(lower)) return lower;
-  if (TYPE_ALIASES[lower]) return TYPE_ALIASES[lower];
-  return "support"; // fallback for unknown values
+  if (VALID_TICKET_TYPES.includes(lower)) return lower as TicketType;
+  if (TYPE_ALIASES[lower]) return TYPE_ALIASES[lower] as TicketType;
+  return "support" as TicketType; // fallback for unknown values
 }
 
 export function ticketRoutes(fastify: FastifyInstance) {
