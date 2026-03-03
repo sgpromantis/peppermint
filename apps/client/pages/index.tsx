@@ -86,7 +86,7 @@ export default function Home() {
   }
 
   const stats = [
-    { name: t("open_issues"), stat: openTickets, href: "/issues" },
+    { name: t("open_issues"), stat: openTickets, href: "/issues?filter=open" },
     {
       name: t("completed_issues"),
       stat: completedTickets,
