@@ -59,6 +59,7 @@ import {
   SignalHigh,
   SignalLow,
   SignalMedium,
+  Tag,
   Trash2,
   Unlock,
 } from "lucide-react";
@@ -155,6 +156,8 @@ export default function Ticket() {
   const [timeReason, setTimeReason] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [assignedClient, setAssignedClient] = useState<any>();
+  const [ticketType, setTicketType] = useState<any>();
+  const [ticketTypeOptions, setTicketTypeOptions] = useState<any[]>([]);
 
   const history = useRouter();
 
@@ -176,6 +179,7 @@ export default function Ticket() {
         title: debounceTitle,
         priority: priority?.value,
         status: ticketStatus?.value,
+        type: ticketType?.value,
       }),
     }).then((res) => res.json());
 
@@ -418,6 +422,31 @@ export default function Ticket() {
     }
   }
 
+  async function fetchTicketTypes() {
+    try {
+      const res = await fetch(`/api/v1/ticket/ticket-types`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }).then((r) => r.json());
+
+      if (res.success && Array.isArray(res.types)) {
+        setTicketTypeOptions(
+          res.types.map((t: string, idx: number) => ({
+            id: String(idx),
+            name: t.charAt(0).toUpperCase() + t.slice(1),
+            value: t,
+            icon: Tag,
+          }))
+        );
+      }
+    } catch (e) {
+      console.error("Failed to fetch ticket types:", e);
+    }
+  }
+
   async function subscribe() {
     if (data && data.ticket && data.ticket.locked) return;
 
@@ -556,6 +585,7 @@ export default function Ticket() {
   useEffect(() => {
     fetchUsers();
     fetchClients();
+    fetchTicketTypes();
   }, []);
 
   useEffect(() => {
@@ -571,7 +601,7 @@ export default function Ticket() {
 
   useEffect(() => {
     update();
-  }, [priority, ticketStatus, debounceTitle]);
+  }, [priority, ticketStatus, ticketType, debounceTitle]);
 
   useEffect(() => {
     if (issue) {
@@ -912,6 +942,18 @@ export default function Ticket() {
                             placeholder="Change Client..."
                             hideInitial={false}
                           />
+
+                          {ticketTypeOptions.length > 0 && (
+                            <IconCombo
+                              value={ticketTypeOptions}
+                              update={setTicketType}
+                              defaultName={
+                                data.ticket.type ? data.ticket.type : ""
+                              }
+                              disabled={data.ticket.locked}
+                              hideInitial={false}
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1316,6 +1358,17 @@ export default function Ticket() {
                       disabled={data.ticket.locked}
                       hideInitial={false}
                     />
+                    {ticketTypeOptions.length > 0 && (
+                      <IconCombo
+                        value={ticketTypeOptions}
+                        update={setTicketType}
+                        defaultName={
+                          data.ticket.type ? data.ticket.type : ""
+                        }
+                        disabled={data.ticket.locked}
+                        hideInitial={false}
+                      />
+                    )}
                     {clients && (
                       <ClientCombo
                         value={clients}

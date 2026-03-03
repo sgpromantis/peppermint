@@ -138,7 +138,7 @@ model Ticket {
   fromImap   Boolean
   Number     Int          @default(autoincrement())
   status     TicketStatus @default(needs_support)
-  type       TicketType   @default(support)
+  type       String       @default("support")
   hidden     Boolean      @default(false)
   createdBy  Json?
   locked     Boolean      @default(false)
@@ -340,6 +340,9 @@ model Config {
   // Azure AD SSO configuration
   microsoft_ad_enabled      Boolean @default(false)
   microsoft_ad_redirect_uri String?
+
+  // Custom ticket types (JSON array of strings, e.g. ["bug","feature","support"])
+  ticket_types              Json?
 }
 
 model Uptime {
@@ -443,17 +446,6 @@ enum TicketStatus {
   in_progress
   in_review
   done
-}
-
-enum TicketType {
-  bug
-  feature
-  support
-  incident
-  service
-  maintenance
-  access
-  feedback
 }
 
 enum Template {

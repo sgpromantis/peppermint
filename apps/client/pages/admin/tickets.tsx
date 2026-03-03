@@ -241,12 +241,31 @@ export default function Clients() {
   } | null>(null);
   const [isResetting, setIsResetting] = useState(false);
 
+  // Ticket type management state
+  const [ticketTypes, setTicketTypes] = useState<string[]>([]);
+  const [newTypeName, setNewTypeName] = useState("");
+  const [isSavingTypes, setIsSavingTypes] = useState(false);
+
   useEffect(() => {
     fetchTicketNumberInfo().then((res) => {
       if (res.success) {
         setNumberInfo(res);
       }
     });
+    // Fetch current ticket types
+    fetch(`/api/v1/ticket/ticket-types`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getCookie("session")}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && Array.isArray(res.types)) {
+          setTicketTypes(res.types);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleResetSequence = async () => {
@@ -278,6 +297,68 @@ export default function Clients() {
       });
     } finally {
       setIsResetting(false);
+    }
+  };
+
+  const handleAddType = () => {
+    const trimmed = newTypeName.trim().toLowerCase();
+    if (!trimmed) return;
+    if (ticketTypes.includes(trimmed)) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: "Dieser Typ existiert bereits.",
+      });
+      return;
+    }
+    setTicketTypes((prev) => [...prev, trimmed]);
+    setNewTypeName("");
+  };
+
+  const handleRemoveType = (type: string) => {
+    setTicketTypes((prev) => prev.filter((t) => t !== type));
+  };
+
+  const handleSaveTypes = async () => {
+    if (ticketTypes.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: "Mindestens ein Ticket-Typ muss vorhanden sein.",
+      });
+      return;
+    }
+    setIsSavingTypes(true);
+    try {
+      const res = await fetch(`/api/v1/ticket/ticket-types`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("session")}`,
+        },
+        body: JSON.stringify({ types: ticketTypes }),
+      }).then((r) => r.json());
+      if (res.success) {
+        setTicketTypes(res.types);
+        toast({
+          title: "Erfolgreich",
+          description: "Ticket-Typen wurden gespeichert.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Fehler",
+          description: res.message || "Fehler beim Speichern.",
+        });
+      }
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Fehler",
+        description: "Fehler beim Speichern der Ticket-Typen.",
+      });
+    } finally {
+      setIsSavingTypes(false);
     }
   };
 
@@ -447,6 +528,62 @@ export default function Clients() {
                 </div>
               </div>
             )}
+
+            {/* Ticket Type Management Section */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">
+                Ticket-Typen verwalten
+              </h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Definieren Sie die verfügbaren Ticket-Typen für Ihr System. Diese werden bei der Erstellung und Bearbeitung von Tickets angezeigt.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {ticketTypes.map((type) => (
+                  <span
+                    key={type}
+                    className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10"
+                  >
+                    <span className="capitalize">{type}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveType(type)}
+                      className="ml-1 text-blue-400 hover:text-red-500 transition-colors"
+                      title="Entfernen"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+                {ticketTypes.length === 0 && (
+                  <span className="text-sm text-gray-400 italic">
+                    Keine Typen definiert — Standardtypen werden verwendet.
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3 mb-3">
+                <input
+                  type="text"
+                  value={newTypeName}
+                  onChange={(e) => setNewTypeName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleAddType(); }}
+                  placeholder="Neuen Typ hinzufügen..."
+                  className="block w-64 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleAddType}
+                  disabled={!newTypeName.trim()}
+                >
+                  Hinzufügen
+                </Button>
+                <Button
+                  onClick={handleSaveTypes}
+                  disabled={isSavingTypes}
+                >
+                  {isSavingTypes ? "Wird gespeichert..." : "Typen speichern"}
+                </Button>
+              </div>
+            </div>
 
             <div className="py-4">
               {status === "loading" && (

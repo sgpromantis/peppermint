@@ -21,7 +21,6 @@ import { sendWebhookNotification } from "../lib/notifications/webhook";
 import { requirePermission } from "../lib/roles";
 import { checkSession } from "../lib/session";
 import { prisma } from "../prisma";
-import { TicketType } from "@prisma/client";
 
 const validateEmail = (email: string) => {
   return String(email)
@@ -31,13 +30,13 @@ const validateEmail = (email: string) => {
     );
 };
 
-// Valid TicketType enum values
-const VALID_TICKET_TYPES = [
+// Default built-in ticket types
+const DEFAULT_TICKET_TYPES = [
   "bug", "feature", "support", "incident",
   "service", "maintenance", "access", "feedback",
 ];
 
-// Map localized (German) type names to Prisma enum values
+// Map localized (German) type names to English values
 const TYPE_ALIASES: Record<string, string> = {
   vorfall: "incident",
   fehler: "bug",
@@ -45,12 +44,16 @@ const TYPE_ALIASES: Record<string, string> = {
   zugriff: "access",
 };
 
-function normalizeTicketType(raw?: string): TicketType {
-  if (!raw) return "support" as TicketType;
+/**
+ * Normalize a raw ticket type string to a valid type.
+ * Supports German aliases and falls back to "support" for unknown values.
+ */
+function normalizeTicketType(raw?: string): string {
+  if (!raw) return "support";
   const lower = raw.toLowerCase();
-  if (VALID_TICKET_TYPES.includes(lower)) return lower as TicketType;
-  if (TYPE_ALIASES[lower]) return TYPE_ALIASES[lower] as TicketType;
-  return "support" as TicketType; // fallback for unknown values
+  if (TYPE_ALIASES[lower]) return TYPE_ALIASES[lower];
+  // Accept any non-empty string (custom types are allowed now)
+  return lower;
 }
 
 export function ticketRoutes(fastify: FastifyInstance) {
@@ -595,7 +598,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
       preHandler: requirePermission(["issue::update"]),
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id, note, detail, title, priority, status, client }: any =
+      const { id, note, detail, title, priority, status, client, type }: any =
         request.body;
 
       const user = await checkSession(request);
@@ -604,15 +607,22 @@ export function ticketRoutes(fastify: FastifyInstance) {
         where: { id: id },
       });
 
+      const updateData: any = {
+        detail,
+        note,
+        title,
+        priority,
+        status,
+      };
+
+      // Include type if provided
+      if (type !== undefined) {
+        updateData.type = normalizeTicketType(type);
+      }
+
       await prisma.ticket.update({
         where: { id: id },
-        data: {
-          detail,
-          note,
-          title,
-          priority,
-          status,
-        },
+        data: updateData,
       });
 
       if (priority && issue!.priority !== priority) {
@@ -1271,6 +1281,68 @@ export function ticketRoutes(fastify: FastifyInstance) {
         reply.status(500).send({
           success: false,
           message: "Fehler beim Abrufen der Ticketnummern-Info",
+        });
+      }
+    }
+  );
+
+  // ── Ticket Type Management ──────────────────────────────────────────
+
+  // Get available ticket types (public — used by forms & detail view)
+  fastify.get(
+    "/api/v1/ticket/ticket-types",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const config = await prisma.config.findFirst();
+        const types: string[] =
+          config?.ticket_types && Array.isArray(config.ticket_types)
+            ? (config.ticket_types as string[])
+            : DEFAULT_TICKET_TYPES;
+        reply.send({ success: true, types });
+      } catch (error) {
+        console.error("Failed to get ticket types:", error);
+        reply.send({ success: true, types: DEFAULT_TICKET_TYPES });
+      }
+    }
+  );
+
+  // Update ticket types (admin only)
+  fastify.put(
+    "/api/v1/ticket/ticket-types",
+    {
+      preHandler: requirePermission(["settings::manage"]),
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { types }: any = request.body;
+        if (!Array.isArray(types) || types.length === 0) {
+          return reply.status(400).send({
+            success: false,
+            message: "Mindestens ein Ticket-Typ muss vorhanden sein.",
+          });
+        }
+
+        // Normalize: lowercase, trim, deduplicate
+        const normalized = [...new Set(
+          types.map((t: string) => t.trim().toLowerCase()).filter(Boolean)
+        )];
+
+        const config = await prisma.config.findFirst();
+        if (!config) {
+          return reply.status(500).send({ success: false, message: "Config not found" });
+        }
+
+        await prisma.config.update({
+          where: { id: config.id },
+          data: { ticket_types: normalized },
+        });
+
+        reply.send({ success: true, types: normalized });
+      } catch (error) {
+        console.error("Failed to update ticket types:", error);
+        reply.status(500).send({
+          success: false,
+          message: "Fehler beim Aktualisieren der Ticket-Typen",
         });
       }
     }

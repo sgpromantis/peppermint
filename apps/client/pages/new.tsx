@@ -14,7 +14,8 @@ function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
-const type = [
+// Fallback types if API not available
+const defaultTypes = [
   { id: 5, name: "Incident" },
   { id: 1, name: "Service" },
   { id: 2, name: "Feature" },
@@ -39,7 +40,8 @@ export default function CreateTicket() {
   const [priority, setPriority] = useState("medium");
   const [options, setOptions] = useState<any>();
   const [users, setUsers] = useState<any>();
-  const [selected, setSelected] = useState<any>(type[3]);
+  const [typeOptions, setTypeOptions] = useState<any[]>(defaultTypes);
+  const [selected, setSelected] = useState<any>(defaultTypes[3]);
 
   const fetchClients = async () => {
     await fetch(`/api/v1/clients/all`, {
@@ -120,9 +122,34 @@ export default function CreateTicket() {
       });
   }
 
+  async function fetchTicketTypes() {
+    try {
+      const res = await fetch(`/api/v1/ticket/ticket-types`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }).then((r) => r.json());
+      if (res.success && Array.isArray(res.types) && res.types.length > 0) {
+        const opts = res.types.map((t: string, idx: number) => ({
+          id: idx,
+          name: t.charAt(0).toUpperCase() + t.slice(1),
+        }));
+        setTypeOptions(opts);
+        // Default to "support" or first item
+        const supportOpt = opts.find((o: any) => o.name.toLowerCase() === "support");
+        setSelected(supportOpt || opts[0]);
+      }
+    } catch (e) {
+      console.error("Failed to fetch ticket types:", e);
+    }
+  }
+
   useEffect(() => {
     fetchClients();
     fetchUsers();
+    fetchTicketTypes();
   }, []);
 
   return (
@@ -377,7 +404,7 @@ export default function CreateTicket() {
                     leaveTo="opacity-0"
                   >
                     <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#0A090C] dark:text-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                      {type.map((person) => (
+                      {typeOptions.map((person) => (
                         <Listbox.Option
                           key={person.id}
                           className={({ active }) =>

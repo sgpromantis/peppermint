@@ -13,9 +13,9 @@ import {
   ChevronUpDownIcon,
 } from "@heroicons/react/20/solid";
 import { useRouter } from "next/router";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
-const type = [
+const defaultTypes = [
   { id: 5, name: "Vorfall" },
   { id: 1, name: "Service" },
   { id: 2, name: "Feature" },
@@ -41,12 +41,31 @@ export default function ClientTicketNew() {
   const [view, setView] = useState("new");
   const [ticketID, setTicketID] = useState("");
 
-  const [selected, setSelected] = useState(type[2]);
+  const [typeOptions, setTypeOptions] = useState<any[]>(defaultTypes);
+  const [selected, setSelected] = useState(defaultTypes[2]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState(pri[0]);
+
+  useEffect(() => {
+    // Fetch custom ticket types (public endpoint)
+    fetch(`/api/v1/ticket/ticket-types`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success && Array.isArray(res.types) && res.types.length > 0) {
+          const opts = res.types.map((t: string, idx: number) => ({
+            id: idx,
+            name: t.charAt(0).toUpperCase() + t.slice(1),
+          }));
+          setTypeOptions(opts);
+          const supportOpt = opts.find((o: any) => o.name.toLowerCase() === "support");
+          setSelected(supportOpt || opts[0]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   async function submitTicket() {
     setIsLoading(true);
@@ -183,7 +202,7 @@ export default function ClientTicketNew() {
                       leaveTo="opacity-0"
                     >
                       <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                        {type.map((person) => (
+                        {typeOptions.map((person) => (
                           <Listbox.Option
                             key={person.id}
                             className={({ active }) =>

@@ -1,18 +1,28 @@
 import { Ticket } from '@/shadcn/types/tickets';
 import { useEffect, useState } from 'react';
 
-export function useTicketFilters(tickets: Ticket[] = []) {
+/**
+ * @param tickets - array of tickets to filter
+ * @param initialFilter - optional query-string filter from dashboard: "closed" | "unassigned" | "open"
+ */
+export function useTicketFilters(tickets: Ticket[] = [], initialFilter?: string) {
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>(() => {
+    if (initialFilter) return []; // query filter overrides localStorage
     const saved = localStorage.getItem("all_selectedPriorities");
     return saved ? JSON.parse(saved) : [];
   });
 
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(() => {
+    if (initialFilter === "closed") return ["closed"];
+    if (initialFilter === "open") return ["open"];
+    if (initialFilter) return []; // e.g. "unassigned" — no status filter
     const saved = localStorage.getItem("all_selectedStatuses");
     return saved ? JSON.parse(saved) : [];
   });
 
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(() => {
+    if (initialFilter === "unassigned") return ["Unassigned"];
+    if (initialFilter) return []; // other filters — no assignee filter
     const saved = localStorage.getItem("all_selectedAssignees");
     return saved ? JSON.parse(saved) : [];
   });

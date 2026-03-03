@@ -28,6 +28,11 @@ export default function Tickets() {
 
   const token = getCookie("session");
   const user = useUser();
+
+  // Read dashboard filter from query param (?filter=closed / ?filter=unassigned)
+  const initialFilter = typeof router.query.filter === "string"
+    ? router.query.filter
+    : undefined;
   
   // Fetch tickets data
   const { data, status, refetch } = useQuery(
@@ -48,7 +53,7 @@ export default function Tickets() {
     handleAssigneeToggle,
     clearFilters,
     filteredTickets
-  } = useTicketFilters(data?.tickets);
+  } = useTicketFilters(data?.tickets, initialFilter);
 
   const {
     viewMode,
