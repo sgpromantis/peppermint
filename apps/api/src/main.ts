@@ -171,6 +171,21 @@ const start = async () => {
     await prisma.$connect();
     server.log.info("Connected to Prisma");
 
+    // Idempotent: set default language to German for DB column & existing users
+    try {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE "User" ALTER COLUMN "language" SET DEFAULT 'de'`
+      );
+      const updated = await prisma.$executeRawUnsafe(
+        `UPDATE "User" SET "language" = 'de' WHERE "language" = 'en' OR "language" IS NULL`
+      );
+      if (updated > 0) {
+        console.log(`✓ Updated ${updated} user(s) default language to German`);
+      }
+    } catch (langErr) {
+      console.log("Note: Language default update skipped:", (langErr as any).message);
+    }
+
     const port = 5003;
 
     server.listen(
