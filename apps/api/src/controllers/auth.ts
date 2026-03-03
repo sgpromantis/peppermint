@@ -587,7 +587,7 @@ export function authRoutes(fastify: FastifyInstance) {
               password: await bcrypt.hash(generateRandomPassword(12), 10), // Set a random password of length 12
               name: userInfo.name || "New User", // Use the name from userInfo or a default
               isAdmin: false, // Set isAdmin to false for basic users
-              language: "en", // Set a default language
+              language: "de", // Set a default language
               external_user: false, // Mark as external user
               firstLogin: true, // Set firstLogin to true
             },

@@ -200,7 +200,7 @@ export class MicrosoftLoginService {
         external_user: false,
         microsoftAzureId: userInfo.oid,
         firstLogin: true,
-        language: "en",
+        language: "de",
       },
     });
 

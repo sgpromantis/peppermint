@@ -14,7 +14,7 @@ export default function CreateUser() {
   const [name, setName] = useState("");
   const [admin, setAdmin] = useState(false);
   const [manager, setManager] = useState(false);
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState("de");
 
   const { user } = useUser();
 
