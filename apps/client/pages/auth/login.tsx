@@ -14,6 +14,7 @@ export default function Login({}) {
   const [url, setUrl] = useState("");
   const [microsoftUrl, setMicrosoftUrl] = useState("");
   const [microsoftEnabled, setMicrosoftEnabled] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
 
   async function postData() {
     try {
@@ -116,102 +117,191 @@ export default function Login({}) {
         ) : (
           <div className="bg-background py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-foreground"
-                >
-                  E-Mail-Adresse
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border text-gray-900 border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                    onKeyPress={(event) => {
-                      if (event.key === "Enter") {
-                        postData();
-                      }
-                    }}
-                  />
+              {/* When Microsoft SSO is enabled, only show that button */}
+              {microsoftEnabled && microsoftUrl ? (
+                <div className="flex flex-col space-y-4">
+                  {!showAdminLogin ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => router.push(microsoftUrl)}
+                        className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-blue-300 rounded-md shadow-sm text-sm font-medium bg-white text-gray-900 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 21 21" fill="currentColor">
+                          <path d="M11.573 8.066H21v10.934H11.573z" fill="#00A4EF"/>
+                          <path d="M0 8.066h10.427v10.934H0z" fill="#7FBA00"/>
+                          <path d="M11.573 0h10.427v9.934H11.573z" fill="#FFB900"/>
+                          <path d="M0 0h10.427v9.934H0z" fill="#F25022"/>
+                        </svg>
+                        Mit Microsoft 365 anmelden
+                      </button>
+
+                      <div className="text-center">
+                        <button
+                          type="button"
+                          onClick={() => setShowAdminLogin(true)}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Admin-Login
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <label
+                          htmlFor="email"
+                          className="block text-sm font-medium text-foreground"
+                        >
+                          E-Mail-Adresse
+                        </label>
+                        <div className="mt-1">
+                          <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            required
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="appearance-none block w-full px-3 py-2 border text-gray-900 border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                            onKeyPress={(event) => {
+                              if (event.key === "Enter") {
+                                postData();
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="password"
+                          className="block text-sm font-medium text-foreground"
+                        >
+                          Passwort
+                        </label>
+                        <div className="mt-1">
+                          <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            autoComplete="password"
+                            required
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="appearance-none block w-full px-3 py-2 border text-gray-900 border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                            onKeyPress={(event) => {
+                              if (event.key === "Enter") {
+                                postData();
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        onClick={postData}
+                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                      >
+                        Anmelden
+                      </button>
+
+                      <div className="text-center">
+                        <button
+                          type="button"
+                          onClick={() => setShowAdminLogin(false)}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          ← Zurück zu Microsoft 365
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-foreground"
+                    >
+                      E-Mail-Adresse
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="appearance-none block w-full px-3 py-2 border text-gray-900 border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                        onKeyPress={(event) => {
+                          if (event.key === "Enter") {
+                            postData();
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-foreground"
-                >
-                  Passwort
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="password"
-                    required
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border text-gray-900 border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                    onKeyPress={(event) => {
-                      if (event.key === "Enter") {
-                        postData();
-                      }
-                    }}
-                  />
-                </div>
-              </div>
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-foreground"
+                    >
+                      Passwort
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        autoComplete="password"
+                        required
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="appearance-none block w-full px-3 py-2 border text-gray-900 border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                        onKeyPress={(event) => {
+                          if (event.key === "Enter") {
+                            postData();
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
 
-              <div className="flex items-center justify-between">
-                <div className="text-sm">
-                  <Link
-                    href="/auth/forgot-password"
-                    className="font-medium text-indigo-600 hover:text-indigo-500"
-                  >
-                    Passwort vergessen?
-                  </Link>
-                </div>
-              </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm">
+                      <Link
+                        href="/auth/forgot-password"
+                        className="font-medium text-indigo-600 hover:text-indigo-500"
+                      >
+                        Passwort vergessen?
+                      </Link>
+                    </div>
+                  </div>
 
-              <div className="flex flex-col space-y-4">
-                <button
-                  type="submit"
-                  onClick={postData}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  Anmelden
-                </button>
+                  <div className="flex flex-col space-y-4">
+                    <button
+                      type="submit"
+                      onClick={postData}
+                      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      Anmelden
+                    </button>
 
-                {url && (
-                  <button
-                    type="submit"
-                    onClick={() => router.push(url)}
-                    className="w-full flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
-                    Mit SSO anmelden
-                  </button>
-                )}
-
-                {microsoftEnabled && microsoftUrl && (
-                  <button
-                    type="button"
-                    onClick={() => router.push(microsoftUrl)}
-                    className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-blue-300 rounded-md shadow-sm text-sm font-medium bg-white text-gray-900 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 21 21" fill="currentColor">
-                      <path d="M11.573 8.066H21v10.934H11.573z" fill="#00A4EF"/>
-                      <path d="M0 8.066h10.427v10.934H0z" fill="#7FBA00"/>
-                      <path d="M11.573 0h10.427v9.934H11.573z" fill="#FFB900"/>
-                      <path d="M0 0h10.427v9.934H0z" fill="#F25022"/>
-                    </svg>
-                    Mit Microsoft 365 anmelden
-                  </button>
-                )}
-              </div>
+                    {url && (
+                      <button
+                        type="submit"
+                        onClick={() => router.push(url)}
+                        className="w-full flex justify-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                      >
+                        Mit SSO anmelden
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

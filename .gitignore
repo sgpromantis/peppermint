@@ -44,3 +44,6 @@ dist
 infra
 
 .cursorrules
+
+# production compose (contains secrets)
+docker-compose-prod.yml
