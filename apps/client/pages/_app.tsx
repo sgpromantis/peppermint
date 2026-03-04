@@ -120,10 +120,14 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: any) {
 
   if (router.pathname === "/submit") {
     return (
-      <>
-        <Component {...pageProps} />
-        <Toaster />
-      </>
+      <SessionProvider>
+        <ThemeProvider attribute="class" defaultTheme="light">
+          <QueryClientProvider client={queryClient}>
+            <Component {...pageProps} />
+            <Toaster />
+          </QueryClientProvider>
+        </ThemeProvider>
+      </SessionProvider>
     );
   }
 

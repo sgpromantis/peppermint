@@ -1423,7 +1423,8 @@ export default function Ticket() {
                       />
                     )}
 
-                    {/* Editable contact / notification recipient */}
+                    {/* Editable contact / notification recipient — admin and manager only */}
+                    {(user?.isAdmin || user?.isManager) && (
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
                       <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-1.5">
                         <Mail className="h-3.5 w-3.5" />
@@ -1465,6 +1466,7 @@ export default function Ticket() {
                         </div>
                       </div>
                     </div>
+                    )}
 
                     {/* <div className="flex flex-row items-center justify-between mt-2">
                     <span className="text-sm font-medium text-gray-500 dark:text-white">

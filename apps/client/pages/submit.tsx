@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { useRouter } from "next/router";
 import { Fragment, useEffect, useState } from "react";
+import { useUser } from "../store/session";
 
 const defaultTypes = [
   { id: 5, name: "Vorfall" },
@@ -35,6 +36,9 @@ export default function ClientTicketNew() {
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
   }
+
+  // Require authentication — useUser auto-redirects to /auth/login if no session
+  const { user, loading } = useUser();
 
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -105,6 +109,9 @@ export default function ClientTicketNew() {
       });
     setIsLoading(false);
   }
+
+  // Don't render until we have confirmed the user is authenticated
+  if (loading || !user) return null;
 
   return (
     <div className="flex justify-center items-center content-center h-screen bg-gray-900">
