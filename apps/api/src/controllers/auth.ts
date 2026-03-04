@@ -990,6 +990,7 @@ export function authRoutes(fastify: FastifyInstance) {
         version: config!.client_version,
         notifcations,
         external_user: user!.external_user,
+        microsoft_user: !!user!.microsoftAzureId,
       };
 
       await tracking("user_profile", {});

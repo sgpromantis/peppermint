@@ -4,9 +4,11 @@ import { Bell, Flag, KeyRound, SearchSlashIcon } from "lucide-react";
 import useTranslation from "next-translate/useTranslation";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useUser } from "../store/session";
 
 export default function Settings({ children }) {
   const router = useRouter();
+  const { user } = useUser();
 
   const { t } = useTranslation("peppermint");
 
@@ -32,6 +34,7 @@ export default function Settings({ children }) {
                     <span className="truncate">{t("notifications")}</span>
                   </Link>
 
+                  {!user?.microsoft_user && (
                   <Link
                     href="/settings/password"
                     className={classNames(
@@ -44,6 +47,7 @@ export default function Settings({ children }) {
                     <KeyRound className="flex-shrink-0  h-5 w-5 text-foreground" />
                     <span>{t("reset_password")}</span>
                   </Link>
+                  )}
 
                   <Link
                     href="/settings/flags"

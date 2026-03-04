@@ -47,6 +47,67 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     location.push("/portal");
   }
 
+  const isAdminOrManager = user?.isAdmin || user?.isManager;
+
+  const allNavItems = [
+    {
+      title: "Neues Ticket",
+      url: ``,
+      icon: ListPlus,
+      isActive: location.pathname === "/" ? true : false,
+      initial: "c",
+    },
+    {
+      title: t("sl_dashboard"),
+      url: `/${locale}/`,
+      icon: Building,
+      isActive: location.pathname === "/" ? true : false,
+      initial: "h",
+    },
+    {
+      title: "Dokumente",
+      url: `/${locale}/documents`,
+      icon: FileText,
+      isActive: location.pathname === "/documents" ? true : false,
+      initial: "d",
+      internal: true,
+    },
+    ...(isAdminOrManager
+      ? [
+          {
+            title: "Tickets",
+            url: `/${locale}/issues`,
+            icon: SquareKanban,
+            isActive: location.pathname === "/issues" ? true : false,
+            initial: "t",
+            items: [
+              {
+                title: "Offen",
+                url: "/issues/open",
+                initial: "o",
+              },
+              {
+                title: "Geschlossen",
+                url: "/issues/closed",
+                initial: "f",
+              },
+            ],
+          },
+        ]
+      : []),
+    ...(user?.isAdmin
+      ? [
+          {
+            title: "Verwaltung",
+            url: "/admin",
+            icon: Settings,
+            isActive: true,
+            initial: "a",
+          },
+        ]
+      : []),
+  ];
+
   const data = {
     teams: [
       {
@@ -54,56 +115,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         plan: `version: ${process.env.NEXT_PUBLIC_CLIENT_VERSION}`,
       },
     ],
-    navMain: [
-      {
-        title: "Neues Ticket",
-        url: ``,
-        icon: ListPlus,
-        isActive: location.pathname === "/" ? true : false,
-        initial: "c",
-      },
-      {
-        title: t("sl_dashboard"),
-        url: `/${locale}/`,
-        icon: Building,
-        isActive: location.pathname === "/" ? true : false,
-        initial: "h",
-      },
-      {
-        title: "Dokumente",
-        url: `/${locale}/documents`,
-        icon: FileText,
-        isActive: location.pathname === "/documents" ? true : false,
-        initial: "d",
-        internal: true,
-      },
-      {
-        title: "Tickets",
-        url: `/${locale}/issues`,
-        icon: SquareKanban,
-        isActive: location.pathname === "/issues" ? true : false,
-        initial: "t",
-        items: [
-          {
-            title: "Offen",
-            url: "/issues/open",
-            initial: "o",
-          },
-          {
-            title: "Geschlossen",
-            url: "/issues/closed",
-            initial: "f",
-          },
-        ],
-      },
-      {
-        title: "Verwaltung",
-        url: "/admin",
-        icon: Settings,
-        isActive: true,
-        initial: "a",
-      },
-    ],
+    navMain: allNavItems,
   };
 
   function handleKeyPress(event: any) {

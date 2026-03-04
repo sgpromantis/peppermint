@@ -197,9 +197,12 @@ export function CommandMenu() {
               <span>Geschlossene Tickets</span>
             </CommandItem>
             <CommandItem
-              onSelect={() =>
-                document.dispatchEvent(new KeyboardEvent("keydown", { key: "c" }))
-              }
+              onSelect={() => {
+                setOpen(false);
+                setTimeout(() => {
+                  document.dispatchEvent(new KeyboardEvent("keydown", { key: "c" }));
+                }, 50);
+              }}
             >
               <Plus className="mr-2 h-4 w-4" />
               <span>Neues Ticket erstellen</span>
