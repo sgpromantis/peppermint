@@ -54,6 +54,7 @@ import {
   Loader,
   LoaderCircle,
   Lock,
+  Mail,
   Paperclip,
   PanelTopClose,
   SignalHigh,
@@ -158,6 +159,9 @@ export default function Ticket() {
   const [assignedClient, setAssignedClient] = useState<any>();
   const [ticketType, setTicketType] = useState<any>();
   const [ticketTypeOptions, setTicketTypeOptions] = useState<any[]>([]);
+  const [ticketEmail, setTicketEmail] = useState<string>("");
+  const [ticketName, setTicketName] = useState<string>("");
+  const [ticketReplyTo, setTicketReplyTo] = useState<string>("");
 
   const history = useRouter();
 
@@ -192,6 +196,23 @@ export default function Ticket() {
       return;
     }
     setEdit(false);
+  }
+
+  async function updateContactInfo() {
+    if (data && data.ticket && data.ticket.locked) return;
+    await fetch(`/api/v1/ticket/update`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        id,
+        email: ticketEmail,
+        name: ticketName,
+        replyTo: ticketReplyTo,
+      }),
+    });
   }
 
   async function updateStatus() {
@@ -598,6 +619,13 @@ export default function Ticket() {
 
   const [debouncedValue] = useDebounce(issue, 500);
   const [debounceTitle] = useDebounce(title, 500);
+  const [debounceEmail] = useDebounce(ticketEmail, 800);
+  const [debounceName] = useDebounce(ticketName, 800);
+  const [debounceReplyTo] = useDebounce(ticketReplyTo, 800);
+
+  // Guard to prevent saving contact info before ticket data has loaded
+  const contactInfoLoaded = useRef(false);
+  const [contactInfoDirty, setContactInfoDirty] = useState(false);
 
   useEffect(() => {
     update();
@@ -608,6 +636,13 @@ export default function Ticket() {
       update();
     }
   }, [debouncedValue]);
+
+  // Auto-save contact info only when user has changed a field (contactInfoDirty)
+  useEffect(() => {
+    if (contactInfoDirty) {
+      updateContactInfo();
+    }
+  }, [debounceEmail, debounceName, debounceReplyTo]);
 
   async function loadFromStorage() {
     const storageString = data.ticket.detail as PartialBlock[];
@@ -641,6 +676,10 @@ export default function Ticket() {
           setInitialContent(undefined);
         }
       });
+      // Initialize editable contact fields from ticket data
+      setTicketEmail(data.ticket.email || "");
+      setTicketName(data.ticket.name || "");
+      setTicketReplyTo(data.ticket.replyTo || "");
     }
   }, [status, data]);
 
@@ -1384,8 +1423,50 @@ export default function Ticket() {
                       />
                     )}
 
-                    {/* <div className="border-t border-gray-200">
-                  <div className="flex flex-row items-center justify-between mt-2">
+                    {/* Editable contact / notification recipient */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-1.5">
+                        <Mail className="h-3.5 w-3.5" />
+                        Benachrichtigung
+                      </span>
+                      <div className="space-y-2">
+                        <div>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">Name</span>
+                          <input
+                            type="text"
+                            value={ticketName}
+                            disabled={data.ticket.locked}
+                            onChange={(e) => { setTicketName(e.target.value); setContactInfoDirty(true); }}
+                            placeholder="Kontaktname"
+                            className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5 disabled:opacity-50"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">E-Mail (Empfänger)</span>
+                          <input
+                            type="email"
+                            value={ticketEmail}
+                            disabled={data.ticket.locked}
+                            onChange={(e) => { setTicketEmail(e.target.value); setContactInfoDirty(true); }}
+                            placeholder="Kontakt-E-Mail"
+                            className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5 disabled:opacity-50"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">Weiterer Empfänger</span>
+                          <input
+                            type="email"
+                            value={ticketReplyTo}
+                            disabled={data.ticket.locked}
+                            onChange={(e) => { setTicketReplyTo(e.target.value); setContactInfoDirty(true); }}
+                            placeholder="Antwort-An / Zusätzl. Empfänger"
+                            className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5 disabled:opacity-50"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* <div className="flex flex-row items-center justify-between mt-2">
                     <span className="text-sm font-medium text-gray-500 dark:text-white">
                       Time Tracking
                     </span>

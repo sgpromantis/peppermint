@@ -35,6 +35,14 @@ export default function CreateTicket() {
   const [company, setCompany] = useState<any>();
   const [engineer, setEngineer] = useState<any>();
   const [email, setEmail] = useState("");
+
+  // Pre-fill contact name & email with logged-in user's data
+  useEffect(() => {
+    if (user) {
+      if (!name) setName(user.name || "");
+      if (!email) setEmail(user.email || "");
+    }
+  }, [user]);
   const [issue, setIssue] = useState<any>("");
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("medium");
@@ -491,6 +499,7 @@ export default function CreateTicket() {
                 placeholder={t("ticket_name_here")}
                 name="name"
                 autoComplete="off"
+                value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full pl-0 pr-0 sm:text-sm border-none focus:outline-none dark:bg-[#0A090C] dark:text-white focus:shadow-none focus:ring-0 focus:border-none"
               />
@@ -506,6 +515,7 @@ export default function CreateTicket() {
                 type="text"
                 name="email"
                 placeholder={t("ticket_email_here")}
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-0 pr-0 sm:text-sm border-none focus:outline-none dark:bg-[#0A090C] dark:text-white focus:shadow-none focus:ring-0 focus:border-none"
               />

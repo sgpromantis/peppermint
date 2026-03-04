@@ -42,6 +42,14 @@ export default function CreateTicketModal({ keypress, setKeyPressDown }) {
   const [company, setCompany] = useState<any>();
   const [engineer, setEngineer] = useState<any>();
   const [email, setEmail] = useState("");
+
+  // Pre-fill contact name & email with logged-in user's data
+  useEffect(() => {
+    if (user) {
+      if (!name) setName(user.name || "");
+      if (!email) setEmail(user.email || "");
+    }
+  }, [user]);
   const [issue, setIssue] = useState<any>();
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("medium");
@@ -262,6 +270,7 @@ export default function CreateTicketModal({ keypress, setKeyPressDown }) {
                       id="name"
                       placeholder={t("ticket_name_here")}
                       name="name"
+                      value={name}
                       onChange={(e) => setName(e.target.value)}
                       className=" w-full pl-0 pr-0text-foreground bg-background  sm:text-sm border-none focus:outline-none focus:shadow-none focus:ring-0 focus:border-none"
                     />
@@ -272,6 +281,7 @@ export default function CreateTicketModal({ keypress, setKeyPressDown }) {
                       type="text"
                       name="email"
                       placeholder={t("ticket_email_here")}
+                      value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className=" w-full pl-0 pr-0 text-foreground bg-background   sm:text-sm border-none focus:outline-none focus:shadow-none focus:ring-0 focus:border-none"
                     />
