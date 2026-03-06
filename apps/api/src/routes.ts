@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { authRoutes } from "./controllers/auth";
 import { clientRoutes } from "./controllers/clients";
+import { reportRoutes } from "./controllers/report";
 import { configRoutes } from "./controllers/config";
 import { dataRoutes } from "./controllers/data";
 import { metricsRoutes } from "./controllers/metrics";
@@ -31,4 +32,5 @@ export function registerRoutes(fastify: FastifyInstance) {
   metricsRoutes(fastify);
   microsoftGraphRoutes(fastify);
   prometheusRoutes(fastify);
+  reportRoutes(fastify);
 }

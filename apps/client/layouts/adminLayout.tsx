@@ -17,6 +17,7 @@ import {
   Mailbox,
   MoveLeft,
   RollerCoaster,
+  ScrollText,
   UserRound,
   Webhook,
 } from "lucide-react";
@@ -108,6 +109,12 @@ export default function AdminLayout({ children }: any) {
       href: "/admin/logs",
       current: location.pathname === "/admin/logs",
       icon: FileText,
+    },
+    {
+      name: "Monatsbericht",
+      href: "/admin/reports",
+      current: location.pathname === "/admin/reports",
+      icon: ScrollText,
     },
   ];
 
