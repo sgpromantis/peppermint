@@ -6,6 +6,40 @@ import { Button } from "@/shadcn/ui/button";
 import { useUser } from "../../store/session";
 import { useRouter } from "next/router";
 
+/**
+ * Extracts plain text from a BlockNote JSON detail field.
+ * Falls back to the raw string if it's not valid JSON or not BlockNote format.
+ */
+function blockNoteToText(detail: string | null | undefined): string {
+  if (!detail) return "";
+  try {
+    const blocks = JSON.parse(detail);
+    if (!Array.isArray(blocks)) return detail;
+
+    const extractInline = (content: any[]): string => {
+      if (!Array.isArray(content)) return "";
+      return content
+        .map((item) => {
+          if (item.type === "text") return item.text ?? "";
+          if (item.type === "link") return extractInline(item.content ?? []);
+          return "";
+        })
+        .join("");
+    };
+
+    const extractBlock = (block: any): string => {
+      const line = extractInline(block.content ?? []);
+      const children = (block.children ?? []).map(extractBlock).join("\n");
+      return children ? line + "\n" + children : line;
+    };
+
+    return blocks.map(extractBlock).join("\n").trim();
+  } catch {
+    // Not JSON → might be plain HTML or plain text from old tickets
+    return detail.replace(/<[^>]+>/g, " ").replace(/\s{2,}/g, " ").trim();
+  }
+}
+
 const fetchClients = async () => {
   const res = await fetch(`/api/v1/clients/all`, {
     headers: { Authorization: `Bearer ${getCookie("session")}` },
@@ -315,7 +349,7 @@ export default function MonthlyReports() {
                 {ticket.detail && (
                   <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-sm">
                     <div className="text-xs text-muted-foreground mb-1 font-semibold">Beschreibung</div>
-                    <p className="whitespace-pre-wrap text-sm">{ticket.detail}</p>
+                    <p className="whitespace-pre-wrap text-sm">{blockNoteToText(ticket.detail)}</p>
                   </div>
                 )}
 

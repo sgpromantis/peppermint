@@ -2,6 +2,39 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { checkSession } from "../lib/session";
 import { prisma } from "../prisma";
 
+/**
+ * Extract plain text from a BlockNote JSON string.
+ * Falls back gracefully for plain text or legacy HTML tickets.
+ */
+function blockNoteToText(detail: string | null): string {
+  if (!detail) return "";
+  try {
+    const blocks = JSON.parse(detail);
+    if (!Array.isArray(blocks)) return detail;
+
+    const extractInline = (content: any[]): string => {
+      if (!Array.isArray(content)) return "";
+      return content
+        .map((item: any) => {
+          if (item.type === "text") return item.text ?? "";
+          if (item.type === "link") return extractInline(item.content ?? []);
+          return "";
+        })
+        .join("");
+    };
+
+    const extractBlock = (block: any): string => {
+      const line = extractInline(block.content ?? []);
+      const children = (block.children ?? []).map(extractBlock).join("\n");
+      return children ? line + "\n" + children : line;
+    };
+
+    return blocks.map(extractBlock).join("\n").trim();
+  } catch {
+    return detail.replace(/<[^>]+>/g, " ").replace(/\s{2,}/g, " ").trim();
+  }
+}
+
 export function reportRoutes(fastify: FastifyInstance) {
   /**
    * GET /api/v1/report/monthly
@@ -166,6 +199,7 @@ export function reportRoutes(fastify: FastifyInstance) {
           "Zugewiesen an",
           "Kunde",
           "Zeit (Min)",
+          "Beschreibung",
           "Kommentare",
         ].join(";"),
       ];
@@ -196,6 +230,7 @@ export function reportRoutes(fastify: FastifyInstance) {
             escape(t.assignedTo?.name),
             escape(t.client?.name),
             totalMinutes,
+            escape(blockNoteToText(t.detail)),
             escape(comments),
           ].join(";")
         );
