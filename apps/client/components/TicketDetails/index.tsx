@@ -572,11 +572,13 @@ export default function Ticket() {
       formData.append("user", user.id);
 
       try {
-        // You can write the URL of your server or any other endpoint used for file upload
         const result = await fetch(
           `/api/v1/storage/ticket/${router.query.id}/upload/single`,
           {
             method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
             body: formData,
           }
         );
@@ -584,11 +586,12 @@ export default function Ticket() {
         const data = await result.json();
 
         if (data.success) {
-          setFile(null);
           refetch();
         }
       } catch (error) {
         console.error(error);
+      } finally {
+        setFile(null);
       }
     }
   };
