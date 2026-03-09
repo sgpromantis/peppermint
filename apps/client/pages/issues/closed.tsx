@@ -69,7 +69,7 @@ export default function Tickets() {
 
   const token = getCookie("session");
   const { data, status, error, refetch } = useQuery(
-    "allusertickets",
+    "tickets-closed",
     () => getUserTickets(token),
     {
       refetchInterval: 5000,

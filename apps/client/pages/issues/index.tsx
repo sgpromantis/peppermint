@@ -36,7 +36,7 @@ export default function Tickets() {
   
   // Fetch tickets data
   const { data, status, refetch } = useQuery(
-    "allusertickets",
+    "tickets-all",
     () => getUserTickets(token),
     {
       refetchInterval: 5000,
