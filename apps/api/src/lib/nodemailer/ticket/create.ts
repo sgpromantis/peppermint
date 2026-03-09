@@ -42,6 +42,7 @@ export async function sendTicketCreate(ticket: any) {
         var template = handlebars.compile(testhtml.html);
         var replacements = {
           id: ticket.id,
+          ticketNumber: ticket.Number,
           title: ticket.title,
           ticketUrl: ticketUrl,
           createdAt: new Date(ticket.createdAt).toLocaleString("de-DE"),

@@ -54,6 +54,7 @@ export async function sendComment(
         title: title,
         comment: comment,
         id: id,
+        ticketNumber: ticket?.Number,
         ticketUrl: ticketUrl,
       };
       htmlToSend = template(replacements);

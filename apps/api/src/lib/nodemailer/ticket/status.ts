@@ -47,6 +47,7 @@ export async function sendTicketStatus(ticket: any) {
       title: ticket.title,
       status: statusText,
       id: ticket.id,
+      ticketNumber: ticket.Number,
       ticketUrl: ticketUrl,
     };
     htmlToSend = template(replacements);
@@ -75,7 +76,7 @@ export async function sendTicketStatus(ticket: any) {
     </div>
     <div class="content">
       <div class="ticket-info">
-        <p><strong>Ticket #${ticket.id}</strong></p>
+        <p><strong>Ticket #${ticket.Number || ticket.id}</strong></p>
         <p><strong>Betreff:</strong> ${ticket.title}</p>
         <p><strong>Neuer Status:</strong> <span class="status-badge">${statusTextGerman}</span></p>
       </div>
@@ -88,7 +89,7 @@ export async function sendTicketStatus(ticket: any) {
       <p style="color: #6b7280; font-size: 14px;">Bei Fragen antworten Sie einfach auf diese E-Mail.</p>
     </div>
     <div class="footer">
-      <p>Ticket-Referenz: #${ticket.id}</p>
+      <p>Ticket-Referenz: #${ticket.Number || ticket.id}</p>
       <p><a href="${ticketUrl}">Ticket online ansehen</a></p>
     </div>
   </div>

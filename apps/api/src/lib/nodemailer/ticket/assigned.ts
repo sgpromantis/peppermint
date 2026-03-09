@@ -38,6 +38,7 @@ export async function sendAssignedEmail(email: any, ticketId?: string, ticketTit
         var template = handlebars.compile(testhtml.html);
         var replacements = {
           id: ticketId,
+          ticketNumber: ticketNumber,
           title: ticketTitle,
           ticketId: ticketId,
           ticketTitle: ticketTitle,
@@ -73,7 +74,7 @@ export async function sendAssignedEmail(email: any, ticketId?: string, ticketTit
       
       ${ticketId ? `
       <div class="ticket-info">
-        <p><strong>Ticket-Nummer:</strong> #${ticketId}</p>
+        <p><strong>Ticket-Nummer:</strong> #${ticketNumber || ticketId}</p>
         ${ticketTitle ? `<p><strong>Betreff:</strong> ${ticketTitle}</p>` : ''}
       </div>
       ` : ''}
