@@ -2,10 +2,28 @@ import { FastifyRequest } from "fastify";
 import jwt from "jsonwebtoken";
 import { prisma } from "../prisma";
 
+/**
+ * Extract session token from Authorization header or session cookie.
+ * Prefers the Authorization header; falls back to the "session" cookie
+ * so that plain browser navigations (e.g. file download links) work.
+ */
+export function extractToken(request: FastifyRequest): string | undefined {
+  const fromHeader = request.headers.authorization?.split(" ")[1];
+  if (fromHeader) return fromHeader;
+
+  // Fallback: read from cookie header
+  const cookieHeader = request.headers.cookie;
+  if (cookieHeader) {
+    const match = cookieHeader.match(/(?:^|;\s*)session=([^;]+)/);
+    if (match) return decodeURIComponent(match[1]);
+  }
+  return undefined;
+}
+
 // Checks session token and returns user object
 export async function checkSession(request: FastifyRequest) {
   try {
-    const bearer = request.headers.authorization?.split(" ")[1];
+    const bearer = extractToken(request);
     if (!bearer) {
       return null;
     }

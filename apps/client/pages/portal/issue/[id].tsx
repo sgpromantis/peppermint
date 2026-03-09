@@ -56,8 +56,6 @@ export default function Ticket() {
 
   const { id } = history.query;
 
-  let file: any = [];
-
   async function updateStatus() {
     await fetch(`/api/v1/ticket/status/update`, {
       method: "PUT",
@@ -597,6 +595,35 @@ export default function Ticket() {
                     </div>
                   )}
                 </div>
+                {data.ticket.files && data.ticket.files.length > 0 && (
+                  <div className="border-t border-gray-200">
+                    <div className="flex flex-row items-center justify-between mt-2">
+                      <span className="text-sm font-medium text-gray-500 dark:text-white">
+                        Attachments
+                      </span>
+                    </div>
+                    <div className="mt-1 space-y-1">
+                      {data.ticket.files.map((f: any) => (
+                        <div
+                          key={f.id}
+                          className="flex items-center justify-between p-1 px-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                          <span className="text-xs truncate max-w-[140px] dark:text-white">
+                            {f.filename}
+                          </span>
+                          <a
+                            href={`/api/v1/ticket/${id}/file/${f.id}/download`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:underline dark:text-blue-400"
+                          >
+                            Download
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

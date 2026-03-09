@@ -3,7 +3,7 @@ FROM node:22-slim AS deps
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential python3 git && \
+    apt-get install -y --no-install-recommends build-essential python3 git ca-certificates && \
     npm i -g prisma typescript@latest --force && \
     rm -rf /var/lib/apt/lists/*
 
@@ -29,7 +29,10 @@ RUN cd apps/client && yarn build
 
 FROM node:22-slim AS runner
 
-RUN npm install -g pm2 && npm cache clean --force
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openssl && \
+    rm -rf /var/lib/apt/lists/* && \
+    npm install -g pm2 && npm cache clean --force
 
 COPY --from=builder /app/apps/api/ ./apps/api/
 COPY --from=builder /app/apps/client/.next/standalone ./apps/client

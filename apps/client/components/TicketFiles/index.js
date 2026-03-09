@@ -21,15 +21,11 @@ export default function TicketFiles({ id, uploaded, setUploaded }) {
   }
 
   async function deleteFile(file) {
-    await fetch(`/api/v1/ticket/${id}/file/delete`, {
+    await fetch(`/api/v1/ticket/${id}/file/${file.id}/delete`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        id: file.id,
-        path: file.path,
-      }),
     })
       .then((res) => res.json())
       .then((res) => {
@@ -38,13 +34,9 @@ export default function TicketFiles({ id, uploaded, setUploaded }) {
   }
 
   function download(file) {
-    const url = `/api/v1/ticket/${id}/file/download?filepath=${file.path}`;
-    let data = new FormData();
+    const url = `/api/v1/ticket/${id}/file/${file.id}/download`;
     axios
-      .post(url, data, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+      .get(url, {
         responseType: "blob",
       })
       .then((res) => {

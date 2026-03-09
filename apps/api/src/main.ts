@@ -9,6 +9,7 @@ import { exec } from "child_process";
 import { track } from "./lib/hog";
 import { getEmails } from "./lib/imap";
 import { checkToken } from "./lib/jwt";
+import { extractToken } from "./lib/session";
 import { prisma } from "./prisma";
 import { registerRoutes } from "./routes";
 
@@ -95,7 +96,10 @@ server.addHook("preHandler", async function (request: any, reply: any) {
     if (routePath === "/" && request.method === "GET") {
       return true;
     }
-    const bearer = request.headers.authorization!.split(" ")[1];
+    const bearer = extractToken(request);
+    if (!bearer) {
+      return reply.status(401).send({ message: "Unauthorized", success: false });
+    }
     checkToken(bearer);
   } catch (err) {
     reply.status(401).send({
