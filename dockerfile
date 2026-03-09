@@ -11,6 +11,9 @@ RUN apt-get update && \
 COPY apps/api/package*.json ./apps/api/
 COPY apps/client/package*.json ./apps/client/
 
+# Prisma schema needed for postinstall (prisma generate)
+COPY apps/api/src/prisma ./apps/api/src/prisma
+
 # Install dependencies (cached unless package.json changes)
 RUN cd apps/api && npm install
 RUN cd apps/client && yarn install --network-timeout 1000000 --frozen-lockfile || yarn install --network-timeout 1000000
