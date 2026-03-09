@@ -67,12 +67,12 @@ import {
 import { useUser } from "../../store/session";
 import { ClientCombo, IconCombo, UserCombo } from "../Combo";
 
-const ticketStatusMap = [
-  { id: 0, value: "hold", name: "Hold", icon: CircleDotDashed },
-  { id: 1, value: "needs_support", name: "Needs Support", icon: LifeBuoy },
-  { id: 2, value: "in_progress", name: "In Progress", icon: CircleDotDashed },
-  { id: 3, value: "in_review", name: "In Review", icon: Loader },
-  { id: 4, value: "done", name: "Done", icon: CircleCheck },
+const ticketStatusKeys = [
+  { id: 0, value: "hold", nameKey: "hold", icon: CircleDotDashed },
+  { id: 1, value: "needs_support", nameKey: "needs_support", icon: LifeBuoy },
+  { id: 2, value: "in_progress", nameKey: "in_progress", icon: CircleDotDashed },
+  { id: 3, value: "in_review", nameKey: "in_review", icon: Loader },
+  { id: 4, value: "done", nameKey: "done", icon: CircleCheck },
 ];
 
 const priorityOptions = [
@@ -99,6 +99,11 @@ const priorityOptions = [
 export default function Ticket() {
   const router = useRouter();
   const { t } = useTranslation("peppermint");
+
+  const ticketStatusMap = ticketStatusKeys.map((s) => ({
+    ...s,
+    name: t(s.nameKey),
+  }));
 
   const token = getCookie("session");
 
@@ -1490,7 +1495,7 @@ export default function Ticket() {
                         }}
                         className="text-sm font-medium text-gray-500 hover:underline dark:text-white"
                       >
-                        save
+                        {t("save")}
                       </button>
                     )}
                   </div>
@@ -1499,14 +1504,14 @@ export default function Ticket() {
                       <div key={i.id} className="text-xs">
                         <div className="flex flex-row space-x-1.5 items-center dark:text-white">
                           <span>{i.user.name} / </span>
-                          <span>{i.time} minutes</span>
+                          <span>{i.time} {t("minutes")}</span>
                         </div>
                       </div>
                     ))
                   ) : (
                     <div>
                       <span className="text-xs dark:text-white">
-                        No Time added
+                        {t("no_time_added")}
                       </span>
                     </div>
                   )}
@@ -1518,7 +1523,7 @@ export default function Ticket() {
                           name="text"
                           id="timespent_text"
                           className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          placeholder="What did you do?"
+                          placeholder={t("what_did_you_do")}
                           value={timeReason}
                           onChange={(e) => setTimeReason(e.target.value)}
                         />
@@ -1527,7 +1532,7 @@ export default function Ticket() {
                           name="number"
                           id="timespent"
                           className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          placeholder="Time in minutes"
+                          placeholder={t("time_in_minutes")}
                           value={timeSpent}
                           onChange={(e) => setTimeSpent(e.target.value)}
                         />
@@ -1540,13 +1545,13 @@ export default function Ticket() {
                       <div className="flex flex-row items-center justify-between mt-2">
                         <span className="text-sm font-medium text-gray-500 dark:text-white flex items-center gap-1">
                           <Paperclip className="h-4 w-4" />
-                          Attachments
+                          {t("attachments")}
                         </span>
                         <button
                           className="text-sm font-medium text-gray-500 hover:underline dark:text-white"
                           onClick={handleButtonClick}
                         >
-                          upload
+                          {t("upload")}
                           <input
                             id="file"
                             type="file"
@@ -1615,13 +1620,13 @@ export default function Ticket() {
                           ))
                         ) : (
                           <span className="text-xs text-gray-400 dark:text-gray-500">
-                            No files attached
+                            {t("no_files_attached")}
                           </span>
                         )}
                         {file && (
                           <div className="p-1 px-1.5">
                             <span className="text-xs text-blue-500">
-                              Uploading: {file.name}
+                              {t("uploading_file")} {file.name}
                             </span>
                           </div>
                         )}
@@ -1636,12 +1641,12 @@ export default function Ticket() {
             <ContextMenuItem
               onClick={(e) => updateTicketStatus(e, data.ticket)}
             >
-              {data.ticket.isComplete ? "Re-open Issue" : "Close Issue"}
+              {data.ticket.isComplete ? t("reopen_issue_action") : t("close_issue")}
             </ContextMenuItem>
             <ContextMenuSeparator />
 
             <ContextMenuSub>
-              <ContextMenuSubTrigger>Assign To</ContextMenuSubTrigger>
+              <ContextMenuSubTrigger>{t("assign_to")}</ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-64 ml-1 -mt-1/2">
                 <Command>
                   <CommandList>
@@ -1690,7 +1695,7 @@ export default function Ticket() {
             </ContextMenuSub>
 
             <ContextMenuSub>
-              <ContextMenuSubTrigger>Change Priority</ContextMenuSubTrigger>
+              <ContextMenuSubTrigger>{t("change_priority")}</ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-64 ml-1">
                 <Command>
                   <CommandList>
@@ -1727,8 +1732,8 @@ export default function Ticket() {
               onClick={(e) => {
                 e.preventDefault();
                 toast({
-                  title: "Link copied to clipboard",
-                  description: "You can now share the link with others.",
+                  title: t("link_copied"),
+                  description: t("link_copied_desc"),
                   duration: 3000,
                 });
                 navigator.clipboard.writeText(
@@ -1736,7 +1741,7 @@ export default function Ticket() {
                 );
               }}
             >
-              Share Link
+              {t("share_link")}
             </ContextMenuItem>
 
             <ContextMenuSeparator />
@@ -1746,7 +1751,7 @@ export default function Ticket() {
                 className="text-red-600"
                 onClick={(e) => deleteIssue()}
               >
-                Delete Ticket
+                {t("delete_ticket")}
               </ContextMenuItem>
             )}
           </ContextMenuContent>

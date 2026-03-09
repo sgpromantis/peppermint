@@ -3,6 +3,7 @@ import { Button } from "@/shadcn/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/shadcn/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shadcn/ui/popover";
 import { CheckIcon, Filter } from "lucide-react";
+import useTranslation from "next-translate/useTranslation";
 import { useState } from "react";
 import FilterBadge from "./FilterBadge";
 
@@ -29,6 +30,7 @@ export default function TicketFilters({
   onAssigneeToggle,
   onClearFilters,
 }: TicketFiltersProps) {
+  const { t } = useTranslation('peppermint');
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [filterSearch, setFilterSearch] = useState("");
 
@@ -54,28 +56,28 @@ export default function TicketFilters({
         <PopoverTrigger asChild>
           <Button variant="ghost" size="sm" className="h-6 bg-transparent">
             <Filter className="mr-2 h-4 w-4" />
-            <span className="hidden sm:block">Filters</span>
+            <span className="hidden sm:block">{t("filters")}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0" align="start">
           {!activeFilter ? (
             <Command>
               <CommandInput 
-                placeholder="Search filters..." 
+                placeholder={t("search_filters")} 
                 value={filterSearch}
                 onValueChange={setFilterSearch}
               />
               <CommandList>
-                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandEmpty>{t("no_results_found")}</CommandEmpty>
                 <CommandGroup>
                   <CommandItem onSelect={() => setActiveFilter("priority")}>
-                    Priority
+                    {t("priority")}
                   </CommandItem>
                   <CommandItem onSelect={() => setActiveFilter("status")}>
-                    Status
+                    {t("status")}
                   </CommandItem>
                   <CommandItem onSelect={() => setActiveFilter("assignee")}>
-                    Assignee
+                    {t("assignee")}
                   </CommandItem>
                 </CommandGroup>
               </CommandList>
@@ -88,7 +90,7 @@ export default function TicketFilters({
                 onValueChange={setFilterSearch}
               />
               <CommandList>
-                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandEmpty>{t("no_results_found")}</CommandEmpty>
                 <CommandGroup>
                   {activeFilter === "priority" &&
                     filteredPriorities.map((priority) => (

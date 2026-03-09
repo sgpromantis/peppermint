@@ -272,7 +272,7 @@ export default function Ticket() {
                                 />
                               </div>
                               <div className="ml-3 text-xs font-semibold text-gray-900">
-                                {data.ticket.priority} {t("priority")}
+                                {t(data.ticket.priority.toLowerCase())} {t("priority")}
                               </div>
                             </div>
                           </li>
@@ -287,7 +287,7 @@ export default function Ticket() {
                                 />
                               </div>
                               <div className="ml-3 text-xs font-semibold text-gray-900">
-                                {data.ticket.priority} {t("priority")}
+                                {t(data.ticket.priority.toLowerCase())} {t("priority")}
                               </div>
                             </div>
                           </li>
@@ -302,7 +302,7 @@ export default function Ticket() {
                                 />
                               </div>
                               <div className="ml-3 text-xs font-semibold text-gray-900">
-                                {data.ticket.priority} {t("priority")}
+                                {t(data.ticket.priority.toLowerCase())} {t("priority")}
                               </div>
                             </div>
                           </li>
@@ -318,16 +318,19 @@ export default function Ticket() {
                               </div>
                               <div className="ml-3 text-xs font-semibold text-gray-900">
                                 {data.ticket.status === "needs_support" && (
-                                  <span>Needs Support</span>
+                                  <span>{t("needs_support")}</span>
                                 )}
                                 {data.ticket.status === "in_progress" && (
-                                  <span>In Progress</span>
+                                  <span>{t("in_progress")}</span>
                                 )}
                                 {data.ticket.status === "in_review" && (
-                                  <span>In Review</span>
+                                  <span>{t("in_review")}</span>
                                 )}
                                 {data.ticket.status === "done" && (
-                                  <span>Done</span>
+                                  <span>{t("done")}</span>
+                                )}
+                                {data.ticket.status === "hold" && (
+                                  <span>{t("hold")}</span>
                                 )}
                               </div>
                             </div>

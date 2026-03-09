@@ -29,10 +29,13 @@ RUN cd apps/client && yarn build
 
 FROM node:22-slim AS runner
 
+WORKDIR /app
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openssl && \
     rm -rf /var/lib/apt/lists/* && \
-    npm install -g pm2 && npm cache clean --force
+    npm install -g pm2 && npm cache clean --force && \
+    mkdir -p /app/apps/api/uploads
 
 COPY --from=builder /app/apps/api/ ./apps/api/
 COPY --from=builder /app/apps/client/.next/standalone ./apps/client

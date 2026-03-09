@@ -863,6 +863,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
         where: { id: id },
         data: {
           isComplete: status,
+          ...(status === true && { status: "done" }),
         },
       });
 

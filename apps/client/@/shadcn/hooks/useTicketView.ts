@@ -1,7 +1,10 @@
 import { KanbanGrouping, SortOption, Ticket, UISettings, ViewMode } from '@/shadcn/types/tickets';
+import useTranslation from 'next-translate/useTranslation';
 import { useEffect, useState } from 'react';
 
 export function useTicketView(tickets: Ticket[] = []) {
+  const { t } = useTranslation('peppermint');
+
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("preferred_view_mode");
     return (saved as ViewMode) || 'list';
@@ -64,79 +67,79 @@ export function useTicketView(tickets: Ticket[] = []) {
         return [
           {
             id: 'needs_support',
-            title: 'Needs Support',
+            title: t('needs_support'),
             color: 'bg-yellow-500',
-            tickets: sortedTickets.filter(t => t.status === 'needs_support'),
+            tickets: sortedTickets.filter(tk => tk.status === 'needs_support'),
           },
           {
             id: 'in_progress',
-            title: 'In Progress',
+            title: t('in_progress'),
             color: 'bg-blue-500',
-            tickets: sortedTickets.filter(t => t.status === 'in_progress'),
+            tickets: sortedTickets.filter(tk => tk.status === 'in_progress'),
           },
           {
             id: 'in_review',
-            title: 'In Review',
+            title: t('in_review'),
             color: 'bg-purple-500',
-            tickets: sortedTickets.filter(t => t.status === 'in_review'),
+            tickets: sortedTickets.filter(tk => tk.status === 'in_review'),
           },
           {
             id: 'hold',
-            title: 'On Hold',
+            title: t('hold'),
             color: 'bg-orange-500',
-            tickets: sortedTickets.filter(t => t.status === 'hold'),
+            tickets: sortedTickets.filter(tk => tk.status === 'hold'),
           },
           {
             id: 'done',
-            title: 'Done',
+            title: t('done'),
             color: 'bg-green-500',
-            tickets: sortedTickets.filter(t => t.status === 'done'),
+            tickets: sortedTickets.filter(tk => tk.status === 'done'),
           },
         ];
       case 'priority':
         return [
           {
             id: 'high',
-            title: 'High',
+            title: t('high'),
             color: 'bg-red-500',
-            tickets: sortedTickets.filter(t => t.priority.toLowerCase() === 'high'),
+            tickets: sortedTickets.filter(tk => tk.priority.toLowerCase() === 'high'),
           },
           {
             id: 'normal',
-            title: 'Normal',
+            title: t('normal'),
             color: 'bg-green-500',
-            tickets: sortedTickets.filter(t => t.priority.toLowerCase() === 'normal'),
+            tickets: sortedTickets.filter(tk => tk.priority.toLowerCase() === 'normal'),
           },
           {
             id: 'low',
-            title: 'Low',
+            title: t('low'),
             color: 'bg-blue-500',
-            tickets: sortedTickets.filter(t => t.priority.toLowerCase() === 'low'),
+            tickets: sortedTickets.filter(tk => tk.priority.toLowerCase() === 'low'),
           },
         ];
       case 'type':
         return [
           {
             id: 'bug',
-            title: 'Bug',
+            title: t('bug'),
             color: 'bg-red-500',
-            tickets: sortedTickets.filter(t => t.type === 'bug'),
+            tickets: sortedTickets.filter(tk => tk.type === 'bug'),
           },
           {
             id: 'feature',
-            title: 'Feature',
+            title: t('feature'),
             color: 'bg-blue-500',
-            tickets: sortedTickets.filter(t => t.type === 'feature'),
+            tickets: sortedTickets.filter(tk => tk.type === 'feature'),
           },
           // Add other type columns as needed
         ];
       case 'assignee':
-        const assignees = Array.from(new Set(sortedTickets.map(t => t.assignedTo?.name || 'Unassigned')));
+        const assignees = Array.from(new Set(sortedTickets.map(tk => tk.assignedTo?.name || t('unassigned'))));
         return assignees.map(assignee => ({
           id: assignee.toLowerCase(),
           title: assignee,
           color: 'bg-teal-500',
-          tickets: sortedTickets.filter(t => (t.assignedTo?.name || 'Unassigned') === assignee),
+          tickets: sortedTickets.filter(tk => (tk.assignedTo?.name || t('unassigned')) === assignee),
         }));
       default:
         return [];

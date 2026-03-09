@@ -1,5 +1,6 @@
 import { getCookie } from "cookies-next";
 import moment from "moment";
+import useTranslation from "next-translate/useTranslation";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 import { useQuery } from "react-query";
@@ -206,6 +207,8 @@ function Table({ columns, data }: any) {
 }
 
 export default function AdminTicketLayout() {
+  const { t } = useTranslation('peppermint');
+
   const { data, status, refetch } = useQuery(
     "fetchallTickets",
     fetchALLTIckets
@@ -301,10 +304,11 @@ export default function AdminTicketLayout() {
           return (
             <>
               <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-red-600/10">
-                {value === "needs_support" && <span>Needs Support</span>}
-                {value === "in_progress" && <span>In Progress</span>}
-                {value === "in_review" && <span>In Review</span>}
-                {value === "done" && <span>Done</span>}
+                {value === "needs_support" && <span>{t("needs_support")}</span>}
+                {value === "in_progress" && <span>{t("in_progress")}</span>}
+                {value === "in_review" && <span>{t("in_review")}</span>}
+                {value === "done" && <span>{t("done")}</span>}
+                {value === "hold" && <span>{t("hold")}</span>}
               </span>
             </>
           );

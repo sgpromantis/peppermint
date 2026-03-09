@@ -25,6 +25,8 @@ services:
     restart: always
     depends_on:
       - peppermint_postgres
+    volumes:
+      - peppermint_uploads:/app/apps/api/uploads
     environment:
       DB_USERNAME: "peppermint"
       DB_PASSWORD: "12345"
@@ -33,3 +35,4 @@ services:
 
 volumes:
  pgdata_live:
+ peppermint_uploads:

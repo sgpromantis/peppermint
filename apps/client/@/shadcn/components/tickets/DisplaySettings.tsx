@@ -1,5 +1,6 @@
 import { Label } from "@/shadcn/ui/label";
 import { Switch } from "@/shadcn/ui/switch";
+import useTranslation from "next-translate/useTranslation";
 import { UISettings } from "../../types/tickets";
 
 interface DisplaySettingsProps {
@@ -8,12 +9,14 @@ interface DisplaySettingsProps {
 }
 
 export default function DisplaySettings({ settings, onChange }: DisplaySettingsProps) {
+  const { t } = useTranslation('peppermint');
+
   return (
     <div>
-      <h4 className="text-sm font-medium mb-3">Display Options</h4>
+      <h4 className="text-sm font-medium mb-3">{t("display_options")}</h4>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label htmlFor="show-avatars" className="text-sm">Show Avatars</Label>
+          <Label htmlFor="show-avatars" className="text-sm">{t("show_avatars")}</Label>
           <Switch
             id="show-avatars"
             checked={settings.showAvatars}
@@ -22,7 +25,7 @@ export default function DisplaySettings({ settings, onChange }: DisplaySettingsP
         </div>
         
         <div className="flex items-center justify-between">
-          <Label htmlFor="show-dates" className="text-sm">Show Dates</Label>
+          <Label htmlFor="show-dates" className="text-sm">{t("show_dates")}</Label>
           <Switch
             id="show-dates"
             checked={settings.showDates}
@@ -31,7 +34,7 @@ export default function DisplaySettings({ settings, onChange }: DisplaySettingsP
         </div>
 
         <div className="flex items-center justify-between">
-          <Label htmlFor="show-priority" className="text-sm">Show Priority</Label>
+          <Label htmlFor="show-priority" className="text-sm">{t("show_priority")}</Label>
           <Switch
             id="show-priority"
             checked={settings.showPriority}
@@ -40,7 +43,7 @@ export default function DisplaySettings({ settings, onChange }: DisplaySettingsP
         </div>
 
         <div className="flex items-center justify-between">
-          <Label htmlFor="show-type" className="text-sm">Show Type</Label>
+          <Label htmlFor="show-type" className="text-sm">{t("show_type")}</Label>
           <Switch
             id="show-type"
             checked={settings.showType}
@@ -49,7 +52,7 @@ export default function DisplaySettings({ settings, onChange }: DisplaySettingsP
         </div>
 
         <div className="flex items-center justify-between">
-          <Label htmlFor="show-numbers" className="text-sm">Show Ticket Numbers</Label>
+          <Label htmlFor="show-numbers" className="text-sm">{t("show_ticket_numbers")}</Label>
           <Switch
             id="show-numbers"
             checked={settings.showTicketNumbers}

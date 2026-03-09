@@ -86,9 +86,14 @@ export default function CreateTicketModal({ keypress, setKeyPressDown }) {
         .then((res) => res.json())
         .then((res) => {
           if (res) {
-            // TODO: THINK ABOUT AUTO ASSIGN PREFERENCES
-            // setEngineer(user)
             setUsers(res.users);
+            // Auto-assign to default admin
+            const defaultEng = res.users?.find(
+              (u: any) => u.email === "sebastian.gorr@promantis.de"
+            );
+            if (defaultEng) {
+              setEngineer(defaultEng);
+            }
           }
         });
     } catch (error) {
