@@ -26,7 +26,7 @@ export default function Tickets() {
   const { t } = useTranslation("peppermint");
 
   const token = getCookie("session");
-  const { data, status, error } = useQuery("allusertickets", () =>
+  const { data, status, error } = useQuery("usertickets-open", () =>
     getUserTickets(token)
   );
 
