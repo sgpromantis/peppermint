@@ -3,7 +3,7 @@ FROM node:22-slim AS deps
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential python3 && \
+    apt-get install -y --no-install-recommends build-essential python3 git && \
     npm i -g prisma typescript@latest --force && \
     rm -rf /var/lib/apt/lists/*
 
