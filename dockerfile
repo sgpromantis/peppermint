@@ -1,42 +1,39 @@
-FROM node:lts AS builder
+FROM node:22-slim AS deps
 
-# Set the working directory inside the container
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y build-essential python3
+    apt-get install -y --no-install-recommends build-essential python3 && \
+    npm i -g prisma typescript@latest --force && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy the package.json and package-lock.json files for both apps
+# Copy only package files first for dependency caching
 COPY apps/api/package*.json ./apps/api/
 COPY apps/client/package*.json ./apps/client/
-COPY ./ecosystem.config.js ./ecosystem.config.js
 
-RUN npm i -g prisma
-RUN npm i -g typescript@latest -g --force 
+# Install dependencies (cached unless package.json changes)
+RUN cd apps/api && npm install
+RUN cd apps/client && yarn install --network-timeout 1000000 --frozen-lockfile || yarn install --network-timeout 1000000
 
-# Copy the source code for both apps
+FROM deps AS builder
+
+# Now copy source code (this layer busts only on code changes)
 COPY apps/api ./apps/api
 COPY apps/client ./apps/client
 
-RUN cd apps/api && npm install
 RUN cd apps/api && npm run build
-
-RUN cd apps/client && yarn install --network-timeout 1000000
 RUN cd apps/client && yarn build
 
-FROM node:lts AS runner
+FROM node:22-slim AS runner
+
+RUN npm install -g pm2 && npm cache clean --force
 
 COPY --from=builder /app/apps/api/ ./apps/api/
 COPY --from=builder /app/apps/client/.next/standalone ./apps/client
 COPY --from=builder /app/apps/client/.next/static ./apps/client/.next/static
 COPY --from=builder /app/apps/client/public ./apps/client/public
-COPY --from=builder /app/ecosystem.config.js ./ecosystem.config.js
+COPY ecosystem.config.js ./ecosystem.config.js
 
-# Expose the ports for both apps
 EXPOSE 3000 5003
 
-# Install PM2 globally
-RUN npm install -g pm2
-
-# Start both apps using PM2
 CMD ["pm2-runtime", "ecosystem.config.js"]
