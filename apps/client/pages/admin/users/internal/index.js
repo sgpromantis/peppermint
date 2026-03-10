@@ -242,7 +242,9 @@ export default function UserAuthPanel() {
           return (
             <div className="space-x-4 flex flex-row">
               <UpdateUserModal user={row.original} />
-              <ResetPassword user={row.original} />
+              {!row.original.microsoft_user && (
+                <ResetPassword user={row.original} />
+              )}
               {row.original.isAdmin ? null : (
                 <button
                   type="button"
@@ -333,7 +335,9 @@ export default function UserAuthPanel() {
                             user={user}
                             refetch={() => handleRefresh}
                           />
-                          <ResetPassword user={user} />
+                          {!user.microsoft_user && (
+                            <ResetPassword user={user} />
+                          )}
                         </div>
                       </div>
                     ))}

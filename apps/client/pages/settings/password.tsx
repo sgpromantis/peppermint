@@ -1,13 +1,28 @@
-import { useState } from "react";
+import { useContext, useState, useEffect } from "react";
 
 import { getCookie } from "cookies-next";
 import { toast } from "@/shadcn/hooks/use-toast";
+import { useRouter } from "next/router";
+import { useUser } from "../../store/session";
 
 export default function PasswordChange({ children }) {
   const token = getCookie("session");
+  const router = useRouter();
+  const { user } = useUser();
 
   const [password, setPassword] = useState("");
   const [check, setCheck] = useState("");
+
+  // Redirect M365 users away from password page
+  useEffect(() => {
+    if (user?.microsoft_user) {
+      router.replace("/settings");
+    }
+  }, [user, router]);
+
+  if (user?.microsoft_user) {
+    return null;
+  }
 
   const postData = async () => {
     if (check === password && password.length > 2) {

@@ -27,11 +27,18 @@ export function userRoutes(fastify: FastifyInstance) {
           createdAt: true,
           updatedAt: true,
           language: true,
+          microsoftAzureId: true,
         },
       });
 
+      const mapped = users.map((u) => ({
+        ...u,
+        microsoft_user: !!u.microsoftAzureId,
+        microsoftAzureId: undefined,
+      }));
+
       reply.send({
-        users,
+        users: mapped,
         success: true,
       });
     }

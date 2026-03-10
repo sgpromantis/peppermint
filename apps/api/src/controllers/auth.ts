@@ -981,6 +981,7 @@ export function authRoutes(fastify: FastifyInstance) {
         email: user!.email,
         name: user!.name,
         isAdmin: user!.isAdmin,
+        isManager: user!.isManager ?? false,
         language: user!.language,
         ticket_created: user!.notify_ticket_created,
         ticket_status_changed: user!.notify_ticket_status_changed,
@@ -1010,6 +1011,19 @@ export function authRoutes(fastify: FastifyInstance) {
       };
 
       const session = await checkSession(request);
+
+      // Block M365-synced users from setting a local password
+      const user = await prisma.user.findUnique({
+        where: { id: session?.id },
+        select: { microsoftAzureId: true },
+      });
+
+      if (user?.microsoftAzureId) {
+        return reply.code(403).send({
+          message: "Password reset is not available for Microsoft 365 synced users.",
+          success: false,
+        });
+      }
 
       const hashedPass = await bcrypt.hash(password, 10);
 
@@ -1052,6 +1066,19 @@ export function authRoutes(fastify: FastifyInstance) {
       if (check?.isAdmin === false) {
         return reply.code(401).send({
           message: "Unauthorized",
+        });
+      }
+
+      // Block admin from resetting password for M365-synced users
+      const targetUser = await prisma.user.findUnique({
+        where: { id: user },
+        select: { microsoftAzureId: true },
+      });
+
+      if (targetUser?.microsoftAzureId) {
+        return reply.code(403).send({
+          message: "Password reset is not available for Microsoft 365 synced users.",
+          success: false,
         });
       }
 

@@ -1,5 +1,6 @@
 import { Coffee, LucideIcon } from "lucide-react";
 import * as React from "react";
+import useTranslation from "next-translate/useTranslation";
 
 import { cn } from "@/shadcn/lib/utils";
 import { Button } from "@/shadcn/ui/button";
@@ -28,6 +29,7 @@ export function UserCombo({
   disabled,
   placeholder,
 }) {
+  const { t } = useTranslation("peppermint");
   const [open, setOpen] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<any | null>(null);
 
@@ -70,7 +72,7 @@ export function UserCombo({
                 </div>
               </>
             ) : (
-              <span>unassigned</span>
+              <span>{t("unassigned")}</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -78,7 +80,7 @@ export function UserCombo({
           <Command>
             <CommandInput placeholder={placeholder} />
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>{t("no_results_found")}</CommandEmpty>
               <CommandGroup>
                 <CommandItem
                   className=" hover:cursor-pointer"
@@ -89,23 +91,17 @@ export function UserCombo({
                     setOpen(false);
                   }}
                 >
-                  {/* <val.icon
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        val.value === selectedStatus?.value
-                          ? "opacity-100"
-                          : "opacity-40"
-                      )}
-                    /> */}
-                  <span>Unassign</span>
+                  <span>{t("unassign")}</span>
                 </CommandItem>
                 {value.map((val) => (
                   <CommandItem
                     className=" hover:cursor-pointer"
-                    key={val.value}
-                    value={val}
+                    key={val.id || val.value}
+                    value={val.name}
                     onSelect={(selected) => {
-                      const user = value.find((k) => k.name === selected);
+                      const user = value.find(
+                        (k) => k.name.toLowerCase() === selected.toLowerCase()
+                      );
                       setSelectedStatus(user);
                       update(user);
                       setOpen(false);
@@ -130,11 +126,12 @@ export function IconCombo({
   hideInitial,
   disabled,
 }) {
+  const { t } = useTranslation("peppermint");
   const [open, setOpen] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<any | null>(null);
-  const defaultIcon = value.find((k) => k.value === defaultName);
-
-  console.log(disabled);
+  const defaultIcon = value.find(
+    (k) => k.name === defaultName || k.value === defaultName
+  );
 
   return (
     <div className="flex items-center space-x-4">
@@ -157,8 +154,8 @@ export function IconCombo({
                     </span>
                   </div>
                 )}
-                <span className="mt-[2.5px] capitalize">
-                  {selectedStatus.value}
+                <span className="mt-[2.5px]">
+                  {selectedStatus.name}
                 </span>
               </div>
             ) : defaultName ? (
@@ -172,10 +169,10 @@ export function IconCombo({
                     </span>
                   </span>
                 </div>
-                <span className="mt-[2.5px] capitalize">{defaultName}</span>
+                <span className="mt-[2.5px]">{defaultName}</span>
               </div>
             ) : (
-              <span>unassigned</span>
+              <span>{t("unassigned")}</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -183,17 +180,19 @@ export function IconCombo({
           <Command>
             {/* <CommandInput placeholder="Change status..." /> */}
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>{t("no_results_found")}</CommandEmpty>
               <CommandGroup>
                 {value.map((val) => (
                   <CommandItem
                     className=" hover:cursor-pointer"
                     key={val.value}
-                    value={val}
+                    value={val.name}
                     onSelect={(selected) => {
-                      const user = value.find((k) => k.name === selected);
-                      setSelectedStatus(user);
-                      update(user);
+                      const item = value.find(
+                        (k) => k.name.toLowerCase() === selected.toLowerCase()
+                      );
+                      setSelectedStatus(item);
+                      update(item);
                       setOpen(false);
                     }}
                   >
@@ -225,6 +224,7 @@ export function ClientCombo({
   showIcon,
   disabled,
 }) {
+  const { t } = useTranslation("peppermint");
   const [open, setOpen] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<any | null>(null);
 
@@ -263,15 +263,15 @@ export function ClientCombo({
                 </div>
               </>
             ) : (
-              <span>unassigned</span>
+              <span>{t("unassigned")}</span>
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0" side="right" align="start">
           <Command>
-            <CommandInput placeholder="Change client..." />
+            <CommandInput placeholder={t("change_client")} />
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>{t("no_results_found")}</CommandEmpty>
               <CommandGroup>
                 <CommandItem
                   className=" hover:cursor-pointer"
@@ -282,36 +282,22 @@ export function ClientCombo({
                     setOpen(false);
                   }}
                 >
-                  {/* <val.icon
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        val.value === selectedStatus?.value
-                          ? "opacity-100"
-                          : "opacity-40"
-                      )}
-                    /> */}
-                  <span>Unassign</span>
+                  <span>{t("unassign")}</span>
                 </CommandItem>
                 {value.map((val) => (
                   <CommandItem
                     className=" hover:cursor-pointer"
-                    key={val.value}
-                    value={val}
+                    key={val.id || val.value}
+                    value={val.name}
                     onSelect={(selected) => {
-                      const user = value.find((k) => k.name === selected);
-                      setSelectedStatus(user);
-                      update(user);
+                      const item = value.find(
+                        (k) => k.name.toLowerCase() === selected.toLowerCase()
+                      );
+                      setSelectedStatus(item);
+                      update(item);
                       setOpen(false);
                     }}
                   >
-                    {/* <val.icon
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        val.value === selectedStatus?.value
-                          ? "opacity-100"
-                          : "opacity-40"
-                      )}
-                    /> */}
                     <span>{val.name}</span>
                   </CommandItem>
                 ))}

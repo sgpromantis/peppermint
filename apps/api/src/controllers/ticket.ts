@@ -439,14 +439,16 @@ export function ticketRoutes(fastify: FastifyInstance) {
       preHandler: requirePermission(["issue::read"]),
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await checkSession(request);
       const { query }: any = request.body;
 
+      const canSeeAll = user?.isAdmin || user?.isManager;
+      const whereClause = canSeeAll
+        ? { title: { contains: query } }
+        : { title: { contains: query }, userId: user?.id };
+
       const tickets = await prisma.ticket.findMany({
-        where: {
-          title: {
-            contains: query,
-          },
-        },
+        where: whereClause,
       });
 
       reply.send({

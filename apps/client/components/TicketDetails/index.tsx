@@ -46,6 +46,7 @@ import {
   CheckIcon,
   CircleCheck,
   CircleDotDashed,
+  Clock,
   Download,
   Ellipsis,
   Eye,
@@ -57,6 +58,8 @@ import {
   Mail,
   Paperclip,
   PanelTopClose,
+  Pause,
+  Play,
   SignalHigh,
   SignalLow,
   SignalMedium,
@@ -75,25 +78,10 @@ const ticketStatusKeys = [
   { id: 4, value: "done", nameKey: "done", icon: CircleCheck },
 ];
 
-const priorityOptions = [
-  {
-    id: "1",
-    name: "Low",
-    value: "low",
-    icon: SignalLow,
-  },
-  {
-    id: "2",
-    name: "Medium",
-    value: "medium",
-    icon: SignalMedium,
-  },
-  {
-    id: "1",
-    name: "High",
-    value: "high",
-    icon: SignalHigh,
-  },
+const priorityKeys = [
+  { id: "1", nameKey: "low", value: "low", icon: SignalLow },
+  { id: "2", nameKey: "medium", value: "medium", icon: SignalMedium },
+  { id: "3", nameKey: "high", value: "high", icon: SignalHigh },
 ];
 
 export default function Ticket() {
@@ -103,6 +91,11 @@ export default function Ticket() {
   const ticketStatusMap = ticketStatusKeys.map((s) => ({
     ...s,
     name: t(s.nameKey),
+  }));
+
+  const priorityOptions = priorityKeys.map((p) => ({
+    ...p,
+    name: t(p.nameKey),
   }));
 
   const token = getCookie("session");
@@ -160,6 +153,11 @@ export default function Ticket() {
   const [timeSpent, setTimeSpent] = useState<any>();
   const [publicComment, setPublicComment] = useState<any>(false);
   const [timeReason, setTimeReason] = useState("");
+
+  // Timer state
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [assignedClient, setAssignedClient] = useState<any>();
   const [ticketType, setTicketType] = useState<any>();
@@ -195,7 +193,7 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || "Failed to update ticket",
       });
       return;
@@ -238,7 +236,7 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || "Failed to update status",
       });
       return;
@@ -264,7 +262,7 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || "Failed to update visibility",
       });
       return;
@@ -288,7 +286,7 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || "Failed to update lock status",
       });
       return;
@@ -312,8 +310,8 @@ export default function Ticket() {
         if (res.success) {
           toast({
             variant: "default",
-            title: "Issue Deleted",
-            description: "The issue has been deleted",
+            title: t("issue_deleted"),
+            description: t("issue_deleted_desc"),
           });
           router.push("/issues");
         }
@@ -339,7 +337,7 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || "Failed to add comment",
       });
       return;
@@ -363,7 +361,7 @@ export default function Ticket() {
         } else {
           toast({
             variant: "destructive",
-            title: "Error",
+            title: t("error"),
             description: "Failed to delete comment",
           });
         }
@@ -390,14 +388,96 @@ export default function Ticket() {
       .then((res) => {
         if (res.success) {
           setTimeEdit(false);
+          setTimeSpent(undefined);
+          setTimeReason("");
           refetch();
           toast({
             variant: "default",
-            title: "Time Added",
-            description: "Time has been added to the ticket",
+            title: t("time_added"),
+            description: t("time_added_desc"),
           });
         }
       });
+  }
+
+  function startTimer() {
+    if (timerRunning) return;
+    setTimerRunning(true);
+    timerRef.current = setInterval(() => {
+      setTimerSeconds((s: number) => s + 1);
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (!timerRunning) return;
+    setTimerRunning(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }
+
+  async function saveTimerAndReset() {
+    if (timerSeconds < 60) {
+      toast({
+        variant: "destructive",
+        title: t("error"),
+        description: t("timer_min_one_minute"),
+      });
+      return;
+    }
+    const minutes = Math.round(timerSeconds / 60);
+    stopTimer();
+    await fetch(`/api/v1/time/new`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        time: minutes,
+        ticket: id,
+        title: timeReason || t("timer_entry"),
+        user: user.id,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success) {
+          setTimerSeconds(0);
+          setTimeReason("");
+          refetch();
+          toast({
+            variant: "default",
+            title: t("time_added"),
+            description: `${minutes} ${t("minutes")}`,
+          });
+        }
+      });
+  }
+
+  async function deleteTimeEntry(entryId: string) {
+    await fetch(`/api/v1/time/${entryId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success) {
+          refetch();
+          toast({
+            variant: "default",
+            title: t("time_deleted"),
+          });
+        }
+      });
+  }
+
+  function fmtTimer(sec: number) {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   }
 
   async function fetchUsers() {
@@ -412,7 +492,7 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || "Failed to fetch users",
       });
       return;
@@ -435,7 +515,7 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || "Failed to fetch clients",
       });
       return;
@@ -489,17 +569,17 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || `Failed to ${action} to issue`,
       });
       return;
     }
 
     toast({
-      title: isFollowing ? "Unsubscribed" : "Subscribed",
+      title: isFollowing ? t("unsubscribed") : t("subscribed"),
       description: isFollowing
-        ? "You will no longer receive updates"
-        : "You will now receive updates",
+        ? t("will_not_receive_updates")
+        : t("will_receive_updates"),
       duration: 3000,
     });
 
@@ -525,7 +605,7 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || "Failed to transfer ticket",
       });
       return;
@@ -554,7 +634,7 @@ export default function Ticket() {
     if (!res.success) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("error"),
         description: res.message || "Failed to transfer client",
       });
       return;
@@ -722,8 +802,8 @@ export default function Ticket() {
       .then((res) => res.json())
       .then(() => {
         toast({
-          title: ticket.isComplete ? "Issue re-opened" : "Issue closed",
-          description: "The status of the issue has been updated.",
+          title: ticket.isComplete ? t("issue_reopened") : t("issue_closed_toast"),
+          description: t("status_updated_desc"),
           duration: 3000,
         });
         refetch();
@@ -748,14 +828,14 @@ export default function Ticket() {
       if (!response.ok) throw new Error("Failed to update assignee");
 
       toast({
-        title: "Assignee updated",
-        description: `Transferred issue successfully`,
+        title: t("assignee_updated"),
+        description: t("transferred_successfully"),
         duration: 3000,
       });
       refetch();
     } catch (error) {
       toast({
-        title: "Error",
+        title: t("error"),
         description: "Failed to update assignee",
         variant: "destructive",
         duration: 3000,
@@ -784,14 +864,14 @@ export default function Ticket() {
       if (!response.success) throw new Error("Failed to update priority");
 
       toast({
-        title: "Priority updated",
-        description: `Ticket priority set to ${priority}`,
+        title: t("change_priority"),
+        description: `${t("priority")}: ${t(priority)}`,
         duration: 3000,
       });
       refetch();
     } catch (error) {
       toast({
-        title: "Error",
+        title: t("error"),
         description: "Failed to update priority",
         variant: "destructive",
         duration: 3000,
@@ -805,14 +885,14 @@ export default function Ticket() {
     <div>
       {status === "loading" && (
         <div className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
-          <h2> Loading data ... </h2>
+          <h2> {t("loading_data")} </h2>
           {/* <Spin /> */}
         </div>
       )}
 
       {status === "error" && (
         <div className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold"> Error fetching data ... </h2>
+          <h2 className="text-2xl font-bold"> {t("error_fetching_data")} </h2>
         </div>
       )}
 
@@ -867,20 +947,20 @@ export default function Ticket() {
                           </div>
                           <div>
                             <span className="inline-flex items-center rounded-md bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">
-                              {data.ticket.type}
+                              {t(data.ticket.type) || data.ticket.type}
                             </span>
                           </div>
                           {data.ticket.hidden && (
                             <div>
                               <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
-                                Hidden
+                                {t("hidden")}
                               </span>
                             </div>
                           )}
                           {data.ticket.locked && (
                             <div>
                               <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
-                                Locked
+                                {t("locked")}
                               </span>
                             </div>
                           )}
@@ -895,7 +975,7 @@ export default function Ticket() {
                               className="min-w-[160px]"
                             >
                               <DropdownMenuLabel>
-                                <span>Issue Actions</span>
+                                <span>{t("issue_actions")}</span>
                               </DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               {data.ticket.hidden ? (
@@ -904,7 +984,7 @@ export default function Ticket() {
                                   onClick={() => hide(false)}
                                 >
                                   <Eye className="h-4 w-4" />
-                                  <span>Show Issue</span>
+                                  <span>{t("show_issue")}</span>
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem
@@ -912,7 +992,7 @@ export default function Ticket() {
                                   onClick={() => hide(true)}
                                 >
                                   <EyeOff className="h-4 w-4" />
-                                  <span>Hide Issue</span>
+                                  <span>{t("hide_issue")}</span>
                                 </DropdownMenuItem>
                               )}
                               {data.ticket.locked ? (
@@ -921,7 +1001,7 @@ export default function Ticket() {
                                   onClick={() => lock(false)}
                                 >
                                   <Unlock className="h-4 w-4" />
-                                  <span>Unlock Issue</span>
+                                  <span>{t("unlock_issue")}</span>
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem
@@ -929,7 +1009,7 @@ export default function Ticket() {
                                   onClick={() => lock(true)}
                                 >
                                   <Lock className="h-4 w-4" />
-                                  <span>Lock Issue</span>
+                                  <span>{t("lock_issue")}</span>
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
@@ -938,7 +1018,7 @@ export default function Ticket() {
                                 onClick={() => deleteIssue()}
                               >
                                 <Trash2 className="h-4 w-4" />
-                                <span className="">Delete Issue</span>
+                                <span className="">{t("delete_issue")}</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -961,7 +1041,7 @@ export default function Ticket() {
                                     : ""
                                 }
                                 disabled={data.ticket.locked}
-                                placeholder="Assign User..."
+                                placeholder={t("assign_user")}
                                 hideInitial={false}
                                 showIcon={true}
                               />
@@ -972,21 +1052,19 @@ export default function Ticket() {
                             value={priorityOptions}
                             update={setPriority}
                             defaultName={
-                              data.ticket.priority ? data.ticket.priority : ""
+                              data.ticket.priority ? t(data.ticket.priority.toLowerCase()) : ""
                             }
                             disabled={data.ticket.locked}
                             hideInitial={false}
                           />
 
-                          <UserCombo
+                          <IconCombo
                             value={ticketStatusMap}
                             update={setTicketStatus}
                             defaultName={
-                              data.ticket.status ? data.ticket.status : ""
+                              data.ticket.status ? t(data.ticket.status) : ""
                             }
                             disabled={data.ticket.locked}
-                            showIcon={true}
-                            placeholder="Change Client..."
                             hideInitial={false}
                           />
 
@@ -1039,7 +1117,7 @@ export default function Ticket() {
                           id="activity-title"
                           className="text-base font-medium "
                         >
-                          Activity
+                          {t("activity")}
                         </span>
 
                         <div className="flex flex-row items-center space-x-2">
@@ -1056,14 +1134,14 @@ export default function Ticket() {
                             {data.ticket.following?.includes(user.id) ? (
                               <>
                                 <span className="text-xs group-hover:hidden">
-                                  following
+                                  {t("following_status")}
                                 </span>
                                 <span className="text-xs hidden group-hover:inline text-destructive">
-                                  unsubscribe
+                                  {t("unsubscribe")}
                                 </span>
                               </>
                             ) : (
-                              <span className="text-xs">follow</span>
+                              <span className="text-xs">{t("follow")}</span>
                             )}
                           </Button>
 
@@ -1076,7 +1154,7 @@ export default function Ticket() {
                                   </PopoverTrigger>
                                   <PopoverContent>
                                     <div className="flex flex-col space-y-1">
-                                      <span className="text-xs">Followers</span>
+                                      <span className="text-xs">{t("followers")}</span>
                                       {data.ticket.following.map(
                                         (follower: any) => {
                                           const userMatch = users.find(
@@ -1099,7 +1177,7 @@ export default function Ticket() {
                                           follower !== data.ticket.assignedTo.id
                                       ).length === 0 && (
                                         <span className="text-xs">
-                                          This issue has no followers
+                                          {t("no_followers")}
                                         </span>
                                       )}
                                     </div>
@@ -1128,13 +1206,13 @@ export default function Ticket() {
                                         ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
                                         : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                                     }`}>
-                                      {data.ticket.createdBy.role === "external" ? "Extern" 
+                                      {data.ticket.createdBy.role === "external" ? t("external_role") 
                                         : data.ticket.createdBy.role === "admin" ? "Admin"
                                         : data.ticket.createdBy.role === "manager" ? "Manager"
-                                        : "Intern"}
+                                        : t("internal_role")}
                                     </span>
                                   )}
-                                  <span>erstellt per E-Mail</span>
+                                  <span>{t("created_via_email")}</span>
                                   {data.ticket.email && data.ticket.email !== data.ticket.createdBy.email && (
                                     <span>
                                       ( <strong>{data.ticket.email}</strong> )
@@ -1152,9 +1230,9 @@ export default function Ticket() {
                                     {data.ticket.name || data.ticket.email}
                                   </span>
                                   <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                                    Unbekannt
+                                    {t("unknown_role")}
                                   </span>
-                                  <span>erstellt per E-Mail</span>
+                                  <span>{t("created_via_email")}</span>
                                   {data.ticket.name && data.ticket.email && (
                                     <span>
                                       ( <strong>{data.ticket.email}</strong> )
@@ -1162,7 +1240,7 @@ export default function Ticket() {
                                   )}
                                 </>
                               )}
-                              <span>am</span>
+                              <span>{t("on_date")}</span>
                               <span className="font-bold">
                                 {moment(data.ticket.createdAt).format(
                                   "DD/MM/YYYY"
@@ -1170,7 +1248,7 @@ export default function Ticket() {
                               </span>
                               {data.ticket.client && (
                                 <span>
-                                  — Kunde:{" "}
+                                  — {t("customer_label")}:{" "}
                                   <strong>{data.ticket.client.name}</strong>
                                 </span>
                               )}
@@ -1180,11 +1258,11 @@ export default function Ticket() {
                               {data.ticket.createdBy ? (
                                 <div className="flex flex-row space-x-1">
                                   <span>
-                                    Created by
+                                    {t("created_by")}
                                     <strong className="ml-1">
                                       {data.ticket.createdBy.name}
                                     </strong>{" "}
-                                    at{" "}
+                                    {t("at_time")}{" "}
                                   </span>
                                   <span className="">
                                     {moment(data.ticket.createdAt).format(
@@ -1193,7 +1271,7 @@ export default function Ticket() {
                                   </span>
                                   {data.ticket.name && (
                                     <span>
-                                      for <strong>{data.ticket.name}</strong>
+                                      {t("for_person")} <strong>{data.ticket.name}</strong>
                                     </span>
                                   )}
                                   {data.ticket.email && (
@@ -1204,7 +1282,7 @@ export default function Ticket() {
                                 </div>
                               ) : (
                                 <div className="flex flex-row space-x-1">
-                                  <span>Created at </span>
+                                  <span>{t("created_at")} </span>
                                   <span className="">
                                     <strong>
                                       {moment(data.ticket.createdAt).format(
@@ -1213,7 +1291,7 @@ export default function Ticket() {
                                     </strong>
                                     {data.ticket.client && (
                                       <span>
-                                        for{" "}
+                                        {t("for_person")}{" "}
                                         <strong>
                                           {data.ticket.client.name}
                                         </strong>
@@ -1286,8 +1364,8 @@ export default function Ticket() {
                                   className="block w-full bg-secondary/50 dark:bg-secondary/50 rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-background focus:ring-0 focus:ring-inset focus:ring-gray-900 sm:text-sm sm:leading-6"
                                   placeholder={
                                     data.ticket.locked
-                                      ? "This ticket is locked"
-                                      : "Leave a comment"
+                                      ? t("ticket_locked")
+                                      : t("leave_a_comment")
                                   }
                                   defaultValue={""}
                                   onChange={(e) => setComment(e.target.value)}
@@ -1301,7 +1379,7 @@ export default function Ticket() {
                                       checked={publicComment}
                                       onCheckedChange={setPublicComment}
                                     />
-                                    <span> Public Reply</span>
+                                    <span> {t("public_reply")}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1385,7 +1463,7 @@ export default function Ticket() {
                         }
                         disabled={data.ticket.locked}
                         showIcon={true}
-                        placeholder="Change User..."
+                        placeholder={t("change_user")}
                         hideInitial={false}
                       />
                     )}
@@ -1393,7 +1471,7 @@ export default function Ticket() {
                       value={priorityOptions}
                       update={setPriority}
                       defaultName={
-                        data.ticket.priority ? data.ticket.priority : ""
+                        data.ticket.priority ? t(data.ticket.priority.toLowerCase()) : ""
                       }
                       disabled={data.ticket.locked}
                       hideInitial={false}
@@ -1401,7 +1479,7 @@ export default function Ticket() {
                     <IconCombo
                       value={ticketStatusMap}
                       update={setTicketStatus}
-                      defaultName={data.ticket.status ? data.ticket.status : ""}
+                      defaultName={data.ticket.status ? t(data.ticket.status) : ""}
                       disabled={data.ticket.locked}
                       hideInitial={false}
                     />
@@ -1423,7 +1501,7 @@ export default function Ticket() {
                         defaultName={
                           data.ticket.client
                             ? data.ticket.client.name
-                            : "No Client Assigned"
+                            : t("no_client_assigned")
                         }
                         disabled={data.ticket.locked}
                         showIcon={true}
@@ -1436,39 +1514,39 @@ export default function Ticket() {
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
                       <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-1.5">
                         <Mail className="h-3.5 w-3.5" />
-                        Benachrichtigung
+                        {t("notification_label")}
                       </span>
                       <div className="space-y-2">
                         <div>
-                          <span className="text-xs text-gray-400 dark:text-gray-500">Name</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">{t("name")}</span>
                           <input
                             type="text"
                             value={ticketName}
                             disabled={data.ticket.locked}
                             onChange={(e) => { setTicketName(e.target.value); setContactInfoDirty(true); }}
-                            placeholder="Kontaktname"
+                            placeholder={t("contact_name_placeholder")}
                             className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5 disabled:opacity-50"
                           />
                         </div>
                         <div>
-                          <span className="text-xs text-gray-400 dark:text-gray-500">E-Mail (Empfänger)</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">{t("email_recipient")}</span>
                           <input
                             type="email"
                             value={ticketEmail}
                             disabled={data.ticket.locked}
                             onChange={(e) => { setTicketEmail(e.target.value); setContactInfoDirty(true); }}
-                            placeholder="Kontakt-E-Mail"
+                            placeholder={t("contact_email_placeholder")}
                             className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5 disabled:opacity-50"
                           />
                         </div>
                         <div>
-                          <span className="text-xs text-gray-400 dark:text-gray-500">Weiterer Empfänger</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">{t("additional_recipient")}</span>
                           <input
                             type="email"
                             value={ticketReplyTo}
                             disabled={data.ticket.locked}
                             onChange={(e) => { setTicketReplyTo(e.target.value); setContactInfoDirty(true); }}
-                            placeholder="Antwort-An / Zusätzl. Empfänger"
+                            placeholder={t("reply_to_placeholder")}
                             className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5 disabled:opacity-50"
                           />
                         </div>
@@ -1476,70 +1554,137 @@ export default function Ticket() {
                     </div>
                     )}
 
-                    {/* <div className="flex flex-row items-center justify-between mt-2">
-                    <span className="text-sm font-medium text-gray-500 dark:text-white">
-                      Time Tracking
-                    </span>
-                    {!editTime ? (
-                      <button
-                        onClick={() => setTimeEdit(true)}
-                        className="text-sm font-medium text-gray-500 hover:underline dark:text-white"
-                      >
-                        add
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setTimeEdit(false);
-                          addTime();
-                        }}
-                        className="text-sm font-medium text-gray-500 hover:underline dark:text-white"
-                      >
-                        {t("save")}
-                      </button>
-                    )}
-                  </div>
-                  {data.ticket.TimeTracking.length > 0 ? (
-                    data.ticket.TimeTracking.map((i: any) => (
-                      <div key={i.id} className="text-xs">
-                        <div className="flex flex-row space-x-1.5 items-center dark:text-white">
-                          <span>{i.user.name} / </span>
-                          <span>{i.time} {t("minutes")}</span>
-                        </div>
+                    <div className="border-t border-gray-200 dark:border-gray-700">
+                      <div className="flex flex-row items-center justify-between mt-2">
+                        <span className="text-sm font-medium text-gray-500 dark:text-white flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {t("time_tracking")}
+                        </span>
+                        {!editTime ? (
+                          <button
+                            onClick={() => setTimeEdit(true)}
+                            className="text-sm font-medium text-gray-500 hover:underline dark:text-white"
+                          >
+                            {t("add")}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setTimeEdit(false)}
+                            className="text-sm font-medium text-gray-500 hover:underline dark:text-white"
+                          >
+                            {t("close")}
+                          </button>
+                        )}
                       </div>
-                    ))
-                  ) : (
-                    <div>
-                      <span className="text-xs dark:text-white">
-                        {t("no_time_added")}
-                      </span>
-                    </div>
-                  )}
-                  {editTime && (
-                    <div>
-                      <div className="mt-2 flex flex-col space-y-2">
+
+                      {/* Timer */}
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="font-mono text-lg dark:text-white tabular-nums">
+                          {fmtTimer(timerSeconds)}
+                        </span>
+                        {!timerRunning ? (
+                          <button
+                            onClick={startTimer}
+                            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                            title={t("timer_start")}
+                          >
+                            <Play className="h-4 w-4 text-green-600" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={stopTimer}
+                            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                            title={t("timer_stop")}
+                          >
+                            <Pause className="h-4 w-4 text-red-500" />
+                          </button>
+                        )}
+                        {timerSeconds > 0 && !timerRunning && (
+                          <button
+                            onClick={saveTimerAndReset}
+                            className="text-xs font-medium text-blue-600 hover:underline"
+                          >
+                            {t("timer_save")}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Timer description input (shown when timer has run) */}
+                      {(timerRunning || timerSeconds > 0) && (
                         <input
                           type="text"
-                          name="text"
-                          id="timespent_text"
-                          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                          className="mt-1 w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5"
                           placeholder={t("what_did_you_do")}
                           value={timeReason}
                           onChange={(e) => setTimeReason(e.target.value)}
                         />
-                        <input
-                          type="number"
-                          name="number"
-                          id="timespent"
-                          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          placeholder={t("time_in_minutes")}
-                          value={timeSpent}
-                          onChange={(e) => setTimeSpent(e.target.value)}
-                        />
+                      )}
+
+                      {/* Manual entry form */}
+                      {editTime && (
+                        <div className="mt-2 flex flex-col space-y-2">
+                          <input
+                            type="text"
+                            className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5"
+                            placeholder={t("what_did_you_do")}
+                            value={timeReason}
+                            onChange={(e) => setTimeReason(e.target.value)}
+                          />
+                          <input
+                            type="number"
+                            className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5"
+                            placeholder={t("time_in_minutes")}
+                            value={timeSpent || ""}
+                            onChange={(e) => setTimeSpent(e.target.value)}
+                          />
+                          <button
+                            onClick={() => addTime()}
+                            className="self-end text-xs font-medium text-blue-600 hover:underline"
+                          >
+                            {t("save")}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Existing entries */}
+                      <div className="mt-2 space-y-1">
+                        {data && data.ticket && data.ticket.TimeTracking && data.ticket.TimeTracking.length > 0 ? (
+                          data.ticket.TimeTracking.map((i: any) => (
+                            <div key={i.id} className="flex items-center justify-between text-xs dark:text-white group">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-muted-foreground">{i.user?.name}</span>
+                                <span>·</span>
+                                <span className="font-medium">{i.time} {t("minutes")}</span>
+                                {i.title && (
+                                  <>
+                                    <span>·</span>
+                                    <span className="text-muted-foreground">{i.title}</span>
+                                  </>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => deleteTimeEntry(i.id)}
+                                className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-red-500 transition-opacity"
+                                title={t("delete")}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            {t("no_time_added")}
+                          </span>
+                        )}
                       </div>
+
+                      {/* Total time */}
+                      {data && data.ticket && data.ticket.TimeTracking && data.ticket.TimeTracking.length > 0 && (
+                        <div className="mt-1 pt-1 border-t border-gray-100 dark:border-gray-700 text-xs font-medium dark:text-white">
+                          {t("total")}: {data.ticket.TimeTracking.reduce((sum: number, i: any) => sum + i.time, 0)} {t("minutes")}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div> */}
 
                     <div className="border-t border-gray-200">
                       <div className="flex flex-row items-center justify-between mt-2">
@@ -1600,7 +1745,7 @@ export default function Ticket() {
                                       } else {
                                         toast({
                                           variant: "destructive",
-                                          title: "Error",
+                                          title: t("error"),
                                           description:
                                             result.message ||
                                             "Failed to delete file",
@@ -1650,7 +1795,7 @@ export default function Ticket() {
               <ContextMenuSubContent className="w-64 ml-1 -mt-1/2">
                 <Command>
                   <CommandList>
-                    <CommandGroup heading="Assigned To">
+                    <CommandGroup heading={t("assign_to")}>
                       <CommandItem
                         onSelect={() =>
                           updateTicketAssignee(data.ticket.id, undefined)
@@ -1666,7 +1811,7 @@ export default function Ticket() {
                         >
                           <CheckIcon className={cn("h-4 w-4")} />
                         </div>
-                        <span>Unassigned</span>
+                        <span>{t("unassigned")}</span>
                       </CommandItem>
                       {users?.map((user) => (
                         <CommandItem
@@ -1699,7 +1844,7 @@ export default function Ticket() {
               <ContextMenuSubContent className="w-64 ml-1">
                 <Command>
                   <CommandList>
-                    <CommandGroup heading="Priority">
+                    <CommandGroup heading={t("priority")}>
                       {priorities.map((priority) => (
                         <CommandItem
                           key={priority}
@@ -1717,7 +1862,7 @@ export default function Ticket() {
                           >
                             <CheckIcon className={cn("h-4 w-4")} />
                           </div>
-                          <span className="capitalize">{priority}</span>
+                          <span className="capitalize">{t(priority)}</span>
                         </CommandItem>
                       ))}
                     </CommandGroup>

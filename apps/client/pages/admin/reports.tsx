@@ -5,6 +5,7 @@ import { useQuery } from "react-query";
 import { Button } from "@/shadcn/ui/button";
 import { useUser } from "../../store/session";
 import { useRouter } from "next/router";
+import { toast } from "@/shadcn/hooks/use-toast";
 
 /**
  * Extracts plain text from a BlockNote JSON detail field.
@@ -145,6 +146,65 @@ export default function MonthlyReports() {
 
   const handlePrint = () => window.print();
 
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    setPdfLoading(true);
+    try {
+      const params = new URLSearchParams({
+        year: String(year),
+        month: String(month),
+        ...(clientId ? { clientId } : {}),
+      });
+      const token = getCookie("session");
+      const res = await fetch(`/api/v1/report/monthly/pdf?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("PDF generation failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Monatsbericht_${year}_${String(month).padStart(2, "0")}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      // Refresh saved reports list
+      refetchReports();
+      toast({ title: "PDF erstellt", description: "Der Bericht wurde gespeichert und heruntergeladen." });
+    } catch {
+      toast({ variant: "destructive", title: "Fehler", description: "PDF konnte nicht erstellt werden." });
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  // Saved reports
+  const {
+    data: savedReports,
+    refetch: refetchReports,
+  } = useQuery("saved-reports", async () => {
+    const res = await fetch(`/api/v1/report/list`, {
+      headers: { Authorization: `Bearer ${getCookie("session")}` },
+    });
+    return res.json();
+  });
+
+  const handleDownloadSavedReport = async (filename: string) => {
+    const token = getCookie("session");
+    const res = await fetch(
+      `/api/v1/report/download/${encodeURIComponent(filename)}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const monthName = new Date(year, month - 1, 1).toLocaleString("de-DE", {
     month: "long",
   });
@@ -216,11 +276,14 @@ export default function MonthlyReports() {
 
           {tickets.length > 0 && (
             <>
+              <Button variant="outline" onClick={handleDownloadPdf} disabled={pdfLoading}>
+                {pdfLoading ? "Erstellt…" : "PDF erstellen"}
+              </Button>
               <Button variant="outline" onClick={handleDownloadCsv}>
                 CSV herunterladen
               </Button>
               <Button variant="outline" onClick={handlePrint}>
-                Drucken / PDF
+                Drucken
               </Button>
             </>
           )}
@@ -398,6 +461,47 @@ export default function MonthlyReports() {
       {fetchEnabled && !isFetching && tickets.length === 0 && (
         <div className="text-center py-16 text-muted-foreground">
           Keine Tickets für diesen Zeitraum gefunden.
+        </div>
+      )}
+
+      {/* ---- Saved Reports ---- */}
+      {savedReports?.reports?.length > 0 && (
+        <div className="mt-10 print:hidden">
+          <h2 className="text-lg font-semibold mb-4">Gespeicherte Berichte</h2>
+          <div className="border rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-100 dark:bg-gray-800">
+                <tr>
+                  <th className="text-left px-4 py-2 font-medium">Datei</th>
+                  <th className="text-left px-4 py-2 font-medium">Erstellt</th>
+                  <th className="text-right px-4 py-2 font-medium">Größe</th>
+                  <th className="text-right px-4 py-2 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {savedReports.reports.map((r: any) => (
+                  <tr key={r.filename} className="border-t">
+                    <td className="px-4 py-2 font-mono text-xs">{r.filename}</td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      {moment(r.createdAt).format("DD.MM.YYYY HH:mm")}
+                    </td>
+                    <td className="px-4 py-2 text-xs text-right text-muted-foreground">
+                      {(r.size / 1024).toFixed(1)} KB
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDownloadSavedReport(r.filename)}
+                      >
+                        Herunterladen
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
