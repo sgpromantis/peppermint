@@ -183,9 +183,17 @@ export default function NewLayout({ children }: any) {
                   <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background px-6 pb-4">
                     <div className="flex align-middle flex-row h-14 items-center border-b-[1px]">
                       <Link href="/">
-                        <span className="text-3xl ml-2 text-green-500 hover:text-green-600 font-bold">
-                          Helpdesk
-                        </span>
+                        <div className="flex items-center gap-2 select-none">
+                          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="30" height="30" rx="7" fill="#1E3A8A"/>
+                            <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
+                            <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#0891B2"/>
+                          </svg>
+                          <div className="flex flex-col leading-none">
+                            <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
+                            <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#0891B2"}}>Helpdesk</span>
+                          </div>
+                        </div>
                       </Link>
                     </div>
                     <nav className="flex flex-1 flex-col px-6">
@@ -310,9 +318,17 @@ export default function NewLayout({ children }: any) {
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background pb-4">
             <div className="flex align-middle flex-row h-14 items-center border-b-[1px] px-6">
               <Link href="/">
-                <span className="text-3xl ml-2 text-green-500 hover:text-green-600 font-bold">
-                  Helpdesk
-                </span>
+                <div className="flex items-center gap-2 select-none">
+                  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="30" height="30" rx="7" fill="#1E3A8A"/>
+                    <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
+                    <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#0891B2"/>
+                  </svg>
+                  <div className="flex flex-col leading-none">
+                    <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
+                    <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#0891B2"}}>Helpdesk</span>
+                  </div>
+                </div>
               </Link>
             </div>
             <nav className="flex flex-1 flex-col px-6">
@@ -472,8 +488,8 @@ export default function NewLayout({ children }: any) {
             <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 items-center">
               <div className="sm:flex hidden w-full justify-start items-center space-x-6">
                 {user.isAdmin && (
-                  <span className="inline-flex items-center rounded-md bg-green-700/10 px-3 py-2 text-xs font-medium text-green-600 ring-1 ring-inset ring-green-500/20">
-                    Version {process.env.NEXT_PUBLIC_CLIENT_VERSION}
+                  <span className="inline-flex items-center rounded-md bg-blue-900/10 px-3 py-2 text-xs font-medium text-blue-900 ring-1 ring-inset ring-blue-900/20">
+                    Version 1.8
                   </span>
                 )}
               </div>

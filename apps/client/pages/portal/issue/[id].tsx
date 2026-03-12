@@ -614,14 +614,29 @@ export default function Ticket() {
                           <span className="text-xs truncate max-w-[140px] dark:text-white">
                             {f.filename}
                           </span>
-                          <a
-                            href={`/api/v1/ticket/${id}/file/${f.id}/download`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            onClick={async () => {
+                              try {
+                                const res = await fetch(
+                                  `/api/v1/ticket/${id}/file/${f.id}/download`,
+                                  { headers: { Authorization: `Bearer ${token}` } }
+                                );
+                                if (!res.ok) return;
+                                const blob = await res.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = f.filename;
+                                a.click();
+                                window.URL.revokeObjectURL(url);
+                              } catch (err) {
+                                console.error("Download error:", err);
+                              }
+                            }}
                             className="text-xs text-blue-600 hover:underline dark:text-blue-400"
                           >
                             Download
-                          </a>
+                          </button>
                         </div>
                       ))}
                     </div>

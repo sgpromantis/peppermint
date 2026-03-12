@@ -1554,6 +1554,7 @@ export default function Ticket() {
                     </div>
                     )}
 
+                    {(user.isAdmin || user.isManager) && (
                     <div className="border-t border-gray-200 dark:border-gray-700">
                       <div className="flex flex-row items-center justify-between mt-2">
                         <span className="text-sm font-medium text-gray-500 dark:text-white flex items-center gap-1">
@@ -1685,6 +1686,7 @@ export default function Ticket() {
                         </div>
                       )}
                     </div>
+                    )}
 
                     <div className="border-t border-gray-200">
                       <div className="flex flex-row items-center justify-between mt-2">
@@ -1718,15 +1720,30 @@ export default function Ticket() {
                                 {f.filename}
                               </span>
                               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <a
-                                  href={`/api/v1/ticket/${id}/file/${f.id}/download`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch(
+                                        `/api/v1/ticket/${id}/file/${f.id}/download`,
+                                        { headers: { Authorization: `Bearer ${token}` } }
+                                      );
+                                      if (!res.ok) return;
+                                      const blob = await res.blob();
+                                      const url = window.URL.createObjectURL(blob);
+                                      const a = document.createElement("a");
+                                      a.href = url;
+                                      a.download = f.filename;
+                                      a.click();
+                                      window.URL.revokeObjectURL(url);
+                                    } catch (err) {
+                                      console.error("Download error:", err);
+                                    }
+                                  }}
                                   className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
                                   title="Download"
                                 >
                                   <Download className="h-3.5 w-3.5 text-gray-500" />
-                                </a>
+                                </button>
                                 <button
                                   onClick={async () => {
                                     try {

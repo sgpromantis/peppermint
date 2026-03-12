@@ -38,11 +38,17 @@ export default function Login({}) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <img
-          className="mx-auto h-36 w-auto"
-          src="/login.svg"
-          alt="Logo"
-        />
+        <div className="mx-auto flex flex-col items-center gap-2">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="80" height="80" rx="18" fill="#1E3A8A"/>
+            <path fillRule="evenodd" clipRule="evenodd" d="M20 16H46A16 16 0 0 1 46 48H29V70H20V16ZM29 25H46A8 8 0 0 1 46 41H29V25Z" fill="white"/>
+            <rect x="20" y="60" width="36" height="5" rx="2.5" fill="#0891B2"/>
+          </svg>
+          <div className="flex flex-col items-center leading-tight">
+            <span className="font-bold text-xl text-gray-900">promantis</span>
+            <span className="text-sm font-semibold tracking-widest uppercase" style={{color:"#0891B2"}}>Helpdesk</span>
+          </div>
+        </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Request Password Reset
         </h2>
@@ -95,7 +101,7 @@ export default function Login({}) {
         </div>
 
         <div className="mt-8 text-center flex flex-col space-y-2">
-          <span className="font-bold">Helpdesk System</span>
+          <span className="font-bold">promantis Helpdesk</span>
         </div>
       </div>
     </div>

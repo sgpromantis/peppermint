@@ -308,7 +308,7 @@ export default function Login({}) {
 
         <div className="mt-8 text-center flex flex-col space-y-2">
           <span className="font-bold text-foreground">
-            Helpdesk System
+            promantis Helpdesk
           </span>
         </div>
       </div>

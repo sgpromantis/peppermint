@@ -17,7 +17,13 @@ export function dataRoutes(fastify: FastifyInstance) {
       const canSeeAll = user?.isAdmin || user?.isManager;
       const whereClause = canSeeAll
         ? { hidden: false }
-        : { hidden: false, userId: user?.id };
+        : {
+            hidden: false,
+            OR: [
+              { userId: user?.id },
+              { createdBy: { path: ["id"], equals: user?.id } },
+            ],
+          };
 
       const result = await prisma.ticket.count({
         where: whereClause,
@@ -40,7 +46,14 @@ export function dataRoutes(fastify: FastifyInstance) {
       const canSeeAll = user?.isAdmin || user?.isManager;
       const whereClause = canSeeAll
         ? { isComplete: true, hidden: false }
-        : { isComplete: true, hidden: false, userId: user?.id };
+        : {
+            isComplete: true,
+            hidden: false,
+            OR: [
+              { userId: user?.id },
+              { createdBy: { path: ["id"], equals: user?.id } },
+            ],
+          };
 
       const result = await prisma.ticket.count({
         where: whereClause,
@@ -63,7 +76,14 @@ export function dataRoutes(fastify: FastifyInstance) {
       const canSeeAll = user?.isAdmin || user?.isManager;
       const whereClause = canSeeAll
         ? { isComplete: false, hidden: false }
-        : { isComplete: false, hidden: false, userId: user?.id };
+        : {
+            isComplete: false,
+            hidden: false,
+            OR: [
+              { userId: user?.id },
+              { createdBy: { path: ["id"], equals: user?.id } },
+            ],
+          };
 
       const result = await prisma.ticket.count({
         where: whereClause,

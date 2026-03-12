@@ -403,7 +403,14 @@ export function ticketRoutes(fastify: FastifyInstance) {
       const canSeeAll = user?.isAdmin || user?.isManager;
       const whereClause = canSeeAll
         ? { isComplete: false, hidden: false }
-        : { isComplete: false, hidden: false, userId: user?.id };
+        : {
+            isComplete: false,
+            hidden: false,
+            OR: [
+              { userId: user?.id },
+              { createdBy: { path: ["id"], equals: user?.id } },
+            ],
+          };
 
       const tickets = await prisma.ticket.findMany({
         where: whereClause,
@@ -445,7 +452,13 @@ export function ticketRoutes(fastify: FastifyInstance) {
       const canSeeAll = user?.isAdmin || user?.isManager;
       const whereClause = canSeeAll
         ? { title: { contains: query } }
-        : { title: { contains: query }, userId: user?.id };
+        : {
+            title: { contains: query },
+            OR: [
+              { userId: user?.id },
+              { createdBy: { path: ["id"], equals: user?.id } },
+            ],
+          };
 
       const tickets = await prisma.ticket.findMany({
         where: whereClause,
@@ -468,7 +481,13 @@ export function ticketRoutes(fastify: FastifyInstance) {
       const canSeeAll = user?.isAdmin || user?.isManager;
       const whereClause = canSeeAll
         ? { hidden: false }
-        : { hidden: false, userId: user?.id };
+        : {
+            hidden: false,
+            OR: [
+              { userId: user?.id },
+              { createdBy: { path: ["id"], equals: user?.id } },
+            ],
+          };
 
       const tickets = await prisma.ticket.findMany({
         where: whereClause,
@@ -537,7 +556,14 @@ export function ticketRoutes(fastify: FastifyInstance) {
       const canSeeAll = user?.isAdmin || user?.isManager;
       const whereClause = canSeeAll
         ? { isComplete: true, hidden: false }
-        : { isComplete: true, hidden: false, userId: user?.id };
+        : {
+            isComplete: true,
+            hidden: false,
+            OR: [
+              { userId: user?.id },
+              { createdBy: { path: ["id"], equals: user?.id } },
+            ],
+          };
 
       const tickets = await prisma.ticket.findMany({
         where: whereClause,

@@ -16,10 +16,10 @@ export default function Document() {
         />
         <meta name="keywords" content="Keywords" />
 
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#1E3A8A" />
         <link rel="manifest" href="/manifest.json" />
 
-        <title>Peppermint</title>
+        <title>promantis Helpdesk</title>
 
         <link href="/favicon/favicon.ico" rel="icon" />
         <link

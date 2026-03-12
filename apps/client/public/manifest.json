@@ -1,9 +1,9 @@
 {
-  "name": "Peppermint",
-  "short_name": "Peppermint",
+  "name": "promantis Helpdesk",
+  "short_name": "promantis",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#1E3A8A",
   "description": "An offline-first Next.js app",
   "icons": [
     {
