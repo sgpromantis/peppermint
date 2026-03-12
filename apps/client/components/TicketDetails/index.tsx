@@ -1550,6 +1550,30 @@ export default function Ticket() {
                             className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5 disabled:opacity-50"
                           />
                         </div>
+                        <div>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">{t("due_date")}</span>
+                          <input
+                            type="date"
+                            value={data.ticket.dueDate ? moment(data.ticket.dueDate).format("YYYY-MM-DD") : ""}
+                            disabled={data.ticket.locked}
+                            onChange={async (e) => {
+                              const newDueDate = e.target.value;
+                              await fetch(`/api/v1/ticket/update`, {
+                                method: "PUT",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  Authorization: `Bearer ${token}`,
+                                },
+                                body: JSON.stringify({
+                                  id,
+                                  dueDate: newDueDate,
+                                }),
+                              });
+                              refetch();
+                            }}
+                            className="w-full text-sm bg-transparent border-b border-gray-200 dark:border-gray-700 focus:outline-none focus:border-gray-400 dark:text-white py-0.5 disabled:opacity-50"
+                          />
+                        </div>
                       </div>
                     </div>
                     )}
