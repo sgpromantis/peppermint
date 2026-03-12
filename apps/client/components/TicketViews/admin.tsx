@@ -104,12 +104,25 @@ function Table({ columns, data }: any) {
   );
 
   return (
-    <div className="overflow-x-auto md:-mx-6 lg:-mx-8">
+    <div className="overflow-x-auto max-w-full mx-auto mt-4">
+      {/* Page size selector always visible, above table */}
+      <div className="flex items-center justify-end mb-2">
+        <label className="mr-2 font-medium">Tickets pro Seite:</label>
+        <select
+          className="border rounded px-2 py-1 text-sm"
+          value={pageSize}
+          onChange={e => setPageSize(Number(e.target.value))}
+        >
+          <option value={10}>10</option>
+          <option value={25}>25</option>
+          <option value={50}>50</option>
+        </select>
+      </div>
       <div className="py-2 align-middle inline-block min-w-full md:px-6 lg:px-8">
         <div className="shadow overflow-hidden border-b border-gray-200 md:rounded-lg">
           <table
             {...getTableProps()}
-            className="min-w-full divide-y divide-gray-200"
+            className="min-w-full divide-y divide-gray-200 text-base"
           >
             <thead className="bg-gray-50">
               {headerGroups.map((headerGroup: any) => (

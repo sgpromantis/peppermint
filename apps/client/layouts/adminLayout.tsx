@@ -25,9 +25,11 @@ import {
 import useTranslation from "next-translate/useTranslation";
 import Link from "next/link";
 import { Fragment, useState } from "react";
+
 import { AccountDropdown } from "../components/AccountDropdown";
 import ThemeSettings from "../components/ThemeSettings";
 import { useUser } from "../store/session";
+import Image from "next/image";
 
 export default function AdminLayout({ children }: any) {
   const { t, lang } = useTranslation("peppermint");
@@ -126,34 +128,39 @@ export default function AdminLayout({ children }: any) {
   ];
 
   return (
-    !loading &&
-    user && (
+    return (
       <SidebarProvider>
-        <div className="min-h-screen overflow-auto bg-background w-full">
+        <div className="flex h-screen bg-gray-100">
+          {/* Sidebar */}
           <Transition.Root show={sidebarOpen} as={Fragment}>
-            <Dialog
-              as="div"
-              className="relative z-50 lg:hidden"
-              onClose={setSidebarOpen}
-            >
-              <Transition.Child
-                as={Fragment}
-                enter="transition-opacity ease-linear duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="transition-opacity ease-linear duration-300"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <div className="fixed inset-0 bg-gray-900/80" />
-              </Transition.Child>
-
-              <div className="fixed inset-0 flex">
-                <Transition.Child
-                  as={Fragment}
-                  enter="transition ease-in-out duration-300 transform"
-                  enterFrom="-translate-x-full"
-                  enterTo="translate-x-0"
+            <Dialog as="div" className="relative z-40 lg:hidden" onClose={setSidebarOpen}>
+              {/* ...existing code... */}
+            </Dialog>
+          </Transition.Root>
+          {/* Static sidebar for desktop */}
+          <div className="hidden lg:flex lg:flex-shrink-0">
+            <div className="flex flex-col w-64 border-r border-gray-200 bg-white">
+              <div className="flex flex-col items-center h-24 px-6 justify-center bg-white border-b border-gray-200">
+                <Image src="/logo.svg" alt="Logo" width={120} height={60} priority />
+                <span className="text-xl font-bold tracking-tight text-gray-900 mt-2">Admin</span>
+              </div>
+              {/* ...existing code... */}
+            </div>
+          </div>
+          {/* Main content */}
+          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+            {/* ...existing code... */}
+            <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
+              {/* Logo for dashboard header (visible on all admin pages) */}
+              <div className="flex items-center justify-center py-4">
+                <Image src="/logo.svg" alt="Logo" width={120} height={60} priority />
+              </div>
+              {children}
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+    );
                   leave="transition ease-in-out duration-300 transform"
                   leaveFrom="translate-x-0"
                   leaveTo="-translate-x-full"

@@ -159,6 +159,8 @@ model Ticket {
 
   knowledgeBase knowledgeBase[]
   notifications notifications[]
+
+  dueDate     DateTime?
 }
 
 model TimeTracking {
