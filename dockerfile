@@ -38,7 +38,7 @@ RUN apt-get update && \
     npm install -g pm2 && npm cache clean --force && \
     addgroup --system --gid 1001 appgroup && \
     adduser --system --uid 1001 --ingroup appgroup appuser && \
-    mkdir -p /app/apps/api/uploads && \
+    mkdir -p /app/apps/api/uploads /app/.pm2 && \
     chown -R appuser:appgroup /app
 
 COPY --from=builder --chown=appuser:appgroup /app/apps/api/ ./apps/api/
@@ -49,6 +49,7 @@ COPY --chown=appuser:appgroup ecosystem.config.js ./ecosystem.config.js
 
 # Drop to non-root user
 USER appuser
+ENV PM2_HOME=/app/.pm2
 
 EXPOSE 3000 5003
 

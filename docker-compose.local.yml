@@ -3,7 +3,7 @@ version: "3.1"
 services:
   peppermint_postgres:
     container_name: peppermint_postgres
-    image: postgres:latest
+    image: postgres:17
     restart: always
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -16,7 +16,7 @@ services:
     container_name: peppermint
     build: "."
     ports:
-      - 3000:3000
+      - 3333:3000
       - 5001:5003
     restart: always
     depends_on:

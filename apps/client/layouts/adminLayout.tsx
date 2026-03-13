@@ -8,11 +8,16 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "@radix-ui/themes";
 import {
+  BarChart3,
+  Clock,
   ContactIcon,
+  FileText,
   KeyRound,
   Mail,
   Mailbox,
+  Monitor,
   MoveLeft,
+  Shield,
   UserRound,
   Webhook,
 } from "lucide-react";
@@ -58,28 +63,64 @@ export default function AdminLayout({ children }: any) {
       icon: ContactIcon,
     },
     {
-      name: "Email Queues",
+      name: t("sl_email_queues"),
       href: "/admin/email-queues",
       current: location.pathname === "/admin/email-queues",
       icon: Mail,
     },
     {
-      name: "Webhooks",
+      name: t("sl_webhooks"),
       href: "/admin/webhooks",
       current: location.pathname === "/admin/webhooks",
       icon: Webhook,
     },
     {
-      name: "SMTP Email",
+      name: t("sl_smtp"),
       href: "/admin/smtp",
       current: location.pathname === "/admin/smtp",
       icon: Mailbox,
     },
     {
-      name: "Authentication",
+      name: t("sl_authentication"),
       href: "/admin/authentication",
       current: location.pathname === "/admin/authentication",
       icon: KeyRound,
+    },
+    {
+      name: t("sl_roles"),
+      href: "/admin/roles",
+      current: location.pathname === "/admin/roles",
+      icon: Shield,
+    },
+    {
+      name: t("sl_microsoft365"),
+      href: "/admin/microsoft-graph-settings",
+      current: location.pathname === "/admin/microsoft-graph-settings",
+      icon: Monitor,
+    },
+    {
+      name: t("sl_monitoring"),
+      href: "/admin/monitoring",
+      current: location.pathname === "/admin/monitoring",
+      icon: BarChart3,
+    },
+    {
+      name: t("sl_logs"),
+      href: "/admin/logs",
+      current: location.pathname === "/admin/logs",
+      icon: FileText,
+    },
+    {
+      name: t("sl_reports"),
+      href: "/admin/reports",
+      current: location.pathname === "/admin/reports",
+      icon: FileText,
+    },
+    {
+      name: t("sl_timesheet"),
+      href: "/admin/timesheet",
+      current: location.pathname === "/admin/timesheet",
+      icon: Clock,
     },
   ];
 
