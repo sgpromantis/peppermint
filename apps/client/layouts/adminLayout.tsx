@@ -8,28 +8,20 @@ import {
 } from "@heroicons/react/24/outline";
 import { Button } from "@radix-ui/themes";
 import {
-  BarChart3,
-  Clock,
-  Cloud,
   ContactIcon,
-  FileText,
   KeyRound,
   Mail,
   Mailbox,
   MoveLeft,
-  RollerCoaster,
-  ScrollText,
   UserRound,
   Webhook,
 } from "lucide-react";
 import useTranslation from "next-translate/useTranslation";
 import Link from "next/link";
 import { Fragment, useState } from "react";
-
 import { AccountDropdown } from "../components/AccountDropdown";
 import ThemeSettings from "../components/ThemeSettings";
 import { useUser } from "../store/session";
-import Image from "next/image";
 
 export default function AdminLayout({ children }: any) {
   const { t, lang } = useTranslation("peppermint");
@@ -41,14 +33,14 @@ export default function AdminLayout({ children }: any) {
   if (user && !user.isAdmin) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <h1 className="text-4xl font-bold">Sie sind kein Administrator</h1>
+        <h1 className="text-4xl font-bold">You are not an admin</h1>
       </div>
     );
   }
 
   const navigation = [
     {
-      name: "Zurück",
+      name: "Back",
       href: "/",
       current: null,
       icon: MoveLeft,
@@ -66,7 +58,7 @@ export default function AdminLayout({ children }: any) {
       icon: ContactIcon,
     },
     {
-      name: "E-Mail-Warteschlangen",
+      name: "Email Queues",
       href: "/admin/email-queues",
       current: location.pathname === "/admin/email-queues",
       icon: Mail,
@@ -78,89 +70,48 @@ export default function AdminLayout({ children }: any) {
       icon: Webhook,
     },
     {
-      name: "SMTP E-Mail",
+      name: "SMTP Email",
       href: "/admin/smtp",
       current: location.pathname === "/admin/smtp",
       icon: Mailbox,
     },
     {
-      name: "Authentifizierung",
+      name: "Authentication",
       href: "/admin/authentication",
       current: location.pathname === "/admin/authentication",
       icon: KeyRound,
     },
-    {
-      name: "Rollen",
-      href: "/admin/roles",
-      current: location.pathname === "/admin/roles",
-      icon: RollerCoaster,
-    },
-    {
-      name: "Microsoft 365",
-      href: "/admin/microsoft-sync",
-      current: location.pathname === "/admin/microsoft-sync",
-      icon: Cloud,
-    },
-    {
-      name: "Monitoring",
-      href: "/admin/monitoring",
-      current: location.pathname === "/admin/monitoring",
-      icon: BarChart3,
-    },
-    {
-      name: "Protokolle",
-      href: "/admin/logs",
-      current: location.pathname === "/admin/logs",
-      icon: FileText,
-    },
-    {
-      name: "Monatsbericht",
-      href: "/admin/reports",
-      current: location.pathname === "/admin/reports",
-      icon: ScrollText,
-    },
-    {
-      name: "Zeiterfassung",
-      href: "/admin/timesheet",
-      current: location.pathname === "/admin/timesheet",
-      icon: Clock,
-    },
   ];
 
   return (
-    return (
+    !loading &&
+    user && (
       <SidebarProvider>
-        <div className="flex h-screen bg-gray-100">
-          {/* Sidebar */}
+        <div className="min-h-screen overflow-hidden bg-background w-full">
           <Transition.Root show={sidebarOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-40 lg:hidden" onClose={setSidebarOpen}>
-              {/* ...existing code... */}
-            </Dialog>
-          </Transition.Root>
-          {/* Static sidebar for desktop */}
-          <div className="hidden lg:flex lg:flex-shrink-0">
-            <div className="flex flex-col w-64 border-r border-gray-200 bg-white">
-              <div className="flex flex-col items-center h-24 px-6 justify-center bg-white border-b border-gray-200">
-                <Image src="/logo.svg" alt="Logo" width={120} height={60} priority />
-                <span className="text-xl font-bold tracking-tight text-gray-900 mt-2">Admin</span>
-              </div>
-              {/* ...existing code... */}
-            </div>
-          </div>
-          {/* Main content */}
-          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-            {/* ...existing code... */}
-            <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
-              {/* Logo for dashboard header (visible on all admin pages) */}
-              <div className="flex items-center justify-center py-4">
-                <Image src="/logo.svg" alt="Logo" width={120} height={60} priority />
-              </div>
-              {children}
-            </main>
-          </div>
-        </div>
-      </SidebarProvider>
-    );
+            <Dialog
+              as="div"
+              className="relative z-50 lg:hidden"
+              onClose={setSidebarOpen}
+            >
+              <Transition.Child
+                as={Fragment}
+                enter="transition-opacity ease-linear duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="transition-opacity ease-linear duration-300"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-gray-900/80" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 flex">
+                <Transition.Child
+                  as={Fragment}
+                  enter="transition ease-in-out duration-300 transform"
+                  enterFrom="-translate-x-full"
+                  enterTo="translate-x-0"
                   leave="transition ease-in-out duration-300 transform"
                   leaveFrom="translate-x-0"
                   leaveTo="-translate-x-full"
@@ -192,18 +143,11 @@ export default function AdminLayout({ children }: any) {
                     {/* Sidebar component, swap this element with another sidebar if you like */}
                     <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background px-6 pb-4">
                       <div className="flex align-middle flex-row h-14 items-center border-b-[1px]">
-                        <Link href="/">
-                          <div className="flex items-center gap-2 select-none">
-                            <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <rect width="30" height="30" rx="7" fill="#1E3A8A"/>
-                              <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
-                              <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#0891B2"/>
-                            </svg>
-                            <div className="flex flex-col leading-none">
-                              <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
-                              <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#0891B2"}}>Helpdesk</span>
-                            </div>
-                          </div>
+                        {/* <img className="h-8 w-auto" src="/logo.svg" alt="Workflow" /> */}
+                        <Link href="https://peppermint.sh">
+                          <span className="text-3xl ml-2  hover:text-green-600 font-bold ">
+                            Peppermint
+                          </span>
                         </Link>
                       </div>
                       <nav className="flex flex-1 flex-col">
@@ -250,18 +194,11 @@ export default function AdminLayout({ children }: any) {
             {/* Sidebar component, swap this element with another sidebar if you like */}
             <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background pb-4">
               <div className="flex align-middle flex-row h-14 items-center border-b px-6">
-                <Link href="/">
-                  <div className="flex items-center gap-2 select-none">
-                    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="30" height="30" rx="7" fill="#1E3A8A"/>
-                      <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
-                      <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#0891B2"/>
-                    </svg>
-                    <div className="flex flex-col leading-none">
-                      <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
-                      <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#0891B2"}}>Helpdesk</span>
-                    </div>
-                  </div>
+                {/* <img className="h-8 w-auto" src="/logo.svg" alt="Workflow" /> */}
+                <Link href="https://peppermint.sh">
+                  <span className="text-3xl ml-2  hover:text-green-600 font-bold ">
+                    Peppermint
+                  </span>
                 </Link>
               </div>
               <nav className="flex flex-1 flex-col px-6">
@@ -325,9 +262,11 @@ export default function AdminLayout({ children }: any) {
               <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 items-center">
                 <div className="sm:flex hidden w-full justify-start items-center space-x-6">
                   {user.isAdmin && (
-                    <span className="inline-flex items-center rounded-md bg-blue-900/10 px-3 py-2 text-xs font-medium text-blue-900 ring-1 ring-inset ring-blue-900/20">
-                      Version 1.8
-                    </span>
+                    <Link href="https://github.com/Peppermint-Lab/peppermint/releases">
+                      <span className="inline-flex items-center rounded-md bg-green-700/10 px-3 py-2 text-xs font-medium text-green-600 ring-1 ring-inset ring-green-500/20">
+                        Version {process.env.NEXT_PUBLIC_CLIENT_VERSION}
+                      </span>
+                    </Link>
                   )}
                 </div>
 
@@ -351,6 +290,21 @@ export default function AdminLayout({ children }: any) {
                       )}
                     </Link>
                   </Button>
+
+                  {user.isAdmin && (
+                    <Link
+                      href="https://github.com/Peppermint-Lab/peppermint/discussions"
+                      target="_blank"
+                      className="hover:cursor-pointer"
+                    >
+                      <Button
+                        variant="outline"
+                        className="text-foreground hover:cursor-pointer whitespace-nowrap"
+                      >
+                        Send Feedback
+                      </Button>
+                    </Link>
+                  )}
 
                   {/* Profile dropdown */}
                   <AccountDropdown />
