@@ -16,7 +16,7 @@ COPY apps/api/src/prisma ./apps/api/src/prisma
 
 # Install dependencies (cached unless package.json changes)
 RUN cd apps/api && npm install
-RUN cd apps/client && yarn install --network-timeout 1000000 --frozen-lockfile || yarn install --network-timeout 1000000
+RUN cd apps/client && npm install --legacy-peer-deps
 
 FROM deps AS builder
 
@@ -25,24 +25,33 @@ COPY apps/api ./apps/api
 COPY apps/client ./apps/client
 
 RUN cd apps/api && npm run build
-RUN cd apps/client && yarn build
+RUN cd apps/client && npm run build
 
 FROM node:22-slim AS runner
 
 WORKDIR /app
 
+# Install only runtime deps, create non-root user, clean up
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends openssl && \
-    rm -rf /var/lib/apt/lists/* && \
+    apt-get install -y --no-install-recommends openssl tini && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     npm install -g pm2 && npm cache clean --force && \
-    mkdir -p /app/apps/api/uploads
+    addgroup --system --gid 1001 appgroup && \
+    adduser --system --uid 1001 --ingroup appgroup appuser && \
+    mkdir -p /app/apps/api/uploads && \
+    chown -R appuser:appgroup /app
 
-COPY --from=builder /app/apps/api/ ./apps/api/
-COPY --from=builder /app/apps/client/.next/standalone ./apps/client
-COPY --from=builder /app/apps/client/.next/static ./apps/client/.next/static
-COPY --from=builder /app/apps/client/public ./apps/client/public
-COPY ecosystem.config.js ./ecosystem.config.js
+COPY --from=builder --chown=appuser:appgroup /app/apps/api/ ./apps/api/
+COPY --from=builder --chown=appuser:appgroup /app/apps/client/.next/standalone ./apps/client
+COPY --from=builder --chown=appuser:appgroup /app/apps/client/.next/static ./apps/client/.next/static
+COPY --from=builder --chown=appuser:appgroup /app/apps/client/public ./apps/client/public
+COPY --chown=appuser:appgroup ecosystem.config.js ./ecosystem.config.js
+
+# Drop to non-root user
+USER appuser
 
 EXPOSE 3000 5003
 
+# Use tini as init to handle PID 1 and signal forwarding
+ENTRYPOINT ["tini", "--"]
 CMD ["pm2-runtime", "ecosystem.config.js"]

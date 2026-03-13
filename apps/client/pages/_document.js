@@ -16,7 +16,7 @@ export default function Document() {
         />
         <meta name="keywords" content="Keywords" />
 
-        <meta name="theme-color" content="#1E3A8A" />
+        <meta name="theme-color" content="#006e00" />
         <link rel="manifest" href="/manifest.json" />
 
         <title>promantis Helpdesk</title>

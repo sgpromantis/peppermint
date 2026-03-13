@@ -185,13 +185,13 @@ export default function NewLayout({ children }: any) {
                       <Link href="/">
                         <div className="flex items-center gap-2 select-none">
                           <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="30" height="30" rx="7" fill="#1E3A8A"/>
+                            <rect width="30" height="30" rx="7" fill="#006e00"/>
                             <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
-                            <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#0891B2"/>
+                            <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#6bdf57"/>
                           </svg>
                           <div className="flex flex-col leading-none">
                             <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
-                            <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#0891B2"}}>Helpdesk</span>
+                            <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#6bdf57"}}>Helpdesk</span>
                           </div>
                         </div>
                       </Link>
@@ -214,8 +214,8 @@ export default function NewLayout({ children }: any) {
                                   className={classNames(
                                     item.current
                                       ? "bg-secondary dark:bg-primary"
-                                      : "hover:bg-secondary dark:hover:bg-secondary-foreground dark:hover:text-gray-900 ",
-                                    "group -mx-2 flex gap-x-3 p-1 text-xs rounded-md font-semibold leading-6"
+                                      : "hover:bg-muted dark:hover:bg-muted",
+                                    "group -mx-2 flex gap-x-3 p-1 text-xs rounded-md font-semibold leading-6 transition-colors"
                                   )}
                                 >
                                   <item.icon
@@ -235,8 +235,8 @@ export default function NewLayout({ children }: any) {
                                   className={classNames(
                                     location.pathname === "/issues"
                                       ? "bg-secondary dark:bg-primary"
-                                      : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
-                                    "group -mx-2 flex gap-x-3 p-1 rounded-md text-xs font-semibold leading-6"
+                                      : "hover:bg-muted dark:hover:bg-muted",
+                                    "group -mx-2 flex gap-x-3 p-1 rounded-md text-xs font-semibold leading-6 transition-colors"
                                   )}
                                 >
                                   <TicketIcon className="h-4 w-4 ml-1 shrink-0 mt-1" />
@@ -251,8 +251,8 @@ export default function NewLayout({ children }: any) {
                                   className={classNames(
                                     location.pathname === "/issues/open"
                                       ? "bg-secondary dark:bg-primary"
-                                      : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
-                                    "group -mx-2 flex gap-x-3 p-1 pl-3 rounded-md text-xs font-semibold leading-6"
+                                      : "hover:bg-muted dark:hover:bg-muted",
+                                    "group -mx-2 flex gap-x-3 p-1 pl-3 rounded-md text-xs font-semibold leading-6 transition-colors"
                                   )}
                                 >
                                   <span className="whitespace-nowrap">
@@ -267,8 +267,8 @@ export default function NewLayout({ children }: any) {
                                   className={classNames(
                                     location.pathname === "/issues/closed"
                                       ? "bg-secondary dark:bg-primary"
-                                      : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
-                                    "group -mx-2 flex gap-x-3 p-1 pl-3 rounded-md text-xs font-semibold leading-6"
+                                      : "hover:bg-muted dark:hover:bg-muted",
+                                    "group -mx-2 flex gap-x-3 p-1 pl-3 rounded-md text-xs font-semibold leading-6 transition-colors"
                                   )}
                                 >
                                   <span className="whitespace-nowrap">
@@ -284,8 +284,8 @@ export default function NewLayout({ children }: any) {
                                   className={classNames(
                                     location.pathname.includes("/admin")
                                       ? "bg-secondary dark:bg-primary"
-                                      : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
-                                    "group -mx-2 flex gap-x-3 p-1 rounded-md text-xs font-semibold leading-6"
+                                      : "hover:bg-muted dark:hover:bg-muted",
+                                    "group -mx-2 flex gap-x-3 p-1 rounded-md text-xs font-semibold leading-6 transition-colors"
                                   )}
                                 >
                                   <>
@@ -320,13 +320,13 @@ export default function NewLayout({ children }: any) {
               <Link href="/">
                 <div className="flex items-center gap-2 select-none">
                   <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="30" height="30" rx="7" fill="#1E3A8A"/>
+                    <rect width="30" height="30" rx="7" fill="#006e00"/>
                     <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
-                    <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#0891B2"/>
+                    <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#6bdf57"/>
                   </svg>
                   <div className="flex flex-col leading-none">
                     <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
-                    <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#0891B2"}}>Helpdesk</span>
+                    <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#6bdf57"}}>Helpdesk</span>
                   </div>
                 </div>
               </Link>
@@ -351,8 +351,8 @@ export default function NewLayout({ children }: any) {
                           className={classNames(
                             item.current
                               ? "bg-secondary dark:bg-primary"
-                              : "hover:bg-secondary dark:hover:bg-secondary-foreground dark:hover:text-gray-900 ",
-                            "group -mx-2 flex gap-x-3 p-1 text-xs rounded-md font-semibold leading-6"
+                              : "hover:bg-muted dark:hover:bg-muted",
+                            "group -mx-2 flex gap-x-3 p-1 text-xs rounded-md font-semibold leading-6 transition-colors"
                           )}
                         >
                           <item.icon
@@ -375,8 +375,8 @@ export default function NewLayout({ children }: any) {
                           className={classNames(
                             location.pathname === "/issues"
                               ? "bg-secondary dark:bg-primary"
-                              : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
-                            "group -mx-2 flex gap-x-3 p-1 rounded-md text-xs font-semibold leading-6"
+                              : "hover:bg-muted dark:hover:bg-muted",
+                            "group -mx-2 flex gap-x-3 p-1 rounded-md text-xs font-semibold leading-6 transition-colors"
                           )}
                         >
                           <SquareKanban className="h-4 w-4 ml-1 shrink-0 mt-1" />
@@ -394,8 +394,8 @@ export default function NewLayout({ children }: any) {
                           className={classNames(
                             location.pathname === "/issues/open"
                               ? "bg-secondary dark:bg-primary"
-                              : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
-                            "group -mx-2 flex gap-x-3 p-1 pl-3 rounded-md text-xs font-semibold leading-6"
+                              : "hover:bg-muted dark:hover:bg-muted",
+                            "group -mx-2 flex gap-x-3 p-1 pl-3 rounded-md text-xs font-semibold leading-6 transition-colors"
                           )}
                         >
                           <span className="whitespace-nowrap">
@@ -415,8 +415,8 @@ export default function NewLayout({ children }: any) {
                           className={classNames(
                             location.pathname === "/issues/closed"
                               ? "bg-secondary dark:bg-primary"
-                              : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
-                            "group -mx-2 flex gap-x-3 p-1 pl-3 justify-between w-full rounded-md text-xs font-semibold leading-6"
+                              : "hover:bg-muted dark:hover:bg-muted",
+                            "group -mx-2 flex gap-x-3 p-1 pl-3 justify-between w-full rounded-md text-xs font-semibold leading-6 transition-colors"
                           )}
                         >
                             <span className="whitespace-nowrap">
@@ -437,8 +437,8 @@ export default function NewLayout({ children }: any) {
                           className={classNames(
                             location.pathname.includes("/admin")
                               ? "bg-secondary dark:bg-primary"
-                              : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
-                            "group -mx-2 flex gap-x-3 p-1 rounded-md text-xs font-semibold leading-6"
+                              : "hover:bg-muted dark:hover:bg-muted",
+                            "group -mx-2 flex gap-x-3 p-1 rounded-md text-xs font-semibold leading-6 transition-colors"
                           )}
                         >
                           <>
@@ -488,8 +488,8 @@ export default function NewLayout({ children }: any) {
             <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 items-center">
               <div className="sm:flex hidden w-full justify-start items-center space-x-6">
                 {user.isAdmin && (
-                  <span className="inline-flex items-center rounded-md bg-blue-900/10 px-3 py-2 text-xs font-medium text-blue-900 ring-1 ring-inset ring-blue-900/20">
-                    Version 1.8
+                  <span className="inline-flex items-center rounded-md bg-[#006e00]/10 px-3 py-2 text-xs font-medium text-[#006e00] ring-1 ring-inset ring-[#006e00]/20">
+                    Version {process.env.NEXT_PUBLIC_CLIENT_VERSION}
                   </span>
                 )}
               </div>
@@ -505,7 +505,7 @@ export default function NewLayout({ children }: any) {
                       (notification) => !notification.read
                     ).length > 0 && (
                       <svg
-                        className="h-2.5 w-2.5 absolute bottom-6 left-6 animate-pulse fill-green-500"
+                        className="h-2.5 w-2.5 absolute bottom-6 left-6 animate-pulse fill-[#6bdf57]"
                         viewBox="0 0 6 6"
                         aria-hidden="true"
                       >

@@ -3,7 +3,7 @@
   "short_name": "promantis",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1E3A8A",
+  "background_color": "#006e00",
   "description": "An offline-first Next.js app",
   "icons": [
     {

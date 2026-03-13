@@ -40,13 +40,13 @@ export default function Login({}) {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="mx-auto flex flex-col items-center gap-2">
           <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="80" height="80" rx="18" fill="#1E3A8A"/>
+            <rect width="80" height="80" rx="18" fill="#006e00"/>
             <path fillRule="evenodd" clipRule="evenodd" d="M20 16H46A16 16 0 0 1 46 48H29V70H20V16ZM29 25H46A8 8 0 0 1 46 41H29V25Z" fill="white"/>
-            <rect x="20" y="60" width="36" height="5" rx="2.5" fill="#0891B2"/>
+            <rect x="20" y="60" width="36" height="5" rx="2.5" fill="#6bdf57"/>
           </svg>
           <div className="flex flex-col items-center leading-tight">
             <span className="font-bold text-xl text-gray-900">promantis</span>
-            <span className="text-sm font-semibold tracking-widest uppercase" style={{color:"#0891B2"}}>Helpdesk</span>
+            <span className="text-sm font-semibold tracking-widest uppercase" style={{color:"#6bdf57"}}>Helpdesk</span>
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -72,7 +72,7 @@ export default function Login({}) {
                   autoComplete="email"
                   required
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#006e00] focus:border-[#006e00] sm:text-sm"
                 />
               </div>
             </div>
@@ -81,7 +81,7 @@ export default function Login({}) {
               <div className="text-sm">
                 <Link
                   href="/auth/login"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                  className="font-medium text-[#006e00] hover:text-[#005a00]"
                 >
                   Remember your password?
                 </Link>
@@ -92,7 +92,7 @@ export default function Login({}) {
               <button
                 type="submit"
                 onClick={postData}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#006e00] hover:bg-[#005a00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#006e00]"
               >
                 Submit Request
               </button>
