@@ -97,7 +97,7 @@ export default function Login({}) {
                       autoComplete="off"
                       required
                       onChange={(e) => setCode(e.target.value)}
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#006e00] focus:border-[#006e00] sm:text-sm"
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                     />
                   </div>
                 </div>
@@ -106,7 +106,7 @@ export default function Login({}) {
                   <button
                     type="submit"
                     onClick={sendCode}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#006e00] hover:bg-[#005a00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#006e00]"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                   >
                     Check Code
                   </button>
@@ -129,7 +129,7 @@ export default function Login({}) {
                       autoComplete="off"
                       required
                       onChange={(e) => setPassword(e.target.value)}
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#006e00] focus:border-[#006e00] sm:text-sm"
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                     />
                   </div>
                 </div>
@@ -138,7 +138,7 @@ export default function Login({}) {
                   <button
                     type="submit"
                     onClick={updatPassword}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#006e00] hover:bg-[#005a00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#006e00]"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                   >
                     Change Password
                   </button>

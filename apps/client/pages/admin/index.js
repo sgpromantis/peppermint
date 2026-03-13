@@ -2,8 +2,8 @@ export default function BlankPage() {
   return (
     <div className="flex flex-col">
       <div className="flex align-middle flex-row justify-center items-center">
-        <img className="h-12 w-auto" src="/logo.svg" alt="logo" />
-        <h1 className="text-2xl ml-2 font-extrabold text-[#006e00]">
+        <img className="h-12 w-auto" src="/logo.png" alt="promantis Logo" />
+        <h1 className="text-2xl ml-2 font-extrabold text-primary">
           Helpdesk
         </h1>
       </div>
