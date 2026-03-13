@@ -65,7 +65,8 @@
     "tailwind-merge": "^2.3.0",
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
-    "use-debounce": "^10.0.1"
+    "use-debounce": "^10.0.1",
+    "@peppermint/brand": "*"
   },
   "devDependencies": {
     "@types/lodash": "^4",

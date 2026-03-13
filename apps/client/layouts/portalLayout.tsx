@@ -170,17 +170,7 @@ export default function PortalLayout({ children }: any) {
                   <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background px-6 pb-4">
                     <div className="flex align-middle flex-row h-14 items-center border-b-[1px]">
                       <Link href="/">
-                        <div className="flex items-center gap-2 select-none">
-                          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="30" height="30" rx="7" fill="#006e00"/>
-                            <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
-                            <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#6bdf57"/>
-                          </svg>
-                          <div className="flex flex-col leading-none">
-                            <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
-                            <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#6bdf57"}}>Helpdesk</span>
-                          </div>
-                        </div>
+                        <img src="/logo.png" alt="promantis Logo" height={36} style={{height: 36, width: 'auto'}} draggable={false} />
                       </Link>
                     </div>
                     <nav className="flex flex-1 flex-col">
@@ -193,16 +183,16 @@ export default function PortalLayout({ children }: any) {
                                   href={item.href}
                                   className={classNames(
                                     item.current
-                                      ? "bg-secondary text-[#006e00]"
-                                      : "text-foreground hover:text-[#006e00] hover:bg-secondary",
+                                      ? "bg-secondary text-primary"
+                                      : "text-foreground hover:text-primary hover:bg-secondary",
                                     "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                                   )}
                                 >
                                   <item.icon
                                     className={classNames(
                                       item.current
-                                        ? "text-[#006e00]"
-                                        : "text-muted-foreground group-hover:text-[#006e00]",
+                                        ? "text-primary"
+                                        : "text-muted-foreground group-hover:text-primary",
                                       "h-6 w-6 shrink-0"
                                     )}
                                     aria-hidden="true"
@@ -219,10 +209,10 @@ export default function PortalLayout({ children }: any) {
                         <li className="mt-auto">
                           <a
                             href="#"
-                            className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-foreground hover:bg-secondary hover:text-[#006e00]"
+                            className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-foreground hover:bg-secondary hover:text-primary"
                           >
                             <Cog6ToothIcon
-                              className="h-6 w-6 shrink-0 text-muted-foreground group-hover:text-[#006e00]"
+                              className="h-6 w-6 shrink-0 text-muted-foreground group-hover:text-primary"
                               aria-hidden="true"
                             />
                             Settings
@@ -243,17 +233,7 @@ export default function PortalLayout({ children }: any) {
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background pb-4">
             <div className="flex align-middle flex-row h-14 items-center border-b-[1px] px-6">
               <Link href="/">
-                <div className="flex items-center gap-2 select-none">
-                  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="30" height="30" rx="7" fill="#006e00"/>
-                    <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
-                    <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#6bdf57"/>
-                  </svg>
-                  <div className="flex flex-col leading-none">
-                    <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
-                    <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#6bdf57"}}>Helpdesk</span>
-                  </div>
-                </div>
+                <img src="/logo.png" alt="promantis Logo" height={36} style={{height: 36, width: 'auto'}} draggable={false} />
               </Link>
             </div>
             <nav className="flex flex-1 flex-col px-6">
@@ -266,7 +246,7 @@ export default function PortalLayout({ children }: any) {
                           href={item.href}
                           className={classNames(
                             item.current
-                              ? "bg-[#F0F3F9] dark:bg-gray-800 dark:text-[#006e00]"
+                              ? "bg-[#F0F3F9] dark:bg-gray-800 dark:text-primary"
                               : " hover:bg-[#F0F3F9] dark:hover:bg-gray-800 dark:hover:text-gray-900 ",
                             "group -mx-2 flex gap-x-3 p-1 text-xs font-semibold leading-6"
                           )}
@@ -290,7 +270,7 @@ export default function PortalLayout({ children }: any) {
                           href="/portal/issues"
                           className={classNames(
                             location.pathname === "/portal/issues"
-                              ? "bg-[#F0F3F9] dark:bg-gray-800 dark:text-[#006e00]"
+                              ? "bg-[#F0F3F9] dark:bg-gray-800 dark:text-primary"
                               : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
                             "group -mx-2 flex gap-x-3 p-1 text-xs font-semibold leading-6"
                           )}
@@ -309,7 +289,7 @@ export default function PortalLayout({ children }: any) {
                           href="/portal/issues/open"
                           className={classNames(
                             location.pathname === "/portal/issues/open"
-                              ? "bg-[#F0F3F9] dark:bg-gray-800 dark:text-[#006e00]"
+                              ? "bg-[#F0F3F9] dark:bg-gray-800 dark:text-primary"
                               : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
                             "group -mx-2 flex gap-x-3 p-1 mll-2 text-xs font-semibold leading-6"
                           )}
@@ -330,7 +310,7 @@ export default function PortalLayout({ children }: any) {
                           href="/portal/issues/closed"
                           className={classNames(
                             location.pathname === "/portal/issues/closed"
-                              ? "bg-[#F0F3F9] dark:bg-gray-800 dark:text-[#006e00]"
+                              ? "bg-[#F0F3F9] dark:bg-gray-800 dark:text-primary"
                               : " hover:bg-[#F0F3F9] dark:hover:bg-white dark:hover:text-gray-900 ",
                             "group -mx-2 flex gap-x-3 p-1 text-xs font-semibold leading-6"
                           )}

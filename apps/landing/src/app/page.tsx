@@ -10,6 +10,7 @@ import {
   Lock,
   User,
 } from "lucide-react";
+import { colors, identity } from "@peppermint/brand";
 
 const navigation = [
   { name: "Funktionen", href: "#features" },
@@ -82,15 +83,7 @@ export default function Home() {
         <nav className="flex justify-between py-8" aria-label="Global">
           <div className="flex justify-between items-center align-middle lg:flex-1">
             <div className="-m-1.5 p-1.5 flex items-center gap-2">
-              <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="30" height="30" rx="7" fill="#006e00"/>
-                <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
-                <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#6bdf57"/>
-              </svg>
-              <div className="flex flex-col leading-none">
-                <span className="font-bold text-sm tracking-tight text-gray-900">promantis</span>
-                <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#6bdf57"}}>Helpdesk</span>
-              </div>
+              <img src="/logo.png" alt={identity.name + ' Logo'} height={36} style={{height: 36, width: 'auto'}} draggable={false} />
             </div>
           </div>
 
@@ -142,7 +135,10 @@ export default function Home() {
               <div className="my-6 space-x-4 flex flex-row">
                 <a
                   href="mailto:info@promantis.de"
-                  className="rounded-md w-full px-3.5 py-2.5 text-sm text-center font-semibold bg-[#006e00] text-white shadow-sm hover:bg-[#005a00] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006e00] transition-colors"
+                  className="rounded-md w-full px-3.5 py-2.5 text-sm text-center font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors"
+                  style={{ backgroundColor: colors.primary }}
+                  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = colors.primaryHover)}
+                  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = colors.primary)}
                 >
                   Jetzt Kontakt aufnehmen
                 </a>
@@ -166,7 +162,8 @@ export default function Home() {
               <div key={feature.name} className="relative flex-col flex mt-4">
                 <dt className="flex items-center gap-x-3 text-base font-semibold text-gray-900 max-w-[98px] mt-1">
                   <feature.icon
-                    className="h-5 w-5 flex-none text-[#006e00]"
+                    className="h-5 w-5 flex-none"
+                    style={{ color: colors.primary }}
                     aria-hidden="true"
                   />
                   <span className="text-gray-900 whitespace-nowrap">
@@ -201,7 +198,8 @@ export default function Home() {
             <div key={feature.name} className="relative flex-col flex mt-4">
               <dt className="flex items-center gap-x-3 text-base font-semibold text-gray-900 max-w-[98px] mt-1">
                 <feature.icon
-                  className="h-5 w-5 flex-none text-[#006e00]"
+                  className="h-5 w-5 flex-none"
+                  style={{ color: colors.primary }}
                   aria-hidden="true"
                 />
                 <span className="text-gray-900 whitespace-nowrap">

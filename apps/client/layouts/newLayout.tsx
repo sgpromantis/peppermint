@@ -183,17 +183,7 @@ export default function NewLayout({ children }: any) {
                   <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background px-6 pb-4">
                     <div className="flex align-middle flex-row h-14 items-center border-b-[1px]">
                       <Link href="/">
-                        <div className="flex items-center gap-2 select-none">
-                          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="30" height="30" rx="7" fill="#006e00"/>
-                            <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
-                            <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#6bdf57"/>
-                          </svg>
-                          <div className="flex flex-col leading-none">
-                            <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
-                            <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#6bdf57"}}>Helpdesk</span>
-                          </div>
-                        </div>
+                        <img src="/logo.png" alt="promantis Logo" height={36} style={{height: 36, width: 'auto'}} draggable={false} />
                       </Link>
                     </div>
                     <nav className="flex flex-1 flex-col px-6">
@@ -318,17 +308,7 @@ export default function NewLayout({ children }: any) {
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background pb-4">
             <div className="flex align-middle flex-row h-14 items-center border-b-[1px] px-6">
               <Link href="/">
-                <div className="flex items-center gap-2 select-none">
-                  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="30" height="30" rx="7" fill="#006e00"/>
-                    <path fillRule="evenodd" clipRule="evenodd" d="M8 6H18A6 6 0 0 1 18 18H11V26H8V6ZM11 9H18A3 3 0 0 1 18 15H11V9Z" fill="white"/>
-                    <rect x="8" y="22.5" width="14" height="2" rx="1" fill="#6bdf57"/>
-                  </svg>
-                  <div className="flex flex-col leading-none">
-                    <span className="font-bold text-sm tracking-tight text-foreground">promantis</span>
-                    <span className="text-[10px] font-semibold tracking-widest uppercase" style={{color:"#6bdf57"}}>Helpdesk</span>
-                  </div>
-                </div>
+                <img src="/logo.png" alt="promantis Logo" height={36} style={{height: 36, width: 'auto'}} draggable={false} />
               </Link>
             </div>
             <nav className="flex flex-1 flex-col px-6">
@@ -488,7 +468,7 @@ export default function NewLayout({ children }: any) {
             <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 items-center">
               <div className="sm:flex hidden w-full justify-start items-center space-x-6">
                 {user.isAdmin && (
-                  <span className="inline-flex items-center rounded-md bg-[#006e00]/10 px-3 py-2 text-xs font-medium text-[#006e00] ring-1 ring-inset ring-[#006e00]/20">
+                  <span className="inline-flex items-center rounded-md bg-primary/10 px-3 py-2 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
                     Version {process.env.NEXT_PUBLIC_CLIENT_VERSION}
                   </span>
                 )}
@@ -505,7 +485,7 @@ export default function NewLayout({ children }: any) {
                       (notification) => !notification.read
                     ).length > 0 && (
                       <svg
-                        className="h-2.5 w-2.5 absolute bottom-6 left-6 animate-pulse fill-[#6bdf57]"
+                        className="h-2.5 w-2.5 absolute bottom-6 left-6 animate-pulse fill-primary"
                         viewBox="0 0 6 6"
                         aria-hidden="true"
                       >
