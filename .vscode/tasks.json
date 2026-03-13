@@ -2,20 +2,37 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Build & Push to GHCR",
+			"label": "Docker: Build Image",
 			"type": "shell",
-			"command": "docker build -t ghcr.io/sgpromantis/peppermint:latest . && docker push ghcr.io/sgpromantis/peppermint:latest",
-			"isBackground": false,
+			"command": "docker build -t ghcr.io/sgpromantis/peppermint:latest .",
 			"problemMatcher": [],
-			"group": "build"
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
 		},
 		{
-			"label": "Build & Push to GHCR",
+			"label": "Docker: Push to GHCR",
+			"type": "shell",
+			"command": "docker push ghcr.io/sgpromantis/peppermint:latest",
+			"problemMatcher": [],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Docker: Build & Push to GHCR",
 			"type": "shell",
 			"command": "docker build -t ghcr.io/sgpromantis/peppermint:latest .; if ($LASTEXITCODE -eq 0) { docker push ghcr.io/sgpromantis/peppermint:latest }",
-			"isBackground": false,
 			"problemMatcher": [],
-			"group": "build"
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
 		}
 	]
 }
