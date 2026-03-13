@@ -376,7 +376,7 @@ export function reportRoutes(fastify: FastifyInstance) {
         bufferPages: true,
         info: {
           Title: `Monatsbericht ${monthName} ${y}`,
-          Author: "Peppermint Helpdesk",
+          Author: "promantis Helpdesk",
         },
       });
 

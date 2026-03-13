@@ -20,7 +20,7 @@ export default function ShadLayout({ children }: any) {
   const { loading, user, fetchUserProfile } = useUser();
 
 
-  const { t, lang } = useTranslation("peppermint");
+  const { t, lang } = useTranslation("common");
 
   if (!user) {
     location.push("/auth/login");

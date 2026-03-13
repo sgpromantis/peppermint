@@ -86,7 +86,7 @@ const priorityKeys = [
 
 export default function Ticket() {
   const router = useRouter();
-  const { t } = useTranslation("peppermint");
+  const { t } = useTranslation("common");
 
   const ticketStatusMap = ticketStatusKeys.map((s) => ({
     ...s,

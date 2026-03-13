@@ -29,7 +29,7 @@ export function UserCombo({
   disabled,
   placeholder,
 }) {
-  const { t } = useTranslation("peppermint");
+  const { t } = useTranslation("common");
   const [open, setOpen] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<any | null>(null);
 
@@ -126,7 +126,7 @@ export function IconCombo({
   hideInitial,
   disabled,
 }) {
-  const { t } = useTranslation("peppermint");
+  const { t } = useTranslation("common");
   const [open, setOpen] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<any | null>(null);
   const defaultIcon = value.find(
@@ -224,7 +224,7 @@ export function ClientCombo({
   showIcon,
   disabled,
 }) {
-  const { t } = useTranslation("peppermint");
+  const { t } = useTranslation("common");
   const [open, setOpen] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<any | null>(null);
 

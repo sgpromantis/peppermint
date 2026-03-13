@@ -220,7 +220,7 @@ function Table({ columns, data }: any) {
 }
 
 export default function AdminTicketLayout() {
-  const { t } = useTranslation('peppermint');
+  const { t } = useTranslation('common');
 
   const { data, status, refetch } = useQuery(
     "fetchallTickets",

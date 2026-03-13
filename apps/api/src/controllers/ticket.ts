@@ -915,7 +915,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
               content: `Ticket ${ticket.id} created by ${ticket.email}, has had it's status changed to ${s}`,
               avatar_url:
                 "https://avatars.githubusercontent.com/u/76014454?s=200&v=4",
-              username: "Peppermint.sh",
+              username: "promantis Helpdesk",
             };
             axios
               .post(url, message)

@@ -10,7 +10,7 @@ export default function Settings({ children }) {
   const router = useRouter();
   const { user } = useUser();
 
-  const { t } = useTranslation("peppermint");
+  const { t } = useTranslation("common");
 
   return (
     <SidebarProvider>

@@ -1,8 +1,8 @@
-## Peppermint behind a reverse proxy
+## promantis Helpdesk hinter einem Reverse Proxy
 
-Sometimes, individuals & organisations like to put applications behind a reverse proxy, the main reason for this is to allow applications to be accessed on specific domains.
+Manchmal möchten Organisationen Anwendungen hinter einem Reverse Proxy betreiben, um sie über eigene Domainnamen erreichbar zu machen.
 
-An example of this would be a helpdesk company running peppermint having it accessible to employee's through their domain name.
+Ein Beispiel: Ein Helpdesk, der promantis betreibt und es Mitarbeitern über einen eigenen Domainnamen zugänglich macht.
 
 ```
 https://support.example.com
@@ -13,7 +13,7 @@ Behind the scenes you'll most likely use nginx, trafik or haproxy to achieve thi
 In the end, you should have a setup like so:
 
 ```
-https://peppermint.example.com -> https://peppermintapi.example.com -> nginx -> peppermint docker
+https://helpdesk.example.com -> https://helpdeskapi.example.com -> nginx -> promantis docker
 ```
 
 I know two different subdomains may seem a bit overkill, but this is the only way to achieve this goal.
@@ -107,12 +107,12 @@ http://your_server_ip
 
 And if everything is good you should see the welcome to nginx sign.
 
-## Setting up peppermint
+## Setting up promantis
 
 Now nginx is out the way and configured, we can now simply download the docker compose file from github:
 
 ```
-wget https://raw.githubusercontent.com/Peppermint-Lab/Peppermint/master/docker-compose.yml
+wget https://raw.githubusercontent.com/sgpromantis/promantis/master/docker-compose.yml
 ```
 
 After this we should be able to run:
@@ -127,31 +127,31 @@ and we'll be presented with an output like so:
 version: "3.1"
 
 services:
-  peppermint_postgres:
-    container_name: peppermint_postgres
+  promantis_postgres:
+    container_name: promantis_postgres
     image: postgres:latest
     restart: always
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: peppermint
+      POSTGRES_USER: promantis
       POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: peppermint
+      POSTGRES_DB: promantis
 
-  peppermint:
-    container_name: peppermint
-    image: pepperlabs/peppermint:latest
+  promantis:
+    container_name: promantis
+    image: ghcr.io/sgpromantis/promantis:latest
     ports:
       - 3000:3000
       - 5003:5003
     restart: always
     depends_on:
-      - peppermint_postgres
+      - promantis_postgres
     environment:
-      DB_USERNAME: "peppermint"
+      DB_USERNAME: "promantis"
       DB_PASSWORD: "1234"
-      DB_HOST: "peppermint_postgres"
-      SECRET: 'peppermint4life'
+      DB_HOST: "promantis_postgres"
+      SECRET: 'promantis4life'
 
 volumes:
  pgdata:
@@ -167,7 +167,7 @@ After you enter the correct base url hit `ctrl + x` and then `y` to save. When t
 docker-compose up -d
 ```
 
-This will pull the peppermint image & postgres and start the process of both containers. Once up, we have one finally more nginx config to take care of.
+This will pull the promantis image & postgres and start the process of both containers. Once up, we have one finally more nginx config to take care of.
 
 ### Nginx config
 
@@ -189,7 +189,7 @@ This will bring an editor up, in which you will paste
 server {
     listen 80;
     listen [::]:80;
-    server_name peppermint.example.com;
+    server_name helpdesk.example.com;
     add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
 
     location / {
@@ -209,7 +209,7 @@ server {
 Replace the server name with your url of choice, including subdomain and procced to save the file as
 
 ```
-peppermint-client.conf
+promantis-client.conf
 ```
 
 ### API Proxy Config
@@ -218,7 +218,7 @@ peppermint-client.conf
 server {
     listen 80;
     listen [::]:80;
-    server_name peppermintapi.example.com;
+    server_name helpdeskapi.example.com;
     add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
 
     location / {
@@ -238,7 +238,7 @@ server {
 Replace the server name with your url of choice, including subdomain and procced to save the file as, make sure this matches what you put in the docker-compose.yml file
 
 ```
-peppermint-api.conf
+promantis-api.conf
 ```
 
 ### Restarting nginx
@@ -251,7 +251,7 @@ This can be achieved by running:
 systemctl restart nginx
 ```
 
-You should now be able to see peppermint running on your choosen subdomain.
+You should now be able to see promantis running on your choosen subdomain.
 
 I hope you found this guide usual :)
 

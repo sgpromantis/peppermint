@@ -30,7 +30,7 @@ export default function TicketFilters({
   onAssigneeToggle,
   onClearFilters,
 }: TicketFiltersProps) {
-  const { t } = useTranslation('peppermint');
+  const { t } = useTranslation('common');
   const [activeFilter, setActiveFilter] = useState<FilterType>(null);
   const [filterSearch, setFilterSearch] = useState("");
 

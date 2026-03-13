@@ -80,7 +80,7 @@ async function fetchNotebooks(token) {
 }
 
 export default function NoteBooksIndex() {
-  const { t } = useTranslation("peppermint");
+  const { t } = useTranslation("common");
   const [sortBy, setSortBy] = useState("updatedAt");
   const [searchQuery, setSearchQuery] = useState("");
 

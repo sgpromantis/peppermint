@@ -1,20 +1,20 @@
 version: "3.1"
 
 services:
-  peppermint_postgres:
-    container_name: peppermint_postgres
+  promantis_postgres:
+    container_name: promantis_postgres
     image: postgres:latest
     restart: always
     volumes:
       - pgdata_live:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: peppermint
+      POSTGRES_USER: promantis
       POSTGRES_PASSWORD: 12345
-      POSTGRES_DB: peppermint
+      POSTGRES_DB: promantis
 
-  peppermint:
-    container_name: peppermint
-    image: pepperlabs/peppermint:latest
+  promantis:
+    container_name: promantis
+    image: ghcr.io/sgpromantis/promantis:latest
     ports:
       - 1000:3000
       - 1001:5003
@@ -24,15 +24,15 @@ services:
 #      - 8.8.8.8
     restart: always
     depends_on:
-      - peppermint_postgres
+      - promantis_postgres
     volumes:
-      - peppermint_uploads:/app/apps/api/uploads
+      - promantis_uploads:/app/apps/api/uploads
     environment:
-      DB_USERNAME: "peppermint"
+      DB_USERNAME: "promantis"
       DB_PASSWORD: "12345"
-      DB_HOST: "peppermint_postgres"
-      SECRET: 'peppermint4life'
+      DB_HOST: "promantis_postgres"
+      SECRET: 'promantis4life'
 
 volumes:
  pgdata_live:
- peppermint_uploads:
+ promantis_uploads:

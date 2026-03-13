@@ -11,7 +11,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
 const nextConfig = {
   reactStrictMode: false,
   output: 'standalone',
-  transpilePackages: ['@peppermint/brand'],
+  transpilePackages: ['@promantis/brand'],
   typescript: {
     ignoreBuildErrors: true,
   },

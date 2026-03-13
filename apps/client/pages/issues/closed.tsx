@@ -65,7 +65,7 @@ const FilterBadge = ({
 
 export default function Tickets() {
   const router = useRouter();
-  const { t } = useTranslation("peppermint");
+  const { t } = useTranslation("common");
 
   const token = getCookie("session");
   const { data, status, error, refetch } = useQuery(

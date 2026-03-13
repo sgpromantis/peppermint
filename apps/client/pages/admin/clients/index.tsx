@@ -208,7 +208,7 @@ function Table({ columns, data }: any) {
 }
 
 export default function Clients() {
-  const { t } = useTranslation("peppermint");
+  const { t } = useTranslation("common");
   const { data, status, refetch } = useQuery(
     "fetchAllClients",
     fetchAllClients

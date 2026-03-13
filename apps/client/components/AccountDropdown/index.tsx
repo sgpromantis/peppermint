@@ -123,7 +123,7 @@ export function AccountDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="hover:cursor-pointer"
-          onClick={() => router.push("https://discord.gg/XDxnWxCqnc")}
+          onClick={() => window.location.href = "mailto:info@promantis.de"}
         >
           <LifeBuoy className="mr-2 h-4 w-4" />
           <span>Support</span>

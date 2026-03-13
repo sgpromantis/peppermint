@@ -11,7 +11,7 @@ import { useUser } from "../store/session";
 
 export default function Home() {
   const router = useRouter();
-  const { t } = useTranslation("peppermint");
+  const { t } = useTranslation("common");
 
   const { user } = useUser();
   const token = getCookie("session");

@@ -168,8 +168,8 @@ export class MicrosoftGraphService {
   }
 
   /**
-   * Sync users from Azure AD to Peppermint
-   * Creates users that exist in Azure AD but not in Peppermint
+   * Sync users from Azure AD to the helpdesk
+   * Creates users that exist in Azure AD but not in the system
    */
   static async syncUsers(options?: {
     filter?: string;

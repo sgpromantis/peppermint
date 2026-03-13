@@ -3,7 +3,7 @@ import useTranslation from 'next-translate/useTranslation';
 import { useEffect, useState } from 'react';
 
 export function useTicketView(tickets: Ticket[] = []) {
-  const { t } = useTranslation('peppermint');
+  const { t } = useTranslation('common');
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("preferred_view_mode");

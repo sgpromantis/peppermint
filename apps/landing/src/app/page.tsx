@@ -10,7 +10,7 @@ import {
   Lock,
   User,
 } from "lucide-react";
-import { colors, identity } from "@peppermint/brand";
+import { colors, identity } from "@promantis/brand";
 
 const navigation = [
   { name: "Funktionen", href: "#features" },

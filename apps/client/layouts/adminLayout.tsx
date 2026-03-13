@@ -29,7 +29,7 @@ import ThemeSettings from "../components/ThemeSettings";
 import { useUser } from "../store/session";
 
 export default function AdminLayout({ children }: any) {
-  const { t, lang } = useTranslation("peppermint");
+  const { t, lang } = useTranslation("common");
 
   const { loading, user } = useUser();
 
@@ -326,15 +326,14 @@ export default function AdminLayout({ children }: any) {
 
                   {user.isAdmin && (
                     <Link
-                      href="https://github.com/Peppermint-Lab/peppermint/discussions"
-                      target="_blank"
+                      href="mailto:info@promantis.de"
                       className="hover:cursor-pointer"
                     >
                       <Button
                         variant="outline"
                         className="text-foreground hover:cursor-pointer whitespace-nowrap"
                       >
-                        Send Feedback
+                        Feedback senden
                       </Button>
                     </Link>
                   )}

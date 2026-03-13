@@ -25,7 +25,7 @@ export default function PortalLayout({ children }: any) {
   const { loading, user, fetchUserProfile } = useUser();
   const locale = user ? user.language : "en";
 
-  const { t, lang } = useTranslation("peppermint");
+  const { t, lang } = useTranslation("common");
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 

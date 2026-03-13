@@ -36,7 +36,7 @@ export default function NewLayout({ children }: any) {
 
   const [keypressdown, setKeyPressDown] = useState(false);
 
-  const { t, lang } = useTranslation("peppermint");
+  const { t, lang } = useTranslation("common");
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 

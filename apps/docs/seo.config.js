@@ -1,16 +1,16 @@
 const seoConfig = {
-  metadataBase: new URL("https://peppermint.sh"),
+  metadataBase: new URL("https://promantis.de"),
   title: {
-    template: "Peppermint",
+    template: "promantis Helpdesk",
     default:
-      "Peppermint - Revolutionizing Customer Support for Rapid Resolutions. Your Premier Zendesk Alternative.",
+      "promantis Helpdesk — professionelles Ticket-Management für Helpdesks & Service Desks.",
   },
   description:
-    "Experience Peppermint's revolutionary approach to customer support, ensuring swift resolutions. Discover your ultimate alternative to Zendesk.",
-  themeColor: "#F6E458",
+    "promantis Helpdesk — professionelles Ticket-Management für schnelle Bearbeitung interner und externer Anfragen.",
+  themeColor: "#006e00",
   openGraph: {
     images: "/og-image.png",
-    url: "https://peppermint.sh",
+    url: "https://promantis.de",
   },
   manifest: "/site.webmanifest",
   icons: [

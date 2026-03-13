@@ -1,31 +1,31 @@
 version: "3.1"
 
 services:
-  peppermint_postgres:
-    container_name: peppermint_postgres
+  promantis_postgres:
+    container_name: promantis_postgres
     image: postgres:17
     restart: always
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: peppermint
+      POSTGRES_USER: promantis
       POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: peppermint
+      POSTGRES_DB: promantis
 
-  peppermint:
-    container_name: peppermint
+  promantis:
+    container_name: promantis
     build: "."
     ports:
       - 3333:3000
       - 5001:5003
     restart: always
     depends_on:
-      - peppermint_postgres
+      - promantis_postgres
     environment:
-      DB_USERNAME: "peppermint"
+      DB_USERNAME: "promantis"
       DB_PASSWORD: "1234"
-      DB_HOST: "peppermint_postgres"
-      SECRET: 'peppermint4life'
+      DB_HOST: "promantis_postgres"
+      SECRET: 'promantis4life'
       
 volumes: 
  pgdata:

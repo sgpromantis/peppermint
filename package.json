@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "peppermint",
+  "name": "promantis-helpdesk",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",

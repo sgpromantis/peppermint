@@ -11,6 +11,9 @@ RUN apt-get update && \
 COPY apps/api/package*.json ./apps/api/
 COPY apps/client/package*.json ./apps/client/
 
+# Copy brand package (local workspace dependency)
+COPY packages/brand/ ./packages/brand/
+
 # Prisma schema needed for postinstall (prisma generate)
 COPY apps/api/src/prisma ./apps/api/src/prisma
 

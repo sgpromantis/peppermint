@@ -25,7 +25,7 @@ export default function TicketList({
   currentUser,
   uiSettings
 }: TicketListProps) {
-  const { t } = useTranslation('peppermint');
+  const { t } = useTranslation('common');
   const high = "bg-red-100 text-red-800";
   const low = "bg-blue-100 text-blue-800";
   const normal = "bg-green-100 text-green-800";

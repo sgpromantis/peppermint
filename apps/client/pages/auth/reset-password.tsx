@@ -29,7 +29,7 @@ export default function Login({}) {
             variant: "destructive",
             title: "Error",
             description:
-              "There was an error with this request, please try again. If this issue persists, please contact support via the discord.",
+              "There was an error with this request, please try again. If this issue persists, please contact support at info@promantis.de.",
           });
         }
       });
@@ -62,7 +62,7 @@ export default function Login({}) {
               variant: "destructive",
               title: "Error",
               description:
-                "There was an error with this request, please try again. If this issue persists, please contact support via the discord.",
+                "There was an error with this request, please try again. If this issue persists, please contact support at info@promantis.de.",
             });
           }
         });

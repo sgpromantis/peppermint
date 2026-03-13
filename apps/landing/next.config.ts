@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@peppermint/brand'],
+  transpilePackages: ['@promantis/brand'],
 };
 
 export default nextConfig;

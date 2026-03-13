@@ -269,26 +269,50 @@ export default function Authentication() {
               </div>
             ) : (
               <div>
-                <div className="mb-6">
-                  <select
-                    id="providerType"
-                    name="providerType"
-                    onChange={(e) => setProviderType(e.target.value)}
-                    className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={providerType || ""}
-                  >
-                    <option value="" disabled>
-                      Bitte wählen Sie einen Anbietertyp
-                    </option>
-                    <option value="oidc">OIDC</option>
-                    <option value="microsoft-365">Microsoft 365 / Azure AD SSO</option>
-                    <option value="oauth" disabled>
-                      OAuth
-                    </option>
-                    <option value="saml" disabled>
-                      SAML - coming soon
-                    </option>
-                  </select>
+                <div className="mb-6 space-y-3">
+                  {[
+                    { value: "oidc", label: "OIDC", disabled: false },
+                    { value: "microsoft-365", label: "Microsoft 365 / Azure AD SSO", disabled: false },
+                    { value: "oauth", label: "OAuth", disabled: true },
+                    { value: "saml", label: "SAML – demnächst verfügbar", disabled: true },
+                  ].map((method) => (
+                    <button
+                      key={method.value}
+                      type="button"
+                      disabled={method.disabled}
+                      onClick={() =>
+                        setProviderType(
+                          providerType === method.value ? "" : method.value
+                        )
+                      }
+                      className={cn(
+                        "flex w-full items-center gap-4 rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors",
+                        providerType === method.value
+                          ? "border-green-600 bg-green-50 text-green-800"
+                          : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
+                        method.disabled && "cursor-not-allowed opacity-50"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+                          providerType === method.value
+                            ? "bg-green-600"
+                            : "bg-gray-300"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
+                            providerType === method.value
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          )}
+                        />
+                      </span>
+                      <span>{method.label}</span>
+                    </button>
+                  ))}
                 </div>
                 {providerType && (
                   <div className="space-y-4 mt-4">

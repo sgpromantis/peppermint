@@ -9,7 +9,7 @@ interface DisplaySettingsProps {
 }
 
 export default function DisplaySettings({ settings, onChange }: DisplaySettingsProps) {
-  const { t } = useTranslation('peppermint');
+  const { t } = useTranslation('common');
 
   return (
     <div>

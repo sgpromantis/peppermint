@@ -31,7 +31,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const [keypressdown, setKeyPressDown] = useState(false);
 
-  const { t, lang } = useTranslation("peppermint");
+  const { t, lang } = useTranslation("common");
   const sidebar = useSidebar();
 
   if (!user) {

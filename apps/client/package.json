@@ -66,7 +66,7 @@
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
     "use-debounce": "^10.0.1",
-    "@peppermint/brand": "*"
+    "@promantis/brand": "file:../../packages/brand"
   },
   "devDependencies": {
     "@types/lodash": "^4",

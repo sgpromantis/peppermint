@@ -59,48 +59,48 @@ export function prometheusRoutes(fastify: FastifyInstance) {
         // Add database metrics
         output += "\n\n# Database Metrics (real-time)\n";
 
-        output += "# HELP peppermint_tickets_total Total tickets in database\n";
-        output += "# TYPE peppermint_tickets_total gauge\n";
-        output += `peppermint_tickets_total ${totalTickets}\n`;
+        output += "# HELP promantis_tickets_total Total tickets in database\n";
+        output += "# TYPE promantis_tickets_total gauge\n";
+        output += `promantis_tickets_total ${totalTickets}\n`;
 
-        output += "# HELP peppermint_tickets_open Current open tickets\n";
-        output += "# TYPE peppermint_tickets_open gauge\n";
-        output += `peppermint_tickets_open ${openTickets}\n`;
+        output += "# HELP promantis_tickets_open Current open tickets\n";
+        output += "# TYPE promantis_tickets_open gauge\n";
+        output += `promantis_tickets_open ${openTickets}\n`;
 
-        output += "# HELP peppermint_tickets_closed Total closed tickets\n";
-        output += "# TYPE peppermint_tickets_closed gauge\n";
-        output += `peppermint_tickets_closed ${closedTickets}\n`;
+        output += "# HELP promantis_tickets_closed Total closed tickets\n";
+        output += "# TYPE promantis_tickets_closed gauge\n";
+        output += `promantis_tickets_closed ${closedTickets}\n`;
 
-        output += "# HELP peppermint_users_total Total users\n";
-        output += "# TYPE peppermint_users_total gauge\n";
-        output += `peppermint_users_total ${totalUsers}\n`;
+        output += "# HELP promantis_users_total Total users\n";
+        output += "# TYPE promantis_users_total gauge\n";
+        output += `promantis_users_total ${totalUsers}\n`;
 
-        output += "# HELP peppermint_active_sessions Current active sessions\n";
-        output += "# TYPE peppermint_active_sessions gauge\n";
-        output += `peppermint_active_sessions ${activeUsers}\n`;
+        output += "# HELP promantis_active_sessions Current active sessions\n";
+        output += "# TYPE promantis_active_sessions gauge\n";
+        output += `promantis_active_sessions ${activeUsers}\n`;
 
-        output += "# HELP peppermint_comments_total Total comments\n";
-        output += "# TYPE peppermint_comments_total gauge\n";
-        output += `peppermint_comments_total ${totalComments}\n`;
+        output += "# HELP promantis_comments_total Total comments\n";
+        output += "# TYPE promantis_comments_total gauge\n";
+        output += `promantis_comments_total ${totalComments}\n`;
 
         // Tickets by priority
-        output += "# HELP peppermint_tickets_by_priority Tickets by priority\n";
-        output += "# TYPE peppermint_tickets_by_priority gauge\n";
+        output += "# HELP promantis_tickets_by_priority Tickets by priority\n";
+        output += "# TYPE promantis_tickets_by_priority gauge\n";
         for (const item of ticketsByPriority) {
-          output += `peppermint_tickets_by_priority{priority="${item.priority || 'none'}"} ${item._count}\n`;
+          output += `promantis_tickets_by_priority{priority="${item.priority || 'none'}"} ${item._count}\n`;
         }
 
         // Process info
-        output += "# HELP peppermint_process_uptime_seconds Process uptime in seconds\n";
-        output += "# TYPE peppermint_process_uptime_seconds gauge\n";
-        output += `peppermint_process_uptime_seconds ${process.uptime().toFixed(0)}\n`;
+        output += "# HELP promantis_process_uptime_seconds Process uptime in seconds\n";
+        output += "# TYPE promantis_process_uptime_seconds gauge\n";
+        output += `promantis_process_uptime_seconds ${process.uptime().toFixed(0)}\n`;
 
-        output += "# HELP peppermint_process_memory_bytes Process memory usage\n";
-        output += "# TYPE peppermint_process_memory_bytes gauge\n";
+        output += "# HELP promantis_process_memory_bytes Process memory usage\n";
+        output += "# TYPE promantis_process_memory_bytes gauge\n";
         const memUsage = process.memoryUsage();
-        output += `peppermint_process_memory_heap_used_bytes ${memUsage.heapUsed}\n`;
-        output += `peppermint_process_memory_heap_total_bytes ${memUsage.heapTotal}\n`;
-        output += `peppermint_process_memory_rss_bytes ${memUsage.rss}\n`;
+        output += `promantis_process_memory_heap_used_bytes ${memUsage.heapUsed}\n`;
+        output += `promantis_process_memory_heap_total_bytes ${memUsage.heapTotal}\n`;
+        output += `promantis_process_memory_rss_bytes ${memUsage.rss}\n`;
 
         reply.header("Content-Type", "text/plain; charset=utf-8");
         reply.send(output);

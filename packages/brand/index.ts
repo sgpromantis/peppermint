@@ -37,8 +37,8 @@ export const identity = {
   name: "promantis",
   tagline: "professionell. progressiv. proaktiv.",
   fullName: "promantis Helpdesk",
-  contactEmail: "info@promantis.de",
-  copyright: `© ${new Date().getFullYear()} promantis. Alle Rechte vorbehalten.`,
+  contactEmail: "uhd@promantis.de",
+  copyright: `© ${new Date().getFullYear()} promantis GmbH. Alle Rechte vorbehalten.`,
 } as const;
 
 // ── Logo assets ──────────────────────────────────────────
@@ -56,4 +56,4 @@ export const logo = {
 } as const;
 
 // ── Re-export Logo component path ────────────────────────
-// Usage:  import { BrandLogo } from "@peppermint/brand/logo";
+// Usage:  import { BrandLogo } from "@promantis/brand/logo";

@@ -27,7 +27,7 @@ export default function ViewSettings({
   onSortChange,
   onUISettingChange,
 }: ViewSettingsProps) {
-  const { t } = useTranslation('peppermint');
+  const { t } = useTranslation('common');
 
   return (
     <Popover>
