@@ -3,9 +3,9 @@ import "./globals.css";
 import Fathom from "@/component/Fathom";
 
 export const metadata: Metadata = {
-  title: "Peppermint",
+  title: "promantis Helpdesk",
   description:
-    "Peppermint is a self-hosted issue tracker for your projects or help desk.",
+    "promantis ist ein selbst-gehostetes Ticketsystem für Ihre Projekte und Ihren IT-Support.",
 };
 
 export default function RootLayout({
