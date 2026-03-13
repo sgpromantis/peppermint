@@ -208,7 +208,7 @@ export default function Home() {
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {tickets !== undefined &&
-                          tickets.slice(0, 10).map((item: any) => (
+                          tickets.map((item: any) => (
                             <tr
                               key={item.id}
                               className="hover:bg-gray-300 dark:hover:bg-green-600 hover:cursor-pointer"
