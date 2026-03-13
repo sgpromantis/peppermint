@@ -98,5 +98,6 @@
   "reset_password": "Endurstilla lykilorð",
   "logout": "Skrá út",
   "save_and_reload": "Vista og endurhlaða",
-  "enter_todo": "Sláðu inn verkefni"
+  "enter_todo": "Sláðu inn verkefni",
+  "due_date": "Gjalddagi"
 }

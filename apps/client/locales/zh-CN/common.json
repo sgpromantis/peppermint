@@ -98,5 +98,6 @@
   "in_progress": "进行中",
   "in_review": "审核中",
   "done": "已完成",
-  "select_new_user": "选择新用户"
+  "select_new_user": "选择新用户",
+  "due_date": "截止日期"
 }

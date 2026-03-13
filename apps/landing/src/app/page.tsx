@@ -15,14 +15,14 @@ import { colors, identity } from "@promantis/brand";
 const navigation = [
   { name: "Funktionen", href: "#features" },
   { name: "Über uns", href: "#mission" },
-  { name: "Kontakt", href: "mailto:info@promantis.de" },
+  { name: "Kontakt", href: "mailto:it@promantis.de" },
 ];
 
 const posts: { id: number; title: string; description: string; date: string; datetime: string; author: { name: string; role: string; imageUrl: string }; }[] = [];
 
 const stats = [
-  { label: "Zufriedene Kunden", value: "50+" },
-  { label: "Gelöste Tickets", value: "10k+" },
+  { label: "Zufriedene Kunden", value: "5+" },
+  { label: "Gelöste Tickets", value: "100+" },
 ];
 
 const features = [
@@ -53,25 +53,25 @@ const features2 = [
   {
     name: "Standort",
     description:
-      "promantis ist für jede Umgebung konzipiert und bietet alle Kernfunktionen auch ohne Internetverbindung.",
+      "promantis Helpdesk ist für jede Umgebung konzipiert und bietet alle Kernfunktionen auch ohne Internetverbindung.",
     icon: Globe,
   },
   {
     name: "Datenhoheit",
     description:
-      "promantis gewährleistet den Schutz Ihrer Daten – keine Übertragung an externe Server. Alle Daten werden sicher lokal auf Ihrem Server gespeichert.",
+      "promantis Helpdesk gewährleistet den Schutz Ihrer Daten – keine Übertragung an externe Server. Alle Daten werden sicher lokal auf Ihrem Server gespeichert.",
     icon: Lock,
   },
   {
     name: "Leichtgewichtig",
     description:
-      "promantis ist leichtgewichtig und schnell – ideal für den Betrieb auf einfacher Hardware mit minimalem Ressourcenverbrauch. Perfekt für kosteneffizientes Hosting.",
+      "promantis Helpdesk ist leichtgewichtig und schnell – ideal für den Betrieb auf einfacher Hardware mit minimalem Ressourcenverbrauch. Perfekt für kosteneffizientes Hosting.",
     icon: Lightbulb,
   },
   {
     name: "Kunde im Fokus",
     description:
-      "promantis ist ein kundenorientiertes Produkt – wir hören aktiv zu und verbessern uns kontinuierlich, um die besten Funktionen bereitzustellen.",
+      "promantis Helpdesk ist ein kundenorientiertes Produkt – wir hören aktiv zu und verbessern uns kontinuierlich, um die besten Funktionen bereitzustellen.",
     icon: User,
   },
 ];

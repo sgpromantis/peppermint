@@ -98,5 +98,6 @@
   "in_progress": "Folyamatban",
   "in_review": "Ellenőrzés alatt",
   "done": "Kész",
-  "select_new_user": "Új felhasználó kiválasztása"
+  "select_new_user": "Új felhasználó kiválasztása",
+  "due_date": "Határidő"
 }

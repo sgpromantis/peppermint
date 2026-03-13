@@ -228,5 +228,10 @@
   "will_not_receive_updates": "Vous ne recevrez plus les mises à jour",
   "change_user": "Changer l'utilisateur...",
   "assign_user": "Assigner un utilisateur...",
-  "error": "Erreur"
+  "error": "Erreur",
+  "due_date": "Date d'échéance",
+  "support": "Support",
+  "internal": "Interne",
+  "task": "Tâche",
+  "question": "Question"
 }

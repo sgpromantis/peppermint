@@ -92,5 +92,6 @@
   "select_a_client": "Välj en kund",
   "select_an_engineer": "Välj en tekniker",
   "ticket_create": "Skapa ett ärende",
-  "internallycommented_at": "Kommenterat Internt kl."
+  "internallycommented_at": "Kommenterat Internt kl.",
+  "due_date": "Förfallodatum"
 }

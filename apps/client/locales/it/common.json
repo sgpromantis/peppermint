@@ -92,5 +92,6 @@
   "select_a_client": "Seleziona un Cliente",
   "select_an_engineer": "Seleziona un Tecnico",
   "ticket_create": "Crea Ticket",
-  "internallycommented_at": "Commentato Internamente il"
+  "internallycommented_at": "Commentato Internamente il",
+  "due_date": "Data di scadenza"
 }

@@ -98,5 +98,6 @@
   "in_progress": "בתהליך",
   "in_review": "בסקירה",
   "done": "בוצע",
-  "select_new_user": "בחר משתמש חדש"
+  "select_new_user": "בחר משתמש חדש",
+  "due_date": "תאריך יעד"
 }

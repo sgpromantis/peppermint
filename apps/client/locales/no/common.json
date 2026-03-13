@@ -92,5 +92,6 @@
   "select_a_client": "Velg en Kunde",
   "select_an_engineer": "Velg en Ingeniør",
   "ticket_create": "Opprett Sak",
-  "internallycommented_at": "Kommentert Internt kl."
+  "internallycommented_at": "Kommentert Internt kl.",
+  "due_date": "Forfallsdato"
 }

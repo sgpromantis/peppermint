@@ -92,5 +92,6 @@
   "select_a_client": "Pumili ng isang Kliyente",
   "select_an_engineer": "Pumili ng isang Inhinyero",
   "ticket_create": "Gumawa ng Tiket",
-  "internallycommented_at": "Internallyo Nag-komento sa"
+  "internallycommented_at": "Internallyo Nag-komento sa",
+  "due_date": "Petsa ng Takdang-aralin"
 }

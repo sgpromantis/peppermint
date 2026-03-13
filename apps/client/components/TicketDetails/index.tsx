@@ -131,7 +131,28 @@ export default function Ticket() {
     if (initialContent === "loading") {
       return undefined;
     }
-    return BlockNoteEditor.create({ initialContent });
+    return BlockNoteEditor.create({
+      initialContent,
+      uploadFile: async (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("user", user?.id || "");
+        const res = await fetch(
+          `/api/v1/storage/ticket/${router.query.id}/upload/single`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          }
+        );
+        const data = await res.json();
+        if (data.success && data.file) {
+          refetch();
+          return `/api/v1/ticket/${router.query.id}/file/${data.file.id}/download`;
+        }
+        throw new Error("Upload failed");
+      },
+    });
   }, [initialContent]);
 
   const [edit, setEdit] = useState(false);
@@ -540,12 +561,15 @@ export default function Ticket() {
 
       if (res.success && Array.isArray(res.types)) {
         setTicketTypeOptions(
-          res.types.map((t: string, idx: number) => ({
-            id: String(idx),
-            name: t.charAt(0).toUpperCase() + t.slice(1),
-            value: t,
-            icon: Tag,
-          }))
+          res.types.map((typeVal: string, idx: number) => {
+            const translated = t(typeVal);
+            return {
+              id: String(idx),
+              name: translated !== typeVal ? translated : typeVal.charAt(0).toUpperCase() + typeVal.slice(1),
+              value: typeVal,
+              icon: Tag,
+            };
+          })
         );
       }
     } catch (e) {

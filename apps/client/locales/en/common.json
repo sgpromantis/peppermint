@@ -228,5 +228,10 @@
   "will_not_receive_updates": "You will no longer receive updates",
   "change_user": "Change User...",
   "assign_user": "Assign User...",
-  "error": "Error"
+  "error": "Error",
+  "due_date": "Due Date",
+  "support": "Support",
+  "internal": "Internal",
+  "task": "Task",
+  "question": "Question"
 }

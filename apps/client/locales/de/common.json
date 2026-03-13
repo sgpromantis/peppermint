@@ -228,5 +228,10 @@
   "will_not_receive_updates": "Sie erhalten keine Updates mehr",
   "change_user": "Benutzer ändern...",
   "assign_user": "Benutzer zuweisen...",
-  "error": "Fehler"
+  "error": "Fehler",
+  "due_date": "Fälligkeitsdatum",
+  "support": "Support",
+  "internal": "Intern",
+  "task": "Aufgabe",
+  "question": "Frage"
 }

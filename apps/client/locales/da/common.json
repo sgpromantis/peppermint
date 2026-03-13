@@ -92,5 +92,6 @@
   "select_a_client": "Vælg en Kunde",
   "select_an_engineer": "Vælg en Ingeniør",
   "ticket_create": "Opret Billet",
-  "internallycommented_at": "Kommenteret Internt kl."
+  "internallycommented_at": "Kommenteret Internt kl.",
+  "due_date": "Forfaldsdato"
 }
