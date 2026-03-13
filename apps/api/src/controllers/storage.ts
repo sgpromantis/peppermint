@@ -1,14 +1,29 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import multer from "fastify-multer";
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { prisma } from "../prisma";
 import { checkSession } from "../lib/session";
 
-const upload = multer({ dest: "uploads/" });
+// Absolute path so uploads are always in the same directory regardless of CWD
+const UPLOADS_DIR = path.resolve(__dirname, "..", "..", "uploads");
+
+const storage = multer.diskStorage({
+  destination(_req: any, _file: any, cb: any) {
+    cb(null, UPLOADS_DIR);
+  },
+  filename(_req: any, file: any, cb: any) {
+    const ext = path.extname(file.originalname);
+    const uniqueName = `${crypto.randomUUID()}${ext}`;
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage });
 
 // Ensure uploads directory exists on module load
-fs.mkdirSync("uploads", { recursive: true });
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 export function objectStoreRoutes(fastify: FastifyInstance) {
   // ─────────────────────────────────────────────
@@ -94,15 +109,24 @@ export function objectStoreRoutes(fastify: FastifyInstance) {
         return reply.status(404).send({ success: false, message: "File not found" });
       }
 
-      const filePath = path.resolve(file.path);
+      // Resolve path: absolute paths stay as-is; old relative paths
+      // (e.g. "uploads/abc") resolve against UPLOADS_DIR parent
+      let filePath = path.isAbsolute(file.path)
+        ? file.path
+        : path.resolve(UPLOADS_DIR, "..", file.path);
       if (!fs.existsSync(filePath)) {
         return reply.status(404).send({ success: false, message: "File missing from disk" });
       }
 
       const stream = fs.createReadStream(filePath);
+      const isImage = (file.mime || "").startsWith("image/");
+      const disposition = isImage
+        ? `inline; filename="${encodeURIComponent(file.filename)}"`
+        : `attachment; filename="${encodeURIComponent(file.filename)}"`;
       reply
         .header("Content-Type", file.mime || "application/octet-stream")
-        .header("Content-Disposition", `attachment; filename="${encodeURIComponent(file.filename)}"`)
+        .header("Content-Disposition", disposition)
+        .header("Cache-Control", "private, max-age=86400")
         .send(stream);
     }
   );
@@ -130,9 +154,11 @@ export function objectStoreRoutes(fastify: FastifyInstance) {
 
       // Delete from disk (best-effort)
       try {
-        const filePath = path.resolve(file.path);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        const delPath = path.isAbsolute(file.path)
+          ? file.path
+          : path.resolve(UPLOADS_DIR, "..", file.path);
+        if (fs.existsSync(delPath)) {
+          fs.unlinkSync(delPath);
         }
       } catch (fsErr) {
         console.error(`Failed to delete file from disk: ${file.path}`, fsErr);
@@ -186,15 +212,23 @@ export function objectStoreRoutes(fastify: FastifyInstance) {
         return reply.status(404).send({ success: false, message: "File not found" });
       }
 
-      const filePath = path.resolve(file.path);
-      if (!fs.existsSync(filePath)) {
+      let userFilePath = path.isAbsolute(file.path)
+        ? file.path
+        : path.resolve(UPLOADS_DIR, "..", file.path);
+      if (!fs.existsSync(userFilePath)) {
         return reply.status(404).send({ success: false, message: "File missing from disk" });
       }
 
-      const stream = fs.createReadStream(filePath);
+      const stream = fs.createReadStream(userFilePath);
+      const mime = (file as any).mime || "application/octet-stream";
+      const isImage = mime.startsWith("image/");
+      const disposition = isImage
+        ? `inline; filename="${encodeURIComponent(file.filename)}"`
+        : `attachment; filename="${encodeURIComponent(file.filename)}"`;
       reply
-        .header("Content-Type", "application/octet-stream")
-        .header("Content-Disposition", `attachment; filename="${encodeURIComponent(file.filename)}"`)
+        .header("Content-Type", mime)
+        .header("Content-Disposition", disposition)
+        .header("Cache-Control", "private, max-age=86400")
         .send(stream);
     }
   );
@@ -222,9 +256,11 @@ export function objectStoreRoutes(fastify: FastifyInstance) {
 
       // Delete from disk (best-effort)
       try {
-        const filePath = path.resolve(file.path);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        const userDelPath = path.isAbsolute(file.path)
+          ? file.path
+          : path.resolve(UPLOADS_DIR, "..", file.path);
+        if (fs.existsSync(userDelPath)) {
+          fs.unlinkSync(userDelPath);
         }
       } catch (fsErr) {
         console.error(`Failed to delete user file from disk: ${file.path}`, fsErr);

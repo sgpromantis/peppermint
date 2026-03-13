@@ -111,7 +111,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const data = {
     teams: [
       {
-        name: "Helpdesk",
+        name: "promantis Helpdesk",
         plan: `version: ${process.env.NEXT_PUBLIC_CLIENT_VERSION}`,
       },
     ],
@@ -179,11 +179,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         {/* <TeamSwitcher teams={data.teams} /> */}
         <div className="flex items-center gap-2 ">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-            <img src="/favicon/favicon-32x32.png" className="size-4" />
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
+            <img src="/logo.png" alt="promantis Logo" className="size-8 object-contain" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-xl">Helpdesk</span>
+            <span className="truncate font-semibold text-xl">promantis</span>
             <span className="truncate text-xs">
               version: {process.env.NEXT_PUBLIC_CLIENT_VERSION}
             </span>

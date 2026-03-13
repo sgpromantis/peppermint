@@ -21,6 +21,8 @@ services:
     restart: always
     depends_on:
       - promantis_postgres
+    volumes:
+      - promantis_uploads:/app/apps/api/uploads
     environment:
       DB_USERNAME: "promantis"
       DB_PASSWORD: "1234"
@@ -29,3 +31,4 @@ services:
       
 volumes: 
  pgdata:
+ promantis_uploads:

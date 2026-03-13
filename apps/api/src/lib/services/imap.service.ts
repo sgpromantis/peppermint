@@ -23,7 +23,7 @@ async function saveAttachments(
 ): Promise<void> {
   if (!attachments || attachments.length === 0) return;
 
-  const uploadsDir = path.resolve("uploads");
+  const uploadsDir = path.resolve(__dirname, "..", "..", "..", "uploads");
   fs.mkdirSync(uploadsDir, { recursive: true });
 
   for (const att of attachments) {
@@ -38,7 +38,7 @@ async function saveAttachments(
         data: {
           ticketId,
           filename: att.filename || "attachment",
-          path: `uploads/${uniqueName}`,
+          path: filePath,
           mime: att.contentType || "application/octet-stream",
           encoding: att.encoding || "7bit",
           size: att.size || att.content.length,

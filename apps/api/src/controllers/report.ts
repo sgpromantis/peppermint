@@ -5,7 +5,7 @@ import path from "path";
 import { checkSession } from "../lib/session";
 import { prisma } from "../prisma";
 
-const REPORTS_DIR = path.resolve("uploads/reports");
+const REPORTS_DIR = path.resolve(__dirname, "..", "..", "uploads", "reports");
 fs.mkdirSync(REPORTS_DIR, { recursive: true });
 
 /**

@@ -233,5 +233,6 @@
   "support": "Support",
   "internal": "Intern",
   "task": "Aufgabe",
-  "question": "Frage"
+  "question": "Frage",
+  "preview": "Vorschau"
 }

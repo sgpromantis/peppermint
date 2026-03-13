@@ -180,6 +180,7 @@ export default function Ticket() {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [assignedClient, setAssignedClient] = useState<any>();
   const [ticketType, setTicketType] = useState<any>();
   const [ticketTypeOptions, setTicketTypeOptions] = useState<any[]>([]);
@@ -1842,6 +1843,88 @@ export default function Ticket() {
                         )}
                       </div>
                     </div>
+
+                    {/* Image Preview Gallery */}
+                    {data.ticket.files && data.ticket.files.filter((f: any) =>
+                      /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(f.filename)
+                    ).length > 0 && (
+                      <div className="border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex flex-row items-center justify-between mt-2">
+                          <span className="text-sm font-medium text-gray-500 dark:text-white flex items-center gap-1">
+                            <Eye className="h-4 w-4" />
+                            {t("preview")}
+                          </span>
+                        </div>
+                        <div className="mt-1 grid grid-cols-3 gap-1">
+                          {data.ticket.files
+                            .filter((f: any) => /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(f.filename))
+                            .map((f: any, idx: number) => (
+                              <button
+                                key={f.id}
+                                onClick={() => setLightboxIndex(idx)}
+                                className="aspect-square rounded overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-primary transition-all"
+                              >
+                                <img
+                                  src={`/api/v1/ticket/${id}/file/${f.id}/download`}
+                                  alt={f.filename}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Lightbox Overlay */}
+                    {lightboxIndex !== null && (() => {
+                      const imageFiles = data.ticket.files.filter((f: any) =>
+                        /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(f.filename)
+                      );
+                      const currentImage = imageFiles[lightboxIndex];
+                      if (!currentImage) return null;
+                      return (
+                        <div
+                          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+                          onClick={() => setLightboxIndex(null)}
+                        >
+                          <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+                            <img
+                              src={`/api/v1/ticket/${id}/file/${currentImage.id}/download`}
+                              alt={currentImage.filename}
+                              className="max-w-full max-h-[85vh] object-contain rounded"
+                            />
+                            <div className="absolute top-2 right-2 flex gap-1">
+                              <button
+                                onClick={() => setLightboxIndex(null)}
+                                className="p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white"
+                              >
+                                <PanelTopClose className="h-5 w-5" />
+                              </button>
+                            </div>
+                            {imageFiles.length > 1 && (
+                              <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
+                                <button
+                                  onClick={() => setLightboxIndex((lightboxIndex - 1 + imageFiles.length) % imageFiles.length)}
+                                  className="pointer-events-auto p-2 rounded-full bg-black/50 hover:bg-black/70 text-white ml-2"
+                                >
+                                  <Play className="h-5 w-5 rotate-180" />
+                                </button>
+                                <button
+                                  onClick={() => setLightboxIndex((lightboxIndex + 1) % imageFiles.length)}
+                                  className="pointer-events-auto p-2 rounded-full bg-black/50 hover:bg-black/70 text-white mr-2"
+                                >
+                                  <Play className="h-5 w-5" />
+                                </button>
+                              </div>
+                            )}
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white text-xs bg-black/50 px-2 py-1 rounded">
+                              {currentImage.filename} ({lightboxIndex + 1}/{imageFiles.length})
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
