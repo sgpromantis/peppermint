@@ -14,6 +14,7 @@
   "sl_authentication": "Authentication",
   "sl_roles": "Roles",
   "sl_microsoft365": "Microsoft 365",
+  "sl_microsoft_sync": "Microsoft 365 Sync",
   "sl_monitoring": "Monitoring",
   "sl_logs": "Logs",
   "sl_reports": "Monthly Report",

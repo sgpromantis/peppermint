@@ -99,6 +99,12 @@ export default function AdminLayout({ children }: any) {
       icon: Monitor,
     },
     {
+      name: t("sl_microsoft_sync"),
+      href: "/admin/microsoft-sync",
+      current: location.pathname === "/admin/microsoft-sync",
+      icon: Monitor,
+    },
+    {
       name: t("sl_monitoring"),
       href: "/admin/monitoring",
       current: location.pathname === "/admin/monitoring",

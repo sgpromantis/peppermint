@@ -13,7 +13,6 @@ import { getCookie } from "cookies-next";
 import { Cloud, Copy, Info } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import AdminLayout from "../../layouts/adminLayout";
 
 export default function MicrosoftGraphSettings() {
   const router = useRouter();
@@ -119,7 +118,6 @@ export default function MicrosoftGraphSettings() {
   }, []);
 
   return (
-    <AdminLayout>
       <main className="flex-1">
         <div className="relative max-w-4xl mx-auto md:px-8 xl:px-0">
           <div className="pt-10 pb-16">
@@ -316,6 +314,5 @@ export default function MicrosoftGraphSettings() {
           </div>
         </div>
       </main>
-    </AdminLayout>
   );
 }

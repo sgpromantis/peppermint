@@ -209,6 +209,7 @@ export default function Authentication() {
 
   useEffect(() => {
     checkState();
+    checkMicrosoftStatus();
   }, []);
 
   useEffect(() => {
@@ -217,6 +218,12 @@ export default function Authentication() {
       checkMicrosoftStatus();
     }
   }, [providerType]);
+
+  function isMethodActive(value: string): boolean {
+    if (value === "microsoft-365") return microsoftEnabled;
+    if (enabled && provider === value) return true;
+    return false;
+  }
 
   return (
     <main className="flex-1">
@@ -311,6 +318,11 @@ export default function Authentication() {
                         />
                       </span>
                       <span>{method.label}</span>
+                      {isMethodActive(method.value) && (
+                        <span className="ml-auto inline-flex items-center rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-semibold text-white">
+                          Aktiv
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
