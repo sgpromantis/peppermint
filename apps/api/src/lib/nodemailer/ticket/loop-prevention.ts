@@ -5,7 +5,7 @@ import { prisma } from "../../../prisma";
  * Emails to these addresses are ALWAYS blocked, regardless of any configuration.
  */
 export const PROHIBITED_ADDRESSES: string[] = [
-  "pool@ticket.promantis.de", "it-helpdesk@gabo.de","Server1/Orga@gabo.de","Server1/Orga@lkv.de","falcon-complete@crowdstrike.com"  
+  "pool@ticket.promantis.de", "it-helpdesk@gabo.de","Server1/Orga@gabo.de","Server1/Orga@lkv.de","falcon-complete@crowdstrike.com","muc-prt-play@pharos.de" 
 ];
 
 /**
