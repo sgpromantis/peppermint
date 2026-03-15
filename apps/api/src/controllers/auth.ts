@@ -1293,4 +1293,89 @@ export function authRoutes(fastify: FastifyInstance) {
       reply.send({ success: true });
     }
   );
+
+  // ── API Key Management (admin only) ──
+
+  // List all API keys
+  fastify.get(
+    "/api/v1/auth/api-keys",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const currentUser = await checkSession(request);
+      if (!currentUser || !currentUser.isAdmin) {
+        return reply.code(403).send({ message: "Forbidden" });
+      }
+
+      const keys = await prisma.session.findMany({
+        where: { apiKey: true },
+        select: {
+          id: true,
+          createdAt: true,
+          expires: true,
+          user: { select: { id: true, name: true, email: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      reply.send({ success: true, keys });
+    }
+  );
+
+  // Create a new API key
+  fastify.post(
+    "/api/v1/auth/api-keys",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const currentUser = await checkSession(request);
+      if (!currentUser || !currentUser.isAdmin) {
+        return reply.code(403).send({ message: "Forbidden" });
+      }
+
+      const secret = Buffer.from(process.env.SECRET!, "base64");
+      const token = jwt.sign(
+        {
+          data: {
+            id: currentUser.id,
+            sessionId: crypto.randomBytes(32).toString("hex"),
+          },
+        },
+        secret,
+        { expiresIn: "365d", algorithm: "HS256" }
+      );
+
+      await prisma.session.create({
+        data: {
+          userId: currentUser.id,
+          sessionToken: token,
+          expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          apiKey: true,
+        },
+      });
+
+      reply.send({ success: true, token });
+    }
+  );
+
+  // Revoke an API key
+  fastify.delete(
+    "/api/v1/auth/api-keys/:keyId",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const currentUser = await checkSession(request);
+      if (!currentUser || !currentUser.isAdmin) {
+        return reply.code(403).send({ message: "Forbidden" });
+      }
+
+      const { keyId } = request.params as { keyId: string };
+
+      const key = await prisma.session.findFirst({
+        where: { id: keyId, apiKey: true },
+      });
+
+      if (!key) {
+        return reply.code(404).send({ message: "API key not found" });
+      }
+
+      await prisma.session.delete({ where: { id: keyId } });
+
+      reply.send({ success: true });
+    }
+  );
 }

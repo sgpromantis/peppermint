@@ -12,6 +12,7 @@ import {
   Clock,
   ContactIcon,
   FileText,
+  Key,
   KeyRound,
   Mail,
   Mailbox,
@@ -103,6 +104,12 @@ export default function AdminLayout({ children }: any) {
       href: "/admin/microsoft-sync",
       current: location.pathname === "/admin/microsoft-sync",
       icon: Monitor,
+    },
+    {
+      name: "API-Keys",
+      href: "/admin/api-keys",
+      current: location.pathname === "/admin/api-keys",
+      icon: Key,
     },
     {
       name: t("sl_monitoring"),

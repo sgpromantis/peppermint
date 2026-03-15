@@ -58,6 +58,8 @@ export async function checkSession(request: FastifyRequest) {
       return null;
     }
 
+    // Skip user-agent/IP binding check for API key sessions
+    if (!session.apiKey) {
     // Verify the request is coming from the same client
     const currentUserAgent = request.headers["user-agent"];
     const currentIp = request.ip;
@@ -72,6 +74,7 @@ export async function checkSession(request: FastifyRequest) {
       });
 
       return null;
+    }
     }
 
     return session.user;

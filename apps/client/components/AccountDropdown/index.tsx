@@ -128,10 +128,15 @@ export function AccountDropdown() {
           <LifeBuoy className="mr-2 h-4 w-4" />
           <span>Support</span>
         </DropdownMenuItem>
-        <DropdownMenuItem disabled>
-          <Cloud className="mr-2 h-4 w-4" />
-          <span>API</span>
-        </DropdownMenuItem>
+        {user.isAdmin && (
+          <DropdownMenuItem
+            className="hover:cursor-pointer"
+            onClick={() => router.push("/admin/api-keys")}
+          >
+            <Cloud className="mr-2 h-4 w-4" />
+            <span>API</span>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="hover:cursor-pointer"
