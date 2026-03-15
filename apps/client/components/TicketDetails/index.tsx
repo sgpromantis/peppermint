@@ -212,7 +212,10 @@ export default function Ticket() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) return "";
-        const blob = await res.blob();
+        const rawBlob = await res.blob();
+        // Ensure blob carries the correct MIME type (critical for PDF viewer)
+        const ct = res.headers.get("content-type") || rawBlob.type;
+        const blob = ct && ct !== rawBlob.type ? new Blob([rawBlob], { type: ct }) : rawBlob;
         const url = window.URL.createObjectURL(blob);
         setBlobUrls((prev) => ({ ...prev, [fileId]: url }));
         return url;
@@ -1826,13 +1829,20 @@ export default function Ticket() {
                                         { headers: { Authorization: `Bearer ${token}` } }
                                       );
                                       if (!res.ok) return;
-                                      const blob = await res.blob();
+                                      const rawBlob = await res.blob();
+                                      const ct = res.headers.get("content-type") || rawBlob.type;
+                                      const blob = ct && ct !== rawBlob.type ? new Blob([rawBlob], { type: ct }) : rawBlob;
                                       const url = window.URL.createObjectURL(blob);
                                       const a = document.createElement("a");
                                       a.href = url;
                                       a.download = f.filename;
+                                      a.style.display = "none";
+                                      document.body.appendChild(a);
                                       a.click();
-                                      window.URL.revokeObjectURL(url);
+                                      setTimeout(() => {
+                                        document.body.removeChild(a);
+                                        window.URL.revokeObjectURL(url);
+                                      }, 150);
                                     } catch (err) {
                                       console.error("Download error:", err);
                                     }
@@ -1998,12 +2008,26 @@ export default function Ticket() {
                                     style={{ maxHeight: "calc(90vh - 48px)" }}
                                   />
                                 ) : isPdf(current) ? (
-                                  <iframe
-                                    src={url}
+                                  <object
+                                    data={url}
+                                    type="application/pdf"
                                     className="w-full border-0"
                                     style={{ height: "calc(90vh - 48px)" }}
-                                    title={current.filename}
-                                  />
+                                  >
+                                    <div className="flex flex-col items-center justify-center h-full gap-2 p-8">
+                                      <FileTextIcon className="h-12 w-12 text-red-400" />
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {t("pdf_preview_unavailable") || "PDF-Vorschau nicht verfügbar"}
+                                      </p>
+                                      <a
+                                        href={url}
+                                        download={current.filename}
+                                        className="text-sm text-blue-500 hover:underline"
+                                      >
+                                        {t("download") || "Herunterladen"}
+                                      </a>
+                                    </div>
+                                  </object>
                                 ) : null}
                                 {/* Nav arrows in fullscreen */}
                                 {pFiles.length > 1 && (
