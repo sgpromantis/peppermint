@@ -39,6 +39,7 @@ export const identity = {
   fullName: "promantis Helpdesk",
   contactEmail: "uhd@promantis.de",
   copyright: `© ${new Date().getFullYear()} promantis GmbH. Alle Rechte vorbehalten.`,
+  version: "2.0.0",
 } as const;
 
 // ── Logo assets ──────────────────────────────────────────

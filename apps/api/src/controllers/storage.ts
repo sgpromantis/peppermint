@@ -119,13 +119,19 @@ export function objectStoreRoutes(fastify: FastifyInstance) {
       }
 
       const stream = fs.createReadStream(filePath);
+      const stat = fs.statSync(filePath);
       const isImage = (file.mime || "").startsWith("image/");
-      const disposition = isImage
+      const isVideo = (file.mime || "").startsWith("video/");
+      const isPdf = file.mime === "application/pdf";
+      const isInline = isImage || isVideo || isPdf;
+      const disposition = isInline
         ? `inline; filename="${encodeURIComponent(file.filename)}"`
         : `attachment; filename="${encodeURIComponent(file.filename)}"`;
       reply
         .header("Content-Type", file.mime || "application/octet-stream")
         .header("Content-Disposition", disposition)
+        .header("Content-Length", stat.size)
+        .header("Accept-Ranges", "bytes")
         .header("Cache-Control", "private, max-age=86400")
         .send(stream);
     }

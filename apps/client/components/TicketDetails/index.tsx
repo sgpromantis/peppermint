@@ -22,7 +22,7 @@ import { getCookie } from "cookies-next";
 import moment from "moment";
 import useTranslation from "next-translate/useTranslation";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Frame from "react-frame-component";
 import { useQuery } from "react-query";
 import { useDebounce } from "use-debounce";
@@ -51,6 +51,8 @@ import {
   Ellipsis,
   Eye,
   EyeOff,
+  FileText as FileTextIcon,
+  FileVideo,
   LifeBuoy,
   Loader,
   LoaderCircle,
@@ -180,7 +182,9 @@ export default function Ticket() {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [previewFullscreen, setPreviewFullscreen] = useState(false);
+  const [blobUrls, setBlobUrls] = useState<Record<string, string>>({});
   const [assignedClient, setAssignedClient] = useState<any>();
   const [ticketType, setTicketType] = useState<any>();
   const [ticketTypeOptions, setTicketTypeOptions] = useState<any[]>([]);
@@ -191,6 +195,51 @@ export default function Ticket() {
   const history = useRouter();
 
   const { id } = history.query;
+
+  // ── Helpers for file type detection ──
+  const isImage = (f: any) => (f.mime || "").startsWith("image/");
+  const isVideo = (f: any) => (f.mime || "").startsWith("video/");
+  const isPdf = (f: any) => f.mime === "application/pdf";
+  const isPreviewable = (f: any) => isImage(f) || isVideo(f) || isPdf(f);
+
+  // Fetch a file as a blob URL (authenticated)
+  const fetchBlobUrl = useCallback(
+    async (fileId: string) => {
+      if (blobUrls[fileId]) return blobUrls[fileId];
+      try {
+        const res = await fetch(
+          `/api/v1/ticket/${id}/file/${fileId}/download`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) return "";
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        setBlobUrls((prev) => ({ ...prev, [fileId]: url }));
+        return url;
+      } catch {
+        return "";
+      }
+    },
+    [id, token, blobUrls]
+  );
+
+  // Pre-fetch blob URLs for all previewable files once ticket data arrives
+  useEffect(() => {
+    if (!data?.ticket?.files) return;
+    const previewable = data.ticket.files.filter(isPreviewable);
+    previewable.forEach((f: any) => {
+      if (!blobUrls[f.id]) fetchBlobUrl(f.id);
+    });
+  }, [data?.ticket?.files]);
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(blobUrls).forEach((url) => {
+        try { window.URL.revokeObjectURL(url); } catch {}
+      });
+    };
+  }, []);
 
   async function update() {
     if (data && data.ticket && data.ticket.locked) return;
@@ -1844,85 +1893,139 @@ export default function Ticket() {
                       </div>
                     </div>
 
-                    {/* Image Preview Gallery */}
-                    {data.ticket.files && data.ticket.files.filter((f: any) =>
-                      /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(f.filename)
-                    ).length > 0 && (
-                      <div className="border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex flex-row items-center justify-between mt-2">
-                          <span className="text-sm font-medium text-gray-500 dark:text-white flex items-center gap-1">
-                            <Eye className="h-4 w-4" />
-                            {t("preview")}
-                          </span>
-                        </div>
-                        <div className="mt-1 grid grid-cols-3 gap-1">
-                          {data.ticket.files
-                            .filter((f: any) => /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(f.filename))
-                            .map((f: any, idx: number) => (
-                              <button
-                                key={f.id}
-                                onClick={() => setLightboxIndex(idx)}
-                                className="aspect-square rounded overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-primary transition-all"
-                              >
-                                <img
-                                  src={`/api/v1/ticket/${id}/file/${f.id}/download`}
-                                  alt={f.filename}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                />
-                              </button>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Lightbox Overlay */}
-                    {lightboxIndex !== null && (() => {
-                      const imageFiles = data.ticket.files.filter((f: any) =>
-                        /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(f.filename)
-                      );
-                      const currentImage = imageFiles[lightboxIndex];
-                      if (!currentImage) return null;
+                    {/* File Preview Carousel — one file at a time */}
+                    {data.ticket.files && (() => {
+                      const pFiles = data.ticket.files.filter((f: any) => isPreviewable(f));
+                      if (pFiles.length === 0) return null;
+                      const idx = Math.min(previewIndex, pFiles.length - 1);
+                      const current = pFiles[idx];
+                      const url = blobUrls[current.id];
                       return (
-                        <div
-                          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
-                          onClick={() => setLightboxIndex(null)}
-                        >
-                          <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-                            <img
-                              src={`/api/v1/ticket/${id}/file/${currentImage.id}/download`}
-                              alt={currentImage.filename}
-                              className="max-w-full max-h-[85vh] object-contain rounded"
-                            />
-                            <div className="absolute top-2 right-2 flex gap-1">
+                        <>
+                          <div className="border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex flex-row items-center justify-between mt-2 mb-1">
+                              <span className="text-sm font-medium text-gray-500 dark:text-white flex items-center gap-1">
+                                <Eye className="h-4 w-4" />
+                                {t("preview")}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                {idx + 1} / {pFiles.length}
+                              </span>
+                            </div>
+                            <div className="relative group">
+                              {/* Preview content */}
                               <button
-                                onClick={() => setLightboxIndex(null)}
-                                className="p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white"
+                                onClick={() => setPreviewFullscreen(true)}
+                                className="w-full rounded overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-primary transition-all cursor-pointer"
                               >
-                                <PanelTopClose className="h-5 w-5" />
+                                {isImage(current) && url ? (
+                                  <img
+                                    src={url}
+                                    alt={current.filename}
+                                    className="w-full max-h-48 object-contain bg-gray-50 dark:bg-gray-800"
+                                  />
+                                ) : isVideo(current) ? (
+                                  <div className="w-full h-32 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 gap-1">
+                                    <FileVideo className="h-8 w-8 text-gray-400" />
+                                    <span className="text-xs text-gray-500 truncate max-w-[90%]">{current.filename}</span>
+                                    <span className="text-[10px] text-gray-400">{t("click_to_play") || "Klicken zum Abspielen"}</span>
+                                  </div>
+                                ) : isPdf(current) ? (
+                                  <div className="w-full h-32 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 gap-1">
+                                    <FileTextIcon className="h-8 w-8 text-red-400" />
+                                    <span className="text-xs text-gray-500 truncate max-w-[90%]">{current.filename}</span>
+                                    <span className="text-[10px] text-gray-400">{t("click_to_open") || "Klicken zum Öffnen"}</span>
+                                  </div>
+                                ) : null}
                               </button>
-                            </div>
-                            {imageFiles.length > 1 && (
-                              <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
+                              {/* Left arrow */}
+                              {pFiles.length > 1 && (
                                 <button
-                                  onClick={() => setLightboxIndex((lightboxIndex - 1 + imageFiles.length) % imageFiles.length)}
-                                  className="pointer-events-auto p-2 rounded-full bg-black/50 hover:bg-black/70 text-white ml-2"
+                                  onClick={() => setPreviewIndex((idx - 1 + pFiles.length) % pFiles.length)}
+                                  className="absolute left-1 top-1/2 -translate-y-1/2 p-1 rounded-full bg-black/40 hover:bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
-                                  <Play className="h-5 w-5 rotate-180" />
+                                  <Play className="h-4 w-4 rotate-180" />
                                 </button>
+                              )}
+                              {/* Right arrow */}
+                              {pFiles.length > 1 && (
                                 <button
-                                  onClick={() => setLightboxIndex((lightboxIndex + 1) % imageFiles.length)}
-                                  className="pointer-events-auto p-2 rounded-full bg-black/50 hover:bg-black/70 text-white mr-2"
+                                  onClick={() => setPreviewIndex((idx + 1) % pFiles.length)}
+                                  className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded-full bg-black/40 hover:bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
-                                  <Play className="h-5 w-5" />
+                                  <Play className="h-4 w-4" />
                                 </button>
-                              </div>
-                            )}
-                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white text-xs bg-black/50 px-2 py-1 rounded">
-                              {currentImage.filename} ({lightboxIndex + 1}/{imageFiles.length})
+                              )}
                             </div>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate mt-0.5">{current.filename}</p>
                           </div>
-                        </div>
+
+                          {/* Fullscreen preview modal */}
+                          {previewFullscreen && url && (
+                            <div
+                              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+                              onClick={() => setPreviewFullscreen(false)}
+                            >
+                              <div
+                                className="relative bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-xl"
+                                style={{ width: "min(90vw, 960px)", maxHeight: "90vh" }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div className="flex items-center justify-between px-4 py-2 border-b dark:border-gray-700">
+                                  <span className="text-sm font-medium truncate dark:text-white">
+                                    {current.filename} ({idx + 1}/{pFiles.length})
+                                  </span>
+                                  <button
+                                    onClick={() => setPreviewFullscreen(false)}
+                                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                                  >
+                                    <PanelTopClose className="h-4 w-4" />
+                                  </button>
+                                </div>
+                                {isImage(current) ? (
+                                  <img
+                                    src={url}
+                                    alt={current.filename}
+                                    className="w-full object-contain"
+                                    style={{ maxHeight: "calc(90vh - 48px)" }}
+                                  />
+                                ) : isVideo(current) ? (
+                                  <video
+                                    src={url}
+                                    controls
+                                    autoPlay
+                                    className="w-full"
+                                    style={{ maxHeight: "calc(90vh - 48px)" }}
+                                  />
+                                ) : isPdf(current) ? (
+                                  <iframe
+                                    src={url}
+                                    className="w-full border-0"
+                                    style={{ height: "calc(90vh - 48px)" }}
+                                    title={current.filename}
+                                  />
+                                ) : null}
+                                {/* Nav arrows in fullscreen */}
+                                {pFiles.length > 1 && (
+                                  <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
+                                    <button
+                                      onClick={() => setPreviewIndex((idx - 1 + pFiles.length) % pFiles.length)}
+                                      className="pointer-events-auto p-2 rounded-full bg-black/50 hover:bg-black/70 text-white ml-2"
+                                    >
+                                      <Play className="h-5 w-5 rotate-180" />
+                                    </button>
+                                    <button
+                                      onClick={() => setPreviewIndex((idx + 1) % pFiles.length)}
+                                      className="pointer-events-auto p-2 rounded-full bg-black/50 hover:bg-black/70 text-white mr-2"
+                                    >
+                                      <Play className="h-5 w-5" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </>
                       );
                     })()}
                   </div>

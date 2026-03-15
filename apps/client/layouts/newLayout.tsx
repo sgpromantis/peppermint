@@ -1,3 +1,4 @@
+import { identity } from "@promantis/brand";
 import {
   Dialog,
   Transition,
@@ -469,7 +470,7 @@ export default function NewLayout({ children }: any) {
               <div className="sm:flex hidden w-full justify-start items-center space-x-6">
                 {user.isAdmin && (
                   <span className="inline-flex items-center rounded-md bg-primary/10 px-3 py-2 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
-                    Version {process.env.NEXT_PUBLIC_CLIENT_VERSION}
+                    Version {identity.version}
                   </span>
                 )}
               </div>

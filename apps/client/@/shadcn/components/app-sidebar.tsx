@@ -1,3 +1,4 @@
+import { identity } from "@promantis/brand";
 import {
   Building,
   FileText,
@@ -112,7 +113,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     teams: [
       {
         name: "promantis Helpdesk",
-        plan: `version: ${process.env.NEXT_PUBLIC_CLIENT_VERSION}`,
+        plan: `version: ${identity.version}`,
       },
     ],
     navMain: allNavItems,
@@ -185,7 +186,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold text-xl">promantis</span>
             <span className="truncate text-xs">
-              version: {process.env.NEXT_PUBLIC_CLIENT_VERSION}
+              version: {identity.version}
             </span>
           </div>
         </div>
