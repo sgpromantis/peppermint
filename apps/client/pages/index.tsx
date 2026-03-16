@@ -208,7 +208,7 @@ export default function Home() {
                             scope="col"
                             className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white md:table-cell"
                           >
-                            {t("user")}
+                            Benutzer
                           </th>
                           {(user?.isAdmin || user?.isManager) && (
                           <th
@@ -290,7 +290,7 @@ export default function Home() {
                                 {item.assignedTo ? item.assignedTo.name : "-"}
                               </td>
                               <td className="hidden px-3 py-1 text-sm text-gray-500 w-[130px] dark:text-white truncate whitespace-nowrap md:table-cell">
-                                {item.createdBy?.name || item.name || "-"}
+                                {item.name || "-"}
                               </td>
                               {(user?.isAdmin || user?.isManager) && (
                               <td className="hidden px-3 py-1 text-sm text-gray-500 w-[140px] dark:text-white whitespace-nowrap lg:table-cell">
