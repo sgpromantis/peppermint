@@ -204,6 +204,20 @@ export default function Home() {
                           >
                             {t("assigned_to")}
                           </th>
+                          <th
+                            scope="col"
+                            className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white md:table-cell"
+                          >
+                            {t("user")}
+                          </th>
+                          {(user?.isAdmin || user?.isManager) && (
+                          <th
+                            scope="col"
+                            className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell"
+                          >
+                            {t("due_date")}
+                          </th>
+                          )}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
@@ -275,6 +289,14 @@ export default function Home() {
                               <td className="px-3 py-1 text-sm text-gray-500 w-[130px] dark:text-white truncate whitespace-nowrap">
                                 {item.assignedTo ? item.assignedTo.name : "-"}
                               </td>
+                              <td className="hidden px-3 py-1 text-sm text-gray-500 w-[130px] dark:text-white truncate whitespace-nowrap md:table-cell">
+                                {item.createdBy?.name || item.name || "-"}
+                              </td>
+                              {(user?.isAdmin || user?.isManager) && (
+                              <td className="hidden px-3 py-1 text-sm text-gray-500 w-[140px] dark:text-white whitespace-nowrap lg:table-cell">
+                                {item.dueDate ? moment(item.dueDate).format("DD/MM/YYYY HH:mm") : "-"}
+                              </td>
+                              )}
                             </tr>
                           ))}
                       </tbody>

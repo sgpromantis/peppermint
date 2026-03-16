@@ -1630,8 +1630,8 @@ export default function Ticket() {
                         <div>
                           <span className="text-xs text-gray-400 dark:text-gray-500">{t("due_date")}</span>
                           <input
-                            type="date"
-                            value={data.ticket.dueDate ? moment(data.ticket.dueDate).format("YYYY-MM-DD") : ""}
+                            type="datetime-local"
+                            value={data.ticket.dueDate ? moment(data.ticket.dueDate).format("YYYY-MM-DDTHH:mm") : ""}
                             disabled={data.ticket.locked}
                             onChange={async (e) => {
                               const newDueDate = e.target.value;
@@ -1643,7 +1643,7 @@ export default function Ticket() {
                                 },
                                 body: JSON.stringify({
                                   id,
-                                  dueDate: newDueDate,
+                                  dueDate: newDueDate ? new Date(newDueDate).toISOString() : null,
                                 }),
                               });
                               refetch();

@@ -626,7 +626,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
       preHandler: requirePermission(["issue::update"]),
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id, note, detail, title, priority, status, client, type, email, name, replyTo }: any =
+      const { id, note, detail, title, priority, status, client, type, email, name, replyTo, dueDate }: any =
         request.body;
 
       const user = await checkSession(request);
@@ -652,6 +652,9 @@ export function ticketRoutes(fastify: FastifyInstance) {
       if (email !== undefined) updateData.email = email;
       if (name !== undefined) updateData.name = name;
       if (replyTo !== undefined) updateData.replyTo = replyTo;
+      if (dueDate !== undefined) {
+        updateData.dueDate = dueDate ? new Date(dueDate) : null;
+      }
 
       await prisma.ticket.update({
         where: { id: id },
