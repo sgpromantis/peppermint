@@ -25,8 +25,8 @@ export function hasPermission(
   requiredPermissions: Permission | Permission[],
   requireAll: boolean = true
 ): boolean {
-  // Admins have all permissions
-  if (user?.isAdmin) {
+  // Admins and Managers have all permissions
+  if (user?.isAdmin || user?.isManager) {
     return true;
   }
 

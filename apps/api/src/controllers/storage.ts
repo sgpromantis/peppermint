@@ -118,8 +118,8 @@ export function objectStoreRoutes(fastify: FastifyInstance) {
         return reply.status(404).send({ success: false, message: "File missing from disk" });
       }
 
-      const stream = fs.createReadStream(filePath);
-      const stat = fs.statSync(filePath);
+      // Read into buffer — more reliable than streaming through the Next.js proxy
+      const buf = fs.readFileSync(filePath);
       const isImage = (file.mime || "").startsWith("image/");
       const isVideo = (file.mime || "").startsWith("video/");
       const isPdf = file.mime === "application/pdf";
@@ -130,10 +130,9 @@ export function objectStoreRoutes(fastify: FastifyInstance) {
       reply
         .header("Content-Type", file.mime || "application/octet-stream")
         .header("Content-Disposition", disposition)
-        .header("Content-Length", stat.size)
-        .header("Accept-Ranges", "bytes")
+        .header("Content-Length", String(buf.length))
         .header("Cache-Control", "private, max-age=86400")
-        .send(stream);
+        .send(buf);
     }
   );
 
