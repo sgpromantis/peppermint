@@ -22,6 +22,7 @@ export function dataRoutes(fastify: FastifyInstance) {
             OR: [
               { userId: user?.id },
               { createdBy: { path: ["id"], equals: user?.id } },
+              { email: user?.email },
             ],
           };
 
@@ -52,6 +53,7 @@ export function dataRoutes(fastify: FastifyInstance) {
             OR: [
               { userId: user?.id },
               { createdBy: { path: ["id"], equals: user?.id } },
+              { email: user?.email },
             ],
           };
 
@@ -82,6 +84,7 @@ export function dataRoutes(fastify: FastifyInstance) {
             OR: [
               { userId: user?.id },
               { createdBy: { path: ["id"], equals: user?.id } },
+              { email: user?.email },
             ],
           };
 
@@ -102,15 +105,21 @@ export function dataRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const user = await checkSession(request);
       
-      // Only Admins and Managers can see unassigned tickets
       const canSeeAll = user?.isAdmin || user?.isManager;
-      if (!canSeeAll) {
-        reply.send({ count: 0 });
-        return;
-      }
+      const whereClause = canSeeAll
+        ? { userId: null, hidden: false, isComplete: false }
+        : {
+            userId: null,
+            hidden: false,
+            isComplete: false,
+            OR: [
+              { createdBy: { path: ["id"], equals: user?.id } },
+              { email: user?.email },
+            ],
+          };
 
       const result = await prisma.ticket.count({
-        where: { userId: null, hidden: false, isComplete: false },
+        where: whereClause,
       });
 
       reply.send({ count: result });

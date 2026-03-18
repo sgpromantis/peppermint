@@ -1925,7 +1925,14 @@ export default function Ticket() {
                             <div className="relative group">
                               {/* Preview content */}
                               <button
-                                onClick={() => setPreviewFullscreen(true)}
+                                onClick={async () => {
+                                  if (isPdf(current)) {
+                                    const blobUrl = url || await fetchBlobUrl(current.id);
+                                    if (blobUrl) window.open(blobUrl, "_blank");
+                                  } else {
+                                    setPreviewFullscreen(true);
+                                  }
+                                }}
                                 className="w-full rounded overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-primary transition-all cursor-pointer"
                               >
                                 {isImage(current) && url ? (
@@ -2008,26 +2015,12 @@ export default function Ticket() {
                                     style={{ maxHeight: "calc(90vh - 48px)" }}
                                   />
                                 ) : isPdf(current) ? (
-                                  <object
-                                    data={url}
-                                    type="application/pdf"
+                                  <iframe
+                                    src={url}
+                                    title={current.filename}
                                     className="w-full border-0"
                                     style={{ height: "calc(90vh - 48px)" }}
-                                  >
-                                    <div className="flex flex-col items-center justify-center h-full gap-2 p-8">
-                                      <FileTextIcon className="h-12 w-12 text-red-400" />
-                                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {t("pdf_preview_unavailable") || "PDF-Vorschau nicht verfügbar"}
-                                      </p>
-                                      <a
-                                        href={url}
-                                        download={current.filename}
-                                        className="text-sm text-blue-500 hover:underline"
-                                      >
-                                        {t("download") || "Herunterladen"}
-                                      </a>
-                                    </div>
-                                  </object>
+                                  />
                                 ) : null}
                                 {/* Nav arrows in fullscreen */}
                                 {pFiles.length > 1 && (

@@ -72,7 +72,7 @@ export default function Home() {
   }
 
   async function fetchTickets() {
-    await fetch(`/api/v1/tickets/open`, {
+    await fetch(`/api/v1/tickets/all`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

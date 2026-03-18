@@ -409,6 +409,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
             OR: [
               { userId: user?.id },
               { createdBy: { path: ["id"], equals: user?.id } },
+              { email: user?.email },
             ],
           };
 
@@ -457,6 +458,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
             OR: [
               { userId: user?.id },
               { createdBy: { path: ["id"], equals: user?.id } },
+              { email: user?.email },
             ],
           };
 
@@ -486,6 +488,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
             OR: [
               { userId: user?.id },
               { createdBy: { path: ["id"], equals: user?.id } },
+              { email: user?.email },
             ],
           };
 
@@ -562,6 +565,7 @@ export function ticketRoutes(fastify: FastifyInstance) {
             OR: [
               { userId: user?.id },
               { createdBy: { path: ["id"], equals: user?.id } },
+              { email: user?.email },
             ],
           };
 
@@ -594,22 +598,21 @@ export function ticketRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const user = await checkSession(request);
       
-      // Only Admins and Managers can see unassigned tickets
       const canSeeAll = user?.isAdmin || user?.isManager;
-      if (!canSeeAll) {
-        reply.send({
-          success: true,
-          tickets: [],
-        });
-        return;
-      }
+      const whereClause = canSeeAll
+        ? { isComplete: false, assignedTo: null, hidden: false }
+        : {
+            isComplete: false,
+            assignedTo: null,
+            hidden: false,
+            OR: [
+              { createdBy: { path: ["id"], equals: user?.id } },
+              { email: user?.email },
+            ],
+          };
 
       const tickets = await prisma.ticket.findMany({
-        where: {
-          isComplete: false,
-          assignedTo: null,
-          hidden: false,
-        },
+        where: whereClause,
       });
 
       reply.send({
