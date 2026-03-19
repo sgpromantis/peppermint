@@ -416,6 +416,7 @@ export default function Ticket() {
       });
       return;
     }
+    setComment("");
     refetch();
   }
 
